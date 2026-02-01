@@ -2,6 +2,9 @@ import os
 import time
 import random
 
+from engine.ui.instagram import open_instagram, open_post_by_url
+from engine.ui.actions import like_post as ui_like_post
+
 from engine.logic.customer_loader import load_all_customers
 from engine.logic.demo_guard import demo_allowed, mark_demo_post_done
 from engine.logic.post_loader import load_posts
@@ -34,8 +37,8 @@ def open_post(device_id, account, post):
     time.sleep(1)
 
 def like_post(device_id, account):
-    print(f"[{device_id}] [{account}] Like")
-    time.sleep(1)
+    print(f"[{device_id}] [{account}] Like (UI)")
+    return ui_like_post(device_id)
 
 def comment_post(device_id, account):
     print(f"[{device_id}] [{account}] Comment")
@@ -156,8 +159,9 @@ def device_worker(device_id):
         account = accounts[ai]
         print(f"[{device_id}] Switching account → {account}")
 
+        open_instagram(device_id)
         open_profile(device_id, account, customer)
-        open_post(device_id, account, post)
+        open_post_by_url(device_id, post)
 
         actions = build_actions(customer)
         if customer["settings"].get("randomize_action_sequence"):
