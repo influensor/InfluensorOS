@@ -2,7 +2,11 @@ import os
 import time
 import random
 
-from engine.ui.instagram import open_instagram, open_post_by_url
+from engine.ui.instagram import (
+    open_instagram,
+    open_post_by_url,
+    open_profile_by_username
+)
 from engine.ui.actions import like_post as ui_like_post
 
 from engine.logic.customer_loader import load_all_customers
@@ -28,10 +32,6 @@ CYCLE_COOLDOWN = 5
 # PLACEHOLDER ACTIONS
 # (UiAutomator2 later)
 # =========================
-def open_profile(device_id, account, customer):
-    print(f"[{device_id}] [{account}] Open profile @{customer['username']}")
-    time.sleep(1)
-
 def open_post(device_id, account, post):
     print(f"[{device_id}] [{account}] Open post {post}")
     time.sleep(1)
@@ -98,7 +98,7 @@ def device_worker(device_id):
     # -------------------------
     # STEP 6: InfluensorOS Splash
     # -------------------------
-    show_splash(30)
+    show_splash(10)
 
     # -------------------------
     # STEP 7: Load customers
@@ -160,7 +160,7 @@ def device_worker(device_id):
         print(f"[{device_id}] Switching account → {account}")
 
         open_instagram(device_id)
-        open_profile(device_id, account, customer)
+        open_profile_by_username(device_id, customer["username"])
         open_post_by_url(device_id, post)
 
         actions = build_actions(customer)

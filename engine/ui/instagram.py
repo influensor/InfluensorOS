@@ -14,6 +14,19 @@ def open_instagram(device_id):
     d.app_start(INSTAGRAM_PKG)
     time.sleep(5)
 
+def open_profile_by_username(device_id, username):
+    d = get_device(device_id)
+
+    profile_url = f"https://www.instagram.com/{username}/"
+
+    d.shell([
+        "am", "start",
+        "-a", "android.intent.action.VIEW",
+        "-d", profile_url
+    ])
+
+    time.sleep(5)  # allow profile to load
+
 def open_post_by_url(device_id, post_url):
     d = get_device(device_id)
 
@@ -25,3 +38,4 @@ def open_post_by_url(device_id, post_url):
     ])
 
     time.sleep(6)  # allow reel/post to load
+
