@@ -15,16 +15,35 @@ from engine.logic.checkpoint_manager import (
 )
 from engine.logic.action_registry import build as build_actions
 from engine.logic.comment_loader import load_random_comment
+
+# Rate limits (per account)
 from engine.logic.rate_limiter import (
     can_perform,
     record_action,
     DEMO_LIMITS,
     PAID_LIMITS,
 )
+
+# Action probability
 from engine.logic.action_probability import (
     should_perform,
     DEMO_PROBABILITY,
     PAID_PROBABILITY,
+)
+
+# Execution window
+from engine.logic.execution_window import (
+    enforce_execution_window,
+    DEMO_WINDOW,
+    PAID_WINDOW,
+)
+
+# Device hard caps (per device)
+from engine.logic.device_caps import (
+    device_can_perform,
+    record_device_action,
+    DEVICE_DEMO_CAPS,
+    DEVICE_PAID_CAPS,
 )
 
 # =========================
@@ -170,14 +189,23 @@ def device_worker(device_id):
         print(f"[{device_id}] Selected {customer['customer_id']} | {post}")
 
     # -------------------------
-    # Select rate limits
+    # Select SAFETY PROFILES
     # -------------------------
     if customer.get("type") == "demo":
         rate_limits = DEMO_LIMITS
         action_probability = DEMO_PROBABILITY
+        execution_window = DEMO_WINDOW
+        device_caps = DEVICE_DEMO_CAPS
     else:
         rate_limits = PAID_LIMITS
         action_probability = PAID_PROBABILITY
+        execution_window = PAID_WINDOW
+        device_caps = DEVICE_PAID_CAPS
+
+    # -------------------------
+    # Enforce execution window
+    # -------------------------
+    enforce_execution_window(execution_window, device_id)
 
     # -------------------------
     # Accounts loop
@@ -202,7 +230,14 @@ def device_worker(device_id):
             action = actions[si]
 
             # -------------------------
-            # Rate limit check
+            # Device hard cap check
+            # -------------------------
+            if not device_can_perform(device_id, action, device_caps):
+                print(f"[{device_id}] {action} skipped (device cap)")
+                continue
+
+            # -------------------------
+            # Account rate limit check
             # -------------------------
             if not can_perform(device_id, account, action, rate_limits):
                 print(f"[{device_id}] [{account}] {action} skipped (rate limit)")
@@ -226,6 +261,7 @@ def device_worker(device_id):
 
             if success:
                 record_action(device_id, account, action)
+                record_device_action(device_id, action)
 
             save_checkpoint(device_id, {
                 "customer_id": customer["customer_id"],
