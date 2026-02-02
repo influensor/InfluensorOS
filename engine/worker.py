@@ -9,6 +9,8 @@ from engine.logic.customer_loader import load_all_customers
 from engine.logic.demo_guard import demo_allowed, mark_demo_post_done
 from engine.logic.post_loader import load_posts
 from engine.logic.comment_loader import load_random_comment
+from engine.ui.save import save_post as ui_save_post
+
 from engine.logic.checkpoint_manager import (
     load as load_checkpoint,
     save as save_checkpoint,
@@ -54,8 +56,8 @@ def comment_post(device_id, account, customer):
 
 
 def save_post(device_id, account):
-    print(f"[{device_id}] [{account}] Save (UI placeholder)")
-    time.sleep(1)
+    print(f"[{device_id}] [{account}] Save (UI)")
+    return ui_save_post(device_id)
 
 
 def share_post(device_id, account):

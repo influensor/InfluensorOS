@@ -1,0 +1,9 @@
+{
+  "devices": [
+    {
+      "adb_id": "9234f7db",
+      "active": true,
+      "label": "LOCAL_TEST_DEVICE"
+    }
+  ]
+}
