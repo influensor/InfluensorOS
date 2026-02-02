@@ -3,16 +3,24 @@ import time
 import random
 
 # =========================
-# ENGINE LOGIC
+# ENGINE LOGIC IMPORTS
 # =========================
 from engine.logic.customer_loader import load_all_customers
 from engine.logic.post_loader import load_posts
 from engine.logic.demo_guard import demo_allowed, mark_demo_post_done
-from engine.logic.checkpoint_manager import load as load_checkpoint
-from engine.logic.checkpoint_manager import save as save_checkpoint
-from engine.logic.checkpoint_manager import clear as clear_checkpoint
+from engine.logic.checkpoint_manager import (
+    load as load_checkpoint,
+    save as save_checkpoint,
+    clear as clear_checkpoint,
+)
 from engine.logic.action_registry import build as build_actions
-from engine.logic.rate_limiter import can_perform, record_action
+from engine.logic.comment_loader import load_random_comment
+from engine.logic.rate_limiter import (
+    can_perform,
+    record_action,
+    DEMO_LIMITS,
+    PAID_LIMITS,
+)
 
 # =========================
 # UI / UIAUTOMATOR2
@@ -23,13 +31,11 @@ from engine.ui.instagram import (
     open_profile_by_username,
     open_post_by_url,
 )
-
+from engine.ui.actions import like_post as ui_like_post
 from engine.ui.comment import post_comment
 from engine.ui.save import save_post as ui_save_post
 from engine.ui.share import share_post as ui_share_post
 from engine.ui.repost import repost_post as ui_repost_post
-from engine.ui.actions import like_post as ui_like_post
-
 
 # =========================
 # BASIC CONFIG
@@ -100,10 +106,10 @@ def device_worker(device_id):
     # -------------------------
     # Splash screen (Step 6)
     # -------------------------
-    show_splash(10)
+    show_splash(30)
 
     # -------------------------
-    # Resume checkpoint if exists
+    # Load checkpoint
     # -------------------------
     checkpoint = load_checkpoint(device_id)
 
@@ -159,6 +165,14 @@ def device_worker(device_id):
         print(f"[{device_id}] Selected {customer['customer_id']} | {post}")
 
     # -------------------------
+    # Select rate limits
+    # -------------------------
+    if customer.get("type") == "demo":
+        rate_limits = DEMO_LIMITS
+    else:
+        rate_limits = PAID_LIMITS
+
+    # -------------------------
     # Accounts loop
     # -------------------------
     accounts = load_accounts(device_id)
@@ -183,7 +197,7 @@ def device_worker(device_id):
             # -------------------------
             # Rate limit check (PER ACCOUNT)
             # -------------------------
-            if not can_perform(device_id, account, action):
+            if not can_perform(device_id, account, action, rate_limits):
                 print(f"[{device_id}] [{account}] {action} skipped (rate limit)")
                 continue
 

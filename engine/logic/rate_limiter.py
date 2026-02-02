@@ -18,6 +18,24 @@ DEFAULT_LIMITS = {
     "repost":  {"daily": 10,  "cooldown": 300},
 }
 
+# -------------------------
+# RATE LIMIT PROFILES
+# -------------------------
+DEMO_LIMITS = {
+    "like":    {"daily": 25,  "cooldown": 60},
+    "comment": {"daily": 3,   "cooldown": 600},
+    "save":    {"daily": 15,  "cooldown": 90},
+    "share":   {"daily": 10,  "cooldown": 120},
+    "repost":  {"daily": 2,   "cooldown": 900},
+}
+
+PAID_LIMITS = {
+    "like":    {"daily": 120, "cooldown": 20},
+    "comment": {"daily": 15,  "cooldown": 180},
+    "save":    {"daily": 80,  "cooldown": 30},
+    "share":   {"daily": 40,  "cooldown": 60},
+    "repost":  {"daily": 10,  "cooldown": 300},
+}
 
 # -------------------------
 # STATE HELPERS
@@ -60,12 +78,10 @@ def _save_state(device_id, account, state):
 # -------------------------
 # PUBLIC API
 # -------------------------
-def can_perform(device_id, account, action, limits=None):
-    limits = limits or DEFAULT_LIMITS
+def can_perform(device_id, account, action, limits):
     rule = limits.get(action)
-
     if not rule:
-        return True  # unknown action = allow
+        return True
 
     state = _load_state(device_id, account)
 
