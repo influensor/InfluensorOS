@@ -1,78 +1,32 @@
 import json
 import time
-import os
 import urllib.request
 
-from engine.config import CACHE_DIR
-
-BASE_URL = "https://raw.githubusercontent.com/influensor/InfluensorOS/main/remote_config"
-
+BASE_URL = "https://raw.githubusercontent.com/influensor/InfluensorOS/main"
+CACHE = {}
+CACHE_TIME = {}
 CACHE_TTL = 300  # 5 minutes
-CACHE_FILE = os.path.join(CACHE_DIR, "remote_config.json")
-
-_CACHE = {}
-_LAST_FETCH = 0
 
 
-# -------------------------
-# LOW LEVEL FETCH
-# -------------------------
-def _fetch_json(name):
-    url = f"{BASE_URL}/{name}.json"
+def _fetch_json(path):
+    url = f"{BASE_URL}/{path}.json"
     with urllib.request.urlopen(url, timeout=10) as r:
         return json.loads(r.read().decode("utf-8"))
 
 
-# -------------------------
-# DISK CACHE
-# -------------------------
-def _load_disk_cache():
-    if not os.path.exists(CACHE_FILE):
-        return {}
-
-    try:
-        with open(CACHE_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return {}
-
-
-def _save_disk_cache(data):
-    try:
-        with open(CACHE_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-    except Exception:
-        pass
-
-
-# -------------------------
-# PUBLIC API
-# -------------------------
-def get_config(name, fallback):
-    global _LAST_FETCH, _CACHE
-
+def get_config(path, fallback=None):
     now = time.time()
 
-    # In-memory cache still valid
-    if name in _CACHE and now - _LAST_FETCH < CACHE_TTL:
-        return _CACHE[name]
-
-    # Load disk cache (once)
-    if not _CACHE:
-        _CACHE = _load_disk_cache()
+    if path in CACHE and now - CACHE_TIME.get(path, 0) < CACHE_TTL:
+        return CACHE[path]
 
     try:
-        data = _fetch_json(name)
-
-        _CACHE[name] = data
-        _LAST_FETCH = now
-
-        _save_disk_cache(_CACHE)
+        data = _fetch_json(path)
+        CACHE[path] = data
+        CACHE_TIME[path] = now
         return data
-
     except Exception:
-        # Network down → disk cache → fallback
-        return _CACHE.get(name, fallback)
+        return CACHE.get(path, fallback)
 
 
 def kill_switch_active():
