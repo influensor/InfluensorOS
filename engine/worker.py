@@ -3,26 +3,19 @@ import time
 import random
 
 # =========================
-# ENGINE LOGIC IMPORTS
+# ENGINE LOGIC
 # =========================
 from engine.logic.customer_loader import load_all_customers
-from engine.logic.demo_guard import demo_allowed, mark_demo_post_done
 from engine.logic.post_loader import load_posts
-from engine.logic.comment_loader import load_random_comment
-from engine.ui.save import save_post as ui_save_post
-from engine.ui.share import share_post as ui_share_post
-from engine.ui.repost import repost_post as ui_repost_post
-
-
-from engine.logic.checkpoint_manager import (
-    load as load_checkpoint,
-    save as save_checkpoint,
-    clear as clear_checkpoint,
-)
+from engine.logic.demo_guard import demo_allowed, mark_demo_post_done
+from engine.logic.checkpoint_manager import load as load_checkpoint
+from engine.logic.checkpoint_manager import save as save_checkpoint
+from engine.logic.checkpoint_manager import clear as clear_checkpoint
 from engine.logic.action_registry import build as build_actions
+from engine.logic.rate_limiter import can_perform, record_action
 
 # =========================
-# UI IMPORTS (UIAUTOMATOR2)
+# UI / UIAUTOMATOR2
 # =========================
 from engine.ui.splash import show as show_splash
 from engine.ui.instagram import (
@@ -30,8 +23,13 @@ from engine.ui.instagram import (
     open_profile_by_username,
     open_post_by_url,
 )
-from engine.ui.actions import like_post as ui_like_post
+
 from engine.ui.comment import post_comment
+from engine.ui.save import save_post as ui_save_post
+from engine.ui.share import share_post as ui_share_post
+from engine.ui.repost import repost_post as ui_repost_post
+from engine.ui.actions import like_post as ui_like_post
+
 
 # =========================
 # BASIC CONFIG
@@ -51,7 +49,7 @@ def like_post(device_id, account):
 def comment_post(device_id, account, customer):
     comment = load_random_comment(customer["customer_id"])
     if not comment:
-        print(f"[{device_id}] No comment available")
+        print(f"[{device_id}] [{account}] No comment available, skipping")
         return False
 
     print(f"[{device_id}] [{account}] Comment (UI)")
@@ -73,26 +71,16 @@ def repost_post(device_id, account):
     return ui_repost_post(device_id)
 
 
-def share_to_story(device_id, account):
-    print(f"[{device_id}] [{account}] Share to Story (UI placeholder)")
-    time.sleep(1)
-
-
-# =========================
-# ACTION EXECUTOR MAP
-# (context-free actions only)
-# =========================
 ACTION_EXECUTORS = {
     "like": like_post,
     "save": save_post,
     "share": share_post,
     "repost": repost_post,
-    "share_to_story": share_to_story,
 }
 
 
 # =========================
-# ACCOUNTS PER DEVICE
+# LOAD ACCOUNTS PER DEVICE
 # =========================
 def load_accounts(device_id):
     path = f"runtime/accounts/device_{device_id}_accounts.txt"
@@ -110,14 +98,14 @@ def device_worker(device_id):
     print(f"\n[{device_id}] Worker started")
 
     # -------------------------
-    # Resume checkpoint if any
+    # Splash screen (Step 6)
     # -------------------------
-    checkpoint = load_checkpoint(device_id)
+    show_splash(10)
 
     # -------------------------
-    # Step 6: Splash Screen
+    # Resume checkpoint if exists
     # -------------------------
-    show_splash(30)
+    checkpoint = load_checkpoint(device_id)
 
     # -------------------------
     # Load customers
@@ -137,17 +125,18 @@ def device_worker(device_id):
         return
 
     # -------------------------
-    # Select or Resume Customer
+    # Select or resume customer
     # -------------------------
     if checkpoint:
-        customer_id = checkpoint["customer_id"]
+        customer = next(
+            c for c in eligible
+            if c["customer_id"] == checkpoint["customer_id"]
+        )
         post = checkpoint["post"]
         account_index = checkpoint["account_index"]
         step_index = checkpoint["step_index"]
 
-        customer = next(c for c in eligible if c["customer_id"] == customer_id)
-        print(f"[{device_id}] Resuming {customer_id} | {post}")
-
+        print(f"[{device_id}] Resuming {customer['customer_id']} | {post}")
     else:
         customer = random.choice(eligible)
         posts = load_posts(customer["customer_id"])
@@ -170,7 +159,7 @@ def device_worker(device_id):
         print(f"[{device_id}] Selected {customer['customer_id']} | {post}")
 
     # -------------------------
-    # Account Loop
+    # Accounts loop
     # -------------------------
     accounts = load_accounts(device_id)
 
@@ -183,20 +172,32 @@ def device_worker(device_id):
         open_profile_by_username(device_id, customer["username"])
         open_post_by_url(device_id, post)
 
-        # Actions
         actions = build_actions(customer)
+
         if customer["settings"].get("randomize_action_sequence"):
             random.shuffle(actions)
 
         for si in range(step_index, len(actions)):
             action = actions[si]
 
+            # -------------------------
+            # Rate limit check (PER ACCOUNT)
+            # -------------------------
+            if not can_perform(device_id, account, action):
+                print(f"[{device_id}] [{account}] {action} skipped (rate limit)")
+                continue
+
+            success = False
+
             if action == "comment":
-                comment_post(device_id, account, customer)
+                success = comment_post(device_id, account, customer)
             else:
                 executor = ACTION_EXECUTORS.get(action)
                 if executor:
-                    executor(device_id, account)
+                    success = executor(device_id, account)
+
+            if success:
+                record_action(device_id, account, action)
 
             save_checkpoint(device_id, {
                 "customer_id": customer["customer_id"],
