@@ -3,7 +3,7 @@ import time
 import random
 
 # =========================
-# ENGINE LOGIC IMPORTS
+# ENGINE LOGIC
 # =========================
 from engine.logic.customer_loader import load_all_customers
 from engine.logic.post_loader import load_posts
@@ -16,35 +16,20 @@ from engine.logic.checkpoint_manager import (
 from engine.logic.action_registry import build as build_actions
 from engine.logic.comment_loader import load_random_comment
 
-# Rate limits (per account)
-from engine.logic.rate_limiter import (
-    can_perform,
-    record_action,
-    DEMO_LIMITS,
-    PAID_LIMITS,
-)
+# Rate limiter (per account)
+from engine.logic.rate_limiter import can_perform, record_action
 
 # Action probability
-from engine.logic.action_probability import (
-    should_perform,
-    DEMO_PROBABILITY,
-    PAID_PROBABILITY,
-)
+from engine.logic.action_probability import should_perform
 
 # Execution window
-from engine.logic.execution_window import (
-    enforce_execution_window,
-    DEMO_WINDOW,
-    PAID_WINDOW,
-)
+from engine.logic.execution_window import enforce_execution_window
 
-# Device hard caps (per device)
-from engine.logic.device_caps import (
-    device_can_perform,
-    record_device_action,
-    DEVICE_DEMO_CAPS,
-    DEVICE_PAID_CAPS,
-)
+# Device hard caps
+from engine.logic.device_caps import device_can_perform, record_device_action
+
+# Remote config
+from engine.logic.remote_config import get_config, kill_switch_active
 
 # =========================
 # UI / UIAUTOMATOR2
@@ -128,6 +113,14 @@ def device_worker(device_id):
     print(f"\n[{device_id}] Worker started")
 
     # -------------------------
+    # Kill switch (REMOTE)
+    # -------------------------
+    enabled, message = kill_switch_active()
+    if enabled:
+        print(f"[{device_id}] KILL SWITCH ACTIVE: {message}")
+        return
+
+    # -------------------------
     # Splash screen
     # -------------------------
     show_splash(30)
@@ -189,18 +182,14 @@ def device_worker(device_id):
         print(f"[{device_id}] Selected {customer['customer_id']} | {post}")
 
     # -------------------------
-    # Select SAFETY PROFILES
+    # LOAD REMOTE CONFIG
     # -------------------------
-    if customer.get("type") == "demo":
-        rate_limits = DEMO_LIMITS
-        action_probability = DEMO_PROBABILITY
-        execution_window = DEMO_WINDOW
-        device_caps = DEVICE_DEMO_CAPS
-    else:
-        rate_limits = PAID_LIMITS
-        action_probability = PAID_PROBABILITY
-        execution_window = PAID_WINDOW
-        device_caps = DEVICE_PAID_CAPS
+    profile = "demo" if customer.get("type") == "demo" else "paid"
+
+    rate_limits = get_config("limits", {}).get(profile, {})
+    action_probability = get_config("probability", {}).get(profile, {})
+    execution_window = get_config("execution_window", {}).get(profile, {})
+    device_caps = get_config("device_caps", {}).get(profile, {})
 
     # -------------------------
     # Enforce execution window
@@ -230,14 +219,14 @@ def device_worker(device_id):
             action = actions[si]
 
             # -------------------------
-            # Device hard cap check
+            # Device hard cap
             # -------------------------
             if not device_can_perform(device_id, action, device_caps):
                 print(f"[{device_id}] {action} skipped (device cap)")
                 continue
 
             # -------------------------
-            # Account rate limit check
+            # Account rate limit
             # -------------------------
             if not can_perform(device_id, account, action, rate_limits):
                 print(f"[{device_id}] [{account}] {action} skipped (rate limit)")
