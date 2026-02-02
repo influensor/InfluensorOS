@@ -56,6 +56,13 @@ def seconds_until_next_window(window):
 # PUBLIC API
 # -------------------------
 def enforce_execution_window(window, device_id):
+    # -------------------------
+    # Safety fallback
+    # -------------------------
+    if not window or "start" not in window or "end" not in window:
+        print(f"[{device_id}] Execution window missing, skipping enforcement")
+        return
+
     if is_within_window(window):
         return
 
