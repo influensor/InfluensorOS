@@ -1,15 +1,12 @@
 import time
 import threading
-import subprocess
 
 from engine.worker import device_worker
 from engine.logic.device_auth import (
     get_connected_adb_devices,
-    load_allowed_devices,
-    filter_authorized
+    get_authorized_devices,
 )
-from engine.logic.kill_switch import enabled as kill_switch_enabled
-
+from engine.logic.remote_config import kill_switch_active
 
 # =========================
 # BOOTSTRAP CONFIG
@@ -18,9 +15,7 @@ BOOTSTRAP_REFRESH_SECONDS = 10
 
 
 def start_device_worker(device_id):
-    """
-    Wrapper to isolate worker crashes per device
-    """
+    """Isolate crashes per device"""
     try:
         device_worker(device_id)
     except Exception as e:
@@ -34,8 +29,9 @@ def bootstrap_loop():
         # -------------------------
         # Global kill switch
         # -------------------------
-        if not kill_switch_enabled():
-            print("[BOOTSTRAP] Kill switch OFF. Sleeping...")
+        enabled, message = kill_switch_active()
+        if enabled:
+            print(f"[BOOTSTRAP] KILL SWITCH ACTIVE: {message}")
             time.sleep(BOOTSTRAP_REFRESH_SECONDS)
             continue
 
@@ -49,24 +45,23 @@ def bootstrap_loop():
             continue
 
         # -------------------------
-        # Filter allowed devices
+        # Filter authorized devices (REMOTE)
         # -------------------------
-        allowed_config = load_allowed_devices()
-        allowed_devices = filter_authorized(connected, allowed_config)
+        authorized_devices = get_authorized_devices()
 
-        if not allowed_devices:
+        if not authorized_devices:
             print("[BOOTSTRAP] No authorized devices")
             time.sleep(BOOTSTRAP_REFRESH_SECONDS)
             continue
 
-        print(f"[BOOTSTRAP] Authorized devices: {allowed_devices}")
+        print(f"[BOOTSTRAP] Authorized devices: {authorized_devices}")
 
         # -------------------------
-        # Spawn workers (one per device)
+        # Spawn workers
         # -------------------------
         threads = []
 
-        for device_id in allowed_devices:
+        for device_id in authorized_devices:
             t = threading.Thread(
                 target=start_device_worker,
                 args=(device_id,),
@@ -76,20 +71,18 @@ def bootstrap_loop():
             threads.append(t)
 
         # -------------------------
-        # Wait for all workers
+        # Wait for workers to finish
         # -------------------------
         for t in threads:
             t.join()
 
-        # -------------------------
-        # Cooldown before next cycle
-        # -------------------------
         print("[BOOTSTRAP] All device cycles complete. Cooling down...")
         time.sleep(BOOTSTRAP_REFRESH_SECONDS)
 
 
-# =========================
-# ENTRY POINT
-# =========================
 def start():
     bootstrap_loop()
+
+
+if __name__ == "__main__":
+    start()
