@@ -10,6 +10,8 @@ from engine.logic.demo_guard import demo_allowed, mark_demo_post_done
 from engine.logic.post_loader import load_posts
 from engine.logic.comment_loader import load_random_comment
 from engine.ui.save import save_post as ui_save_post
+from engine.ui.share import share_post as ui_share_post
+
 
 from engine.logic.checkpoint_manager import (
     load as load_checkpoint,
@@ -61,8 +63,8 @@ def save_post(device_id, account):
 
 
 def share_post(device_id, account):
-    print(f"[{device_id}] [{account}] Share (UI placeholder)")
-    time.sleep(1)
+    print(f"[{device_id}] [{account}] Share (UI)")
+    return ui_share_post(device_id)
 
 
 def repost_post(device_id, account):
