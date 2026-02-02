@@ -21,6 +21,11 @@ from engine.logic.rate_limiter import (
     DEMO_LIMITS,
     PAID_LIMITS,
 )
+from engine.logic.action_probability import (
+    should_perform,
+    DEMO_PROBABILITY,
+    PAID_PROBABILITY,
+)
 
 # =========================
 # UI / UIAUTOMATOR2
@@ -104,7 +109,7 @@ def device_worker(device_id):
     print(f"\n[{device_id}] Worker started")
 
     # -------------------------
-    # Splash screen (Step 6)
+    # Splash screen
     # -------------------------
     show_splash(30)
 
@@ -169,8 +174,10 @@ def device_worker(device_id):
     # -------------------------
     if customer.get("type") == "demo":
         rate_limits = DEMO_LIMITS
+        action_probability = DEMO_PROBABILITY
     else:
         rate_limits = PAID_LIMITS
+        action_probability = PAID_PROBABILITY
 
     # -------------------------
     # Accounts loop
@@ -195,10 +202,17 @@ def device_worker(device_id):
             action = actions[si]
 
             # -------------------------
-            # Rate limit check (PER ACCOUNT)
+            # Rate limit check
             # -------------------------
             if not can_perform(device_id, account, action, rate_limits):
                 print(f"[{device_id}] [{account}] {action} skipped (rate limit)")
+                continue
+
+            # -------------------------
+            # Probability check
+            # -------------------------
+            if not should_perform(action, action_probability):
+                print(f"[{device_id}] [{account}] {action} skipped (probability)")
                 continue
 
             success = False
