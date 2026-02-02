@@ -11,6 +11,7 @@ from engine.logic.post_loader import load_posts
 from engine.logic.comment_loader import load_random_comment
 from engine.ui.save import save_post as ui_save_post
 from engine.ui.share import share_post as ui_share_post
+from engine.ui.repost import repost_post as ui_repost_post
 
 
 from engine.logic.checkpoint_manager import (
@@ -68,8 +69,8 @@ def share_post(device_id, account):
 
 
 def repost_post(device_id, account):
-    print(f"[{device_id}] [{account}] Repost (UI placeholder)")
-    time.sleep(1)
+    print(f"[{device_id}] [{account}] Repost (UI)")
+    return ui_repost_post(device_id)
 
 
 def share_to_story(device_id, account):
