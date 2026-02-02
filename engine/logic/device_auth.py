@@ -10,11 +10,8 @@ from engine.config import BASE_DIR
 # SYSTEM IDENTIFICATION
 # ==================================================
 def get_system_name():
-    """
-    Returns current system name.
-    Windows: COMPUTERNAME
-    """
-    return os.environ.get("COMPUTERNAME") or platform.node()
+    name = os.environ.get("COMPUTERNAME") or platform.node()
+    return name.strip().lower()
 
 
 # ==================================================
