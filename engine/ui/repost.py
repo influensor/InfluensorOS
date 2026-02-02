@@ -21,10 +21,4 @@ def repost_post(device_id):
     repost_btn.click()
     time.sleep(random.uniform(1.0, 1.8))
 
-    # -------------------------
-    # 3️⃣ Close any repost UI
-    # -------------------------
-    d.press("back")
-    time.sleep(random.uniform(0.8, 1.5))
-
     return True
