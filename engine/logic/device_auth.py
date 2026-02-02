@@ -75,3 +75,14 @@ def filter_authorized(connected_devices, allowed_devices=None):
     if not allowed_devices:
         return connected_devices
     return [d for d in connected_devices if d in allowed_devices]
+
+
+# --------------------------------------------------
+# BACKWARD COMPATIBILITY (BOOTSTRAP)
+# --------------------------------------------------
+def load_allowed_devices():
+    """
+    Legacy API used by bootstrap.py.
+    Returns system-authorized devices.
+    """
+    return load_system_authorized_devices()
