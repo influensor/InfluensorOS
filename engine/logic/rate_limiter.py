@@ -2,8 +2,7 @@ import os
 import json
 import time
 from datetime import date
-
-STATE_DIR = "runtime/state"
+from engine.config import STATE_DIR
 os.makedirs(STATE_DIR, exist_ok=True)
 
 

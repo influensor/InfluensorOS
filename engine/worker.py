@@ -2,6 +2,8 @@ import os
 import time
 import random
 
+from engine.config import ACCOUNTS_DIR
+
 # =========================
 # ENGINE LOGIC
 # =========================
@@ -15,6 +17,12 @@ from engine.logic.checkpoint_manager import (
 )
 from engine.logic.action_registry import build as build_actions
 from engine.logic.comment_loader import load_random_comment
+
+# Delivery tracker (NEW)
+from engine.logic.delivery_tracker import (
+    get_eligible_posts,
+    mark_device_done,
+)
 
 # Rate limiter (per account)
 from engine.logic.rate_limiter import can_perform, record_action
@@ -98,7 +106,11 @@ ACTION_EXECUTORS = {
 # LOAD ACCOUNTS PER DEVICE
 # =========================
 def load_accounts(device_id):
-    path = f"runtime/accounts/device_{device_id}_accounts.txt"
+    path = os.path.join(
+        ACCOUNTS_DIR,
+        f"device_{device_id}_accounts.txt"
+    )
+
     if not os.path.exists(path):
         return ["acc_1", "acc_2", "acc_3"]
 
@@ -155,17 +167,25 @@ def device_worker(device_id):
             c for c in eligible
             if c["customer_id"] == checkpoint["customer_id"]
         )
+
         post = checkpoint["post"]
         account_index = checkpoint["account_index"]
         step_index = checkpoint["step_index"]
 
         print(f"[{device_id}] Resuming {customer['customer_id']} | {post}")
+
     else:
         customer = random.choice(eligible)
+
         posts = load_posts(customer["customer_id"])
+        posts = get_eligible_posts(
+            customer["customer_id"],
+            posts,
+            device_id
+        )
 
         if not posts:
-            print(f"[{device_id}] No posts for {customer['customer_id']}")
+            print(f"[{device_id}] No eligible posts left for {customer['customer_id']}")
             return
 
         post = random.choice(posts)
@@ -269,6 +289,15 @@ def device_worker(device_id):
         })
 
         time.sleep(ACCOUNT_COOLDOWN)
+
+    # -------------------------
+    # Mark delivery complete (PER DEVICE)
+    # -------------------------
+    mark_device_done(
+        customer["customer_id"],
+        post,
+        device_id
+    )
 
     # -------------------------
     # Demo accounting
