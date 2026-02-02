@@ -1,53 +1,77 @@
-import subprocess
-import json
 import os
+import json
+import subprocess
+import platform
+
+from engine.config import BASE_DIR
 
 
-# =========================
-# ADB DEVICE DETECTION
-# =========================
-def get_connected_adb_devices():
+# --------------------------------------------------
+# SYSTEM IDENTIFICATION
+# --------------------------------------------------
+def get_system_name():
+    return os.environ.get("COMPUTERNAME") or platform.node()
+
+
+# --------------------------------------------------
+# SYSTEM-SCOPED DEVICE AUTH FILE
+# --------------------------------------------------
+def _system_devices_file():
+    system = get_system_name()
+    return os.path.join(BASE_DIR, "allowed_devices", f"{system}.json")
+
+
+def load_system_authorized_devices():
     """
-    Returns a list of connected ADB device IDs
+    System is authorized ONLY if this file exists
     """
-    try:
-        result = subprocess.check_output(
-            ["adb", "devices"],
-            stderr=subprocess.STDOUT,
-            text=True
-        )
-    except Exception as e:
-        print(f"[device_auth] adb not available: {e}")
-        return []
+    path = _system_devices_file()
 
-    devices = []
-    for line in result.splitlines():
-        if "\tdevice" in line:
-            devices.append(line.split("\t")[0])
-
-    return devices
-
-
-# =========================
-# LOAD ALLOWED DEVICES
-# =========================
-def load_allowed_devices(path="devices/allowed_devices.json"):
     if not os.path.exists(path):
-        print("[device_auth] allowed_devices.json not found")
-        return {"devices": []}
+        return None  # system NOT authorized
 
     with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        data = json.load(f)
+
+    return data.get("authorized_devices", [])
 
 
-# =========================
-# FILTER AUTHORIZED DEVICES
-# =========================
-def filter_authorized(connected_devices, allowed_config):
-    allowed = set()
+# --------------------------------------------------
+# ADB HELPERS
+# --------------------------------------------------
+def get_connected_adb_devices():
+    try:
+        out = subprocess.check_output(
+            ["adb", "devices"],
+            stderr=subprocess.DEVNULL
+        ).decode()
 
-    for d in allowed_config.get("devices", []):
-        if d.get("active"):
-            allowed.add(d.get("adb_id"))
+        lines = out.strip().splitlines()[1:]
+        return [
+            line.split("\t")[0]
+            for line in lines
+            if "\tdevice" in line
+        ]
+    except Exception:
+        return []
 
-    return [d for d in connected_devices if d in allowed]
+
+# --------------------------------------------------
+# FINAL AUTH API (USED EVERYWHERE)
+# --------------------------------------------------
+def get_authorized_devices():
+    allowed = load_system_authorized_devices()
+    if allowed is None:
+        return []  # system not authorized
+
+    connected = set(get_connected_adb_devices())
+    return list(connected & set(allowed))
+
+
+# --------------------------------------------------
+# BACKWARD COMPAT (BOOTSTRAP)
+# --------------------------------------------------
+def filter_authorized(connected_devices, allowed_devices=None):
+    if not allowed_devices:
+        return connected_devices
+    return [d for d in connected_devices if d in allowed_devices]

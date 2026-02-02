@@ -135,7 +135,7 @@ def device_worker(device_id):
     # -------------------------
     # Splash screen
     # -------------------------
-    show_splash(30)
+    show_splash(10)
 
     # -------------------------
     # Load checkpoint
