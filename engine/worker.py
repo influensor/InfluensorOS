@@ -14,9 +14,11 @@ from engine.logic.checkpoint_manager import (
 )
 from engine.logic.action_registry import build as build_actions
 from engine.logic.comment_loader import load_random_comment
-from engine.logic.delivery_tracker import mark_post_delivered
+from engine.logic.delivery_tracker import (
+    mark_post_delivered,
+    account_already_done,
+)
 
-# Rate / control
 from engine.logic.rate_limiter import can_perform, record_action
 from engine.logic.action_probability import should_perform
 from engine.logic.execution_window import enforce_execution_window
@@ -39,6 +41,7 @@ from engine.ui.comment import post_comment
 from engine.ui.save import save_post as ui_save_post
 from engine.ui.share import share_post as ui_share_post
 from engine.ui.repost import repost_post as ui_repost_post
+from engine.ui.switch_account import switch_account
 
 # =========================
 # CONFIG
@@ -48,35 +51,33 @@ CYCLE_COOLDOWN = 5
 
 
 # =========================
-# ACTION WRAPPERS
+# ACTION EXECUTORS
 # =========================
 def like_post(device_id, account):
-    print(f"[{device_id}] [{account}] Like (UI)")
+    print(f"[{device_id}] [{account}] Like")
     return ui_like_post(device_id)
 
 
 def comment_post(device_id, account, customer):
     comment = load_random_comment(customer["customer_id"])
     if not comment:
-        print(f"[{device_id}] [{account}] No comment available, skipping")
         return False
-
-    print(f"[{device_id}] [{account}] Comment (UI)")
+    print(f"[{device_id}] [{account}] Comment")
     return post_comment(device_id, comment)
 
 
 def save_post(device_id, account):
-    print(f"[{device_id}] [{account}] Save (UI)")
+    print(f"[{device_id}] [{account}] Save")
     return ui_save_post(device_id)
 
 
 def share_post(device_id, account):
-    print(f"[{device_id}] [{account}] Share (UI)")
+    print(f"[{device_id}] [{account}] Share")
     return ui_share_post(device_id)
 
 
 def repost_post(device_id, account):
-    print(f"[{device_id}] [{account}] Repost (UI)")
+    print(f"[{device_id}] [{account}] Repost")
     return ui_repost_post(device_id)
 
 
@@ -90,7 +91,7 @@ ACTION_EXECUTORS = {
 
 
 # =========================
-# MAIN WORKER
+# MAIN DEVICE WORKER
 # =========================
 def device_worker(device_id):
     print(f"\n[{device_id}] Worker started")
@@ -104,14 +105,16 @@ def device_worker(device_id):
         return
 
     # -------------------------
-    # Splash
+    # Splash screen (DO NOT REMOVE)
     # -------------------------
-    show_splash(10)
+    show_splash(1)
 
     # -------------------------
-    # Resume checkpoint
+    # Load checkpoint
     # -------------------------
-    checkpoint = load_checkpoint(device_id)
+    state = load_checkpoint(device_id) or {}
+    active_account = state.get("active_account", "")
+    account_index = state.get("account_index", 0)
 
     # -------------------------
     # Load customers
@@ -128,41 +131,32 @@ def device_worker(device_id):
 
     if not eligible:
         print(f"[{device_id}] No eligible customers")
-        time.sleep(60)
         return
 
     # -------------------------
-    # Select / Resume
+    # Resume or select customer
     # -------------------------
-    if checkpoint:
+    if state:
         customer = next(
             c for c in eligible
-            if c["customer_id"] == checkpoint["customer_id"]
+            if c["customer_id"] == state["customer_id"]
         )
-        post = checkpoint["post"]
-        account_index = checkpoint["account_index"]
-        step_index = checkpoint["step_index"]
+        post = state["post"]
         print(f"[{device_id}] Resuming {customer['customer_id']} | {post}")
     else:
         customer = random.choice(eligible)
         posts = load_posts(customer["customer_id"])
-
         if not posts:
             print(f"[{device_id}] No posts for {customer['customer_id']}")
             return
-
         post = random.choice(posts)
-        account_index = 0
-        step_index = 0
 
         save_checkpoint(device_id, {
             "customer_id": customer["customer_id"],
             "post": post,
             "account_index": 0,
-            "step_index": 0,
+            "active_account": "",
         })
-
-        print(f"[{device_id}] Selected {customer['customer_id']} | {post}")
 
     # -------------------------
     # Remote config
@@ -176,95 +170,116 @@ def device_worker(device_id):
 
     enforce_execution_window(execution_window, device_id)
 
-    # -------------------------
-    # Accounts loop
-    # -------------------------
-    accounts = customer.get("accounts", ["acc_1", "acc_2", "acc_3"])
+    total_accounts = customer.get("accounts_per_device", 10)
 
-    for ai in range(account_index, len(accounts)):
-        account = accounts[ai]
-        print(f"[{device_id}] Switching account → {account}")
+    # =========================
+    # ACCOUNT LOOP
+    # =========================
+    for ai in range(account_index, total_accounts):
 
-        # Navigation
-        open_instagram(device_id)
-        time.sleep(2)
-
-        open_profile_by_username(device_id, customer["username"])
-        time.sleep(3)
-
-        open_post_by_url(device_id, post)
-        time.sleep(3)
-
-        # -------------------------
-        # DECISION GATE
-        # -------------------------
-        if should_skip_actions(device_id):
-            print(f"[{device_id}] [{account}] Post already liked → view only")
-
-            view_post(device_id, 1, 60)
-
-            # ✅ MARK DELIVERY EVEN ON SKIP
-            mark_post_delivered(
-                customer_id=customer["customer_id"],
-                post_url=post,
-                device_id=device_id
-            )
-
-            save_checkpoint(device_id, {
-                "customer_id": customer["customer_id"],
-                "post": post,
-                "account_index": ai + 1,
-                "step_index": 0,
-            })
-            continue
-
-        # -------------------------
-        # Execute actions
-        # -------------------------
-        actions = build_actions(customer)
-
-        if customer["settings"].get("randomize_action_sequence"):
-            random.shuffle(actions)
-
-        for si in range(step_index, len(actions)):
-            action = actions[si]
-
-            if not device_can_perform(device_id, action, device_caps):
+        # 🔐 Ensure we HAVE an active account
+        if not active_account:
+            print(f"[{device_id}] No active account → opening Instagram first")
+        
+            # Ensure Instagram UI exists
+            open_instagram(device_id)
+            time.sleep(3)
+        
+            next_account = switch_account(device_id)
+            if not next_account:
+                print(f"[{device_id}] Failed to get account, skipping")
+                time.sleep(5)
                 continue
-
-            if not can_perform(device_id, account, action, rate_limits):
-                continue
-
-            if not should_perform(action, action_probability):
-                continue
-
-            success = False
-
-            if action == "comment":
-                success = comment_post(device_id, account, customer)
-            else:
-                executor = ACTION_EXECUTORS.get(action)
-                if executor:
-                    success = executor(device_id, account)
-
-            if success:
-                record_action(device_id, account, action)
-                record_device_action(device_id, action)
-
+        
+            active_account = next_account
+        
             save_checkpoint(device_id, {
                 "customer_id": customer["customer_id"],
                 "post": post,
                 "account_index": ai,
-                "step_index": si + 1,
+                "active_account": active_account,
             })
+        
+        print(f"[{device_id}] Using account: {active_account}")
 
-        step_index = 0
+        # -------------------------
+        # Navigation
+        # -------------------------
+        open_instagram(device_id)
+        open_profile_by_username(device_id, customer["username"])
+        open_post_by_url(device_id, post)
+
+        # -------------------------
+        # Skip if already delivered
+        # -------------------------
+        if account_already_done(
+            customer["customer_id"],
+            post,
+            device_id,
+            active_account,
+        ):
+            print(f"[{device_id}] [{active_account}] Already delivered → skip")
+        else:
+            # -------------------------
+            # Like gate
+            # -------------------------
+            if should_skip_actions(device_id):
+                print(
+                    f"[{device_id}] [{active_account}] Already liked → view only"
+                )
+                view_post(device_id, 1, 60)
+            else:
+                actions = build_actions(customer)
+                if customer["settings"].get("randomize_action_sequence"):
+                    random.shuffle(actions)
+
+                for action in actions:
+                    if not device_can_perform(device_id, action, device_caps):
+                        continue
+                    if not can_perform(device_id, active_account, action, rate_limits):
+                        continue
+                    if not should_perform(action, action_probability):
+                        continue
+
+                    success = False
+                    if action == "comment":
+                        success = comment_post(device_id, active_account, customer)
+                    else:
+                        success = ACTION_EXECUTORS[action](device_id, active_account)
+
+                    if success:
+                        record_action(device_id, active_account, action)
+                        record_device_action(device_id, action)
+
+            # -------------------------
+            # Mark delivery
+            # -------------------------
+            mark_post_delivered(
+                customer["customer_id"],
+                post,
+                device_id,
+                active_account,
+            )
+
+        # -------------------------
+        # Save + switch account (END OF LOOP)
+        # -------------------------
+        save_checkpoint(device_id, {
+            "customer_id": customer["customer_id"],
+            "post": post,
+            "account_index": ai + 1,
+            "active_account": active_account,
+        })
+
+        next_account = switch_account(device_id)
+        if next_account:
+            active_account = next_account
 
         save_checkpoint(device_id, {
             "customer_id": customer["customer_id"],
             "post": post,
             "account_index": ai + 1,
-            "step_index": 0,
+            "active_account": active_account,
         })
 
         time.sleep(ACCOUNT_COOLDOWN)
@@ -277,5 +292,4 @@ def device_worker(device_id):
 
     clear_checkpoint(device_id)
     print(f"[{device_id}] Cycle completed for {customer['customer_id']}")
-
     time.sleep(CYCLE_COOLDOWN)
