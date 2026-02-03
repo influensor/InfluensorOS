@@ -2,8 +2,6 @@ import os
 import time
 import random
 
-from engine.config import ACCOUNTS_DIR
-
 # =========================
 # ENGINE LOGIC
 # =========================
@@ -18,25 +16,11 @@ from engine.logic.checkpoint_manager import (
 from engine.logic.action_registry import build as build_actions
 from engine.logic.comment_loader import load_random_comment
 
-# Delivery tracker (NEW)
-from engine.logic.delivery_tracker import (
-    get_eligible_posts,
-    mark_device_done,
-)
-
-# Rate limiter (per account)
+# Rate limiting / controls
 from engine.logic.rate_limiter import can_perform, record_action
-
-# Action probability
 from engine.logic.action_probability import should_perform
-
-# Execution window
 from engine.logic.execution_window import enforce_execution_window
-
-# Device hard caps
 from engine.logic.device_caps import device_can_perform, record_device_action
-
-# Remote config
 from engine.logic.remote_config import get_config, kill_switch_active
 
 # =========================
@@ -48,7 +32,13 @@ from engine.ui.instagram import (
     open_profile_by_username,
     open_post_by_url,
 )
-from engine.ui.actions import like_post as ui_like_post
+
+# Decision gate + view
+from engine.ui.actions import should_skip_actions
+from engine.ui.view import view_post
+
+# Action executors
+from engine.ui.like import like_post as ui_like_post
 from engine.ui.comment import post_comment
 from engine.ui.save import save_post as ui_save_post
 from engine.ui.share import share_post as ui_share_post
@@ -62,7 +52,7 @@ CYCLE_COOLDOWN = 5
 
 
 # =========================
-# UI ACTION WRAPPERS
+# ACTION WRAPPERS
 # =========================
 def like_post(device_id, account):
     print(f"[{device_id}] [{account}] Like (UI)")
@@ -96,26 +86,11 @@ def repost_post(device_id, account):
 
 ACTION_EXECUTORS = {
     "like": like_post,
+    "comment": comment_post,
     "save": save_post,
     "share": share_post,
     "repost": repost_post,
 }
-
-
-# =========================
-# LOAD ACCOUNTS PER DEVICE
-# =========================
-def load_accounts(device_id):
-    path = os.path.join(
-        ACCOUNTS_DIR,
-        f"device_{device_id}_accounts.txt"
-    )
-
-    if not os.path.exists(path):
-        return ["acc_1", "acc_2", "acc_3"]
-
-    with open(path, "r", encoding="utf-8") as f:
-        return [l.strip() for l in f if l.strip()]
 
 
 # =========================
@@ -135,7 +110,7 @@ def device_worker(device_id):
     # -------------------------
     # Splash screen
     # -------------------------
-    show_splash(10)
+    show_splash(30)
 
     # -------------------------
     # Load checkpoint
@@ -157,6 +132,7 @@ def device_worker(device_id):
 
     if not eligible:
         print(f"[{device_id}] No eligible customers")
+        time.sleep(60)
         return
 
     # -------------------------
@@ -167,25 +143,17 @@ def device_worker(device_id):
             c for c in eligible
             if c["customer_id"] == checkpoint["customer_id"]
         )
-
         post = checkpoint["post"]
         account_index = checkpoint["account_index"]
         step_index = checkpoint["step_index"]
 
         print(f"[{device_id}] Resuming {customer['customer_id']} | {post}")
-
     else:
         customer = random.choice(eligible)
-
         posts = load_posts(customer["customer_id"])
-        posts = get_eligible_posts(
-            customer["customer_id"],
-            posts,
-            device_id
-        )
 
         if not posts:
-            print(f"[{device_id}] No eligible posts left for {customer['customer_id']}")
+            print(f"[{device_id}] No posts for {customer['customer_id']}")
             return
 
         post = random.choice(posts)
@@ -219,17 +187,43 @@ def device_worker(device_id):
     # -------------------------
     # Accounts loop
     # -------------------------
-    accounts = load_accounts(device_id)
+    accounts = customer.get("accounts", ["acc_1", "acc_2", "acc_3"])
 
     for ai in range(account_index, len(accounts)):
         account = accounts[ai]
         print(f"[{device_id}] Switching account → {account}")
 
+        # -------------------------
         # Navigation
+        # -------------------------
         open_instagram(device_id)
-        open_profile_by_username(device_id, customer["username"])
-        open_post_by_url(device_id, post)
+        time.sleep(2)
 
+        open_profile_by_username(device_id, customer["username"])
+        time.sleep(3)
+
+        open_post_by_url(device_id, post)
+        time.sleep(3)
+
+        # -------------------------
+        # ACTION DECISION GATE
+        # -------------------------
+        if should_skip_actions(device_id):
+            print(f"[{device_id}] [{account}] Post already liked → view only")
+
+            view_post(device_id, 1, 60)
+
+            save_checkpoint(device_id, {
+                "customer_id": customer["customer_id"],
+                "post": post,
+                "account_index": ai + 1,
+                "step_index": 0,
+            })
+            continue
+
+        # -------------------------
+        # Build action list
+        # -------------------------
         actions = build_actions(customer)
 
         if customer["settings"].get("randomize_action_sequence"):
@@ -238,23 +232,17 @@ def device_worker(device_id):
         for si in range(step_index, len(actions)):
             action = actions[si]
 
-            # -------------------------
             # Device hard cap
-            # -------------------------
             if not device_can_perform(device_id, action, device_caps):
                 print(f"[{device_id}] {action} skipped (device cap)")
                 continue
 
-            # -------------------------
             # Account rate limit
-            # -------------------------
             if not can_perform(device_id, account, action, rate_limits):
                 print(f"[{device_id}] [{account}] {action} skipped (rate limit)")
                 continue
 
-            # -------------------------
             # Probability check
-            # -------------------------
             if not should_perform(action, action_probability):
                 print(f"[{device_id}] [{account}] {action} skipped (probability)")
                 continue
@@ -289,15 +277,6 @@ def device_worker(device_id):
         })
 
         time.sleep(ACCOUNT_COOLDOWN)
-
-    # -------------------------
-    # Mark delivery complete (PER DEVICE)
-    # -------------------------
-    mark_device_done(
-        customer["customer_id"],
-        post,
-        device_id
-    )
 
     # -------------------------
     # Demo accounting

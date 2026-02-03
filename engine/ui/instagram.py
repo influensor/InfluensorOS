@@ -15,27 +15,28 @@ def open_instagram(device_id):
     time.sleep(5)
 
 def open_profile_by_username(device_id, username):
-    d = get_device(device_id)
+    import subprocess
 
-    profile_url = f"https://www.instagram.com/{username}/"
+    url = f"https://www.instagram.com/{username}/"
 
-    d.shell([
-        "am", "start",
+    subprocess.run([
+        "adb", "-s", device_id,
+        "shell", "am", "start",
         "-a", "android.intent.action.VIEW",
-        "-d", profile_url
-    ])
-
+        "-d", url,
+        "-p", INSTAGRAM_PKG
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     time.sleep(5)  # allow profile to load
 
 def open_post_by_url(device_id, post_url):
-    d = get_device(device_id)
+    import subprocess
 
-    # Use Android intent to deep-link the post
-    d.shell([
-        "am", "start",
+    subprocess.run([
+        "adb", "-s", device_id,
+        "shell", "am", "start",
         "-a", "android.intent.action.VIEW",
-        "-d", post_url
-    ])
-
+        "-d", post_url,
+        "-p", INSTAGRAM_PKG
+    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     time.sleep(6)  # allow reel/post to load
 

@@ -1,26 +1,32 @@
-import time
-from engine.ui.device import get_device
+import uiautomator2 as u2
 
-def like_post(device_id):
-    d = get_device(device_id)
+# =========================
+# POST STATE CHECK
+# =========================
 
-    # Strategy:
-    # Instagram like button usually has content-desc "Like"
-    # We try safe selectors
+def is_post_liked(device_id):
+    d = u2.connect(device_id)
 
-    like_btn = d(descriptionContains="Like")
+    like_btn = d(
+        resourceId="com.instagram.android:id/like_button"
+    )
 
-    if like_btn.exists:
-        like_btn.click()
-        time.sleep(1)
-        return True
+    if like_btn.exists(timeout=1):
+        try:
+            return like_btn.info.get("selected", False)
+        except Exception:
+            return False
 
-    # fallback: heart icon resource-id
-    like_btn = d(resourceId="com.instagram.android:id/row_feed_button_like")
-    if like_btn.exists:
-        like_btn.click()
-        time.sleep(1)
-        return True
-
-    print(f"[{device_id}] Like button not found")
     return False
+
+
+# =========================
+# DECISION GATE
+# =========================
+def should_skip_actions(device_id):
+    """
+    Returns:
+        True  → Post already liked → SKIP all actions
+        False → Safe to execute actions
+    """
+    return is_post_liked(device_id)
