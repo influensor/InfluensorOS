@@ -1,4 +1,3 @@
-import os
 import time
 import random
 
@@ -15,8 +14,9 @@ from engine.logic.checkpoint_manager import (
 )
 from engine.logic.action_registry import build as build_actions
 from engine.logic.comment_loader import load_random_comment
+from engine.logic.delivery_tracker import mark_post_delivered
 
-# Rate limiting / controls
+# Rate / control
 from engine.logic.rate_limiter import can_perform, record_action
 from engine.logic.action_probability import should_perform
 from engine.logic.execution_window import enforce_execution_window
@@ -24,7 +24,7 @@ from engine.logic.device_caps import device_can_perform, record_device_action
 from engine.logic.remote_config import get_config, kill_switch_active
 
 # =========================
-# UI / UIAUTOMATOR2
+# UI
 # =========================
 from engine.ui.splash import show as show_splash
 from engine.ui.instagram import (
@@ -32,12 +32,8 @@ from engine.ui.instagram import (
     open_profile_by_username,
     open_post_by_url,
 )
-
-# Decision gate + view
 from engine.ui.actions import should_skip_actions
 from engine.ui.view import view_post
-
-# Action executors
 from engine.ui.like import like_post as ui_like_post
 from engine.ui.comment import post_comment
 from engine.ui.save import save_post as ui_save_post
@@ -45,7 +41,7 @@ from engine.ui.share import share_post as ui_share_post
 from engine.ui.repost import repost_post as ui_repost_post
 
 # =========================
-# BASIC CONFIG
+# CONFIG
 # =========================
 ACCOUNT_COOLDOWN = 3
 CYCLE_COOLDOWN = 5
@@ -94,13 +90,13 @@ ACTION_EXECUTORS = {
 
 
 # =========================
-# MAIN DEVICE WORKER
+# MAIN WORKER
 # =========================
 def device_worker(device_id):
     print(f"\n[{device_id}] Worker started")
 
     # -------------------------
-    # Kill switch (REMOTE)
+    # Kill switch
     # -------------------------
     enabled, message = kill_switch_active()
     if enabled:
@@ -108,12 +104,12 @@ def device_worker(device_id):
         return
 
     # -------------------------
-    # Splash screen
+    # Splash
     # -------------------------
-    show_splash(30)
+    show_splash(10)
 
     # -------------------------
-    # Load checkpoint
+    # Resume checkpoint
     # -------------------------
     checkpoint = load_checkpoint(device_id)
 
@@ -136,7 +132,7 @@ def device_worker(device_id):
         return
 
     # -------------------------
-    # Select or resume customer
+    # Select / Resume
     # -------------------------
     if checkpoint:
         customer = next(
@@ -146,7 +142,6 @@ def device_worker(device_id):
         post = checkpoint["post"]
         account_index = checkpoint["account_index"]
         step_index = checkpoint["step_index"]
-
         print(f"[{device_id}] Resuming {customer['customer_id']} | {post}")
     else:
         customer = random.choice(eligible)
@@ -170,7 +165,7 @@ def device_worker(device_id):
         print(f"[{device_id}] Selected {customer['customer_id']} | {post}")
 
     # -------------------------
-    # LOAD REMOTE CONFIG
+    # Remote config
     # -------------------------
     profile = "demo" if customer.get("type") == "demo" else "paid"
 
@@ -179,9 +174,6 @@ def device_worker(device_id):
     execution_window = get_config("execution_window", {}).get(profile, {})
     device_caps = get_config("device_caps", {}).get(profile, {})
 
-    # -------------------------
-    # Enforce execution window
-    # -------------------------
     enforce_execution_window(execution_window, device_id)
 
     # -------------------------
@@ -193,9 +185,7 @@ def device_worker(device_id):
         account = accounts[ai]
         print(f"[{device_id}] Switching account → {account}")
 
-        # -------------------------
         # Navigation
-        # -------------------------
         open_instagram(device_id)
         time.sleep(2)
 
@@ -206,12 +196,19 @@ def device_worker(device_id):
         time.sleep(3)
 
         # -------------------------
-        # ACTION DECISION GATE
+        # DECISION GATE
         # -------------------------
         if should_skip_actions(device_id):
             print(f"[{device_id}] [{account}] Post already liked → view only")
 
             view_post(device_id, 1, 60)
+
+            # ✅ MARK DELIVERY EVEN ON SKIP
+            mark_post_delivered(
+                customer_id=customer["customer_id"],
+                post_url=post,
+                device_id=device_id
+            )
 
             save_checkpoint(device_id, {
                 "customer_id": customer["customer_id"],
@@ -222,7 +219,7 @@ def device_worker(device_id):
             continue
 
         # -------------------------
-        # Build action list
+        # Execute actions
         # -------------------------
         actions = build_actions(customer)
 
@@ -232,19 +229,13 @@ def device_worker(device_id):
         for si in range(step_index, len(actions)):
             action = actions[si]
 
-            # Device hard cap
             if not device_can_perform(device_id, action, device_caps):
-                print(f"[{device_id}] {action} skipped (device cap)")
                 continue
 
-            # Account rate limit
             if not can_perform(device_id, account, action, rate_limits):
-                print(f"[{device_id}] [{account}] {action} skipped (rate limit)")
                 continue
 
-            # Probability check
             if not should_perform(action, action_probability):
-                print(f"[{device_id}] [{account}] {action} skipped (probability)")
                 continue
 
             success = False

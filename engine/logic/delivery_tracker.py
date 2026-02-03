@@ -7,6 +7,7 @@ from engine.logic.device_auth import get_authorized_devices
 
 
 def _path(customer_id):
+    os.makedirs(DELIVERY_DIR, exist_ok=True)
     return os.path.join(DELIVERY_DIR, f"{customer_id}.json")
 
 
@@ -54,11 +55,20 @@ def mark_device_done(customer_id, post_url, device_id):
 
     authorized = get_authorized_devices()
 
-    if set(post["devices_done"]) >= set(authorized):
+    if authorized and set(post["devices_done"]) >= set(authorized):
         post["completed"] = True
 
     post["last_update"] = int(time.time())
     _save(customer_id, data)
+
+
+# ✅ ALIAS (THIS FIXES YOUR CRASH)
+def mark_post_delivered(customer_id, post_url, device_id):
+    """
+    Semantic wrapper used by worker.py
+    Delivered = device finished processing the post
+    """
+    mark_device_done(customer_id, post_url, device_id)
 
 
 def get_eligible_posts(customer_id, posts, device_id):
