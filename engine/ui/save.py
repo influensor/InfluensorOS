@@ -48,7 +48,7 @@ def save_post(device_id):
     # -------------------------
     # 3️⃣ ALWAYS close Save UI (IMPORTANT)
     # -------------------------
-    d.press("back")
+    #d.press("back")
     time.sleep(random.uniform(1.0, 1.8))
 
     return saved
