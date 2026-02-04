@@ -56,7 +56,7 @@ def post_comment(device_id, text):
         d.press("back")
         return False
 
-    send_btn.click()
+    d.press("enter")
     time.sleep(random.uniform(1.5, 2.5))
 
     # -------------------------
