@@ -34,6 +34,7 @@ from engine.ui.instagram import (
     open_profile_by_username,
     open_post_by_url,
 )
+from engine.ui.story_view_like import story_view_like
 from engine.ui.actions import should_skip_actions
 from engine.ui.view import view_post
 from engine.ui.like import like_post as ui_like_post
@@ -207,6 +208,7 @@ def device_worker(device_id):
         # -------------------------
         open_instagram(device_id)
         open_profile_by_username(device_id, customer["username"])
+        story_view_like(device_id)
         open_post_by_url(device_id, post, customer["username"])
 
         # -------------------------
