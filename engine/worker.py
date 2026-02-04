@@ -207,7 +207,7 @@ def device_worker(device_id):
         # -------------------------
         open_instagram(device_id)
         open_profile_by_username(device_id, customer["username"])
-        open_post_by_url(device_id, post)
+        open_post_by_url(device_id, post, customer["username"])
 
         # -------------------------
         # Skip if already delivered
@@ -218,7 +218,8 @@ def device_worker(device_id):
             device_id,
             active_account,
         ):
-            print(f"[{device_id}] [{active_account}] Already delivered → skip")
+            print(f"[{device_id}] [{active_account}] Already delivered → view only")
+            view_post(device_id, 1, 60)
         else:
             # -------------------------
             # Like gate
@@ -251,15 +252,15 @@ def device_worker(device_id):
                         record_action(device_id, active_account, action)
                         record_device_action(device_id, action)
 
-            # -------------------------
-            # Mark delivery
-            # -------------------------
-            mark_post_delivered(
-                customer["customer_id"],
-                post,
-                device_id,
-                active_account,
-            )
+        # -------------------------
+        # Mark delivery
+        # -------------------------
+        mark_post_delivered(
+            customer["customer_id"],
+            post,
+            device_id,
+            active_account,
+        )
 
         # -------------------------
         # Save + switch account (END OF LOOP)

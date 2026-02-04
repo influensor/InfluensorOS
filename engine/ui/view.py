@@ -25,7 +25,9 @@ def view_post(device_id, min_seconds=1, max_seconds=60):
         # Optional micro-scroll (VERY subtle, safe)
         if random.random() < 0.2:
             try:
-                d.swipe_ext("up", scale=0.05)
+                d.swipe_ext("up", scale=10)
+                time.sleep(random.uniform(1, 3))
+                d.swipe_ext("down", scale=10)
             except Exception:
                 pass
 
