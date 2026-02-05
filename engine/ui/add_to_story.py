@@ -50,7 +50,7 @@ def add_to_story(device_id):
     # 3️⃣ Add a caption
     if not retry_step(
         "Add a caption",
-        retries=10,
+        retries=25,
         delay=2,
         fn=lambda: (
             d(textContains="Add a caption").exists(timeout=5)
