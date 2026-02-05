@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 # -------------------------
 
 DEMO_WINDOW = {
-    "start": 10,   # 10:00 AM
-    "end": 20,     # 8:00 PM
+    "start": 8,   # 10:00 AM
+    "end": 23,     # 11:00 PM
 }
 
 PAID_WINDOW = {

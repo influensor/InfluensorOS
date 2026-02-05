@@ -1,0 +1,17 @@
+{
+  "customer_id": "eternalbright.in",
+  "username": "eternalbright.in",
+
+  "type": "paid",
+
+  "settings": {
+    "like": true,
+    "comment": true,
+    "save": true,
+    "share": true,
+    "repost": true,
+
+    "share_to_story": false,
+    "randomize_action_sequence": true
+  }
+}

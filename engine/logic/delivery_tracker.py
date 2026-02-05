@@ -139,3 +139,17 @@ def get_eligible_posts(customer_id, posts, device_id):
         eligible.append(post)
 
     return eligible
+
+
+def device_already_done(customer_id, post_url, device_id):
+    data = _load(customer_id)
+    post = data["posts"].get(post_url)
+
+    if not isinstance(post, dict):
+        return False
+
+    device = post.get("devices", {}).get(device_id)
+    if not isinstance(device, dict):
+        return False
+
+    return device.get("completed", False)

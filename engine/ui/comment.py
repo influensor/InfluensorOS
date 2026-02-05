@@ -63,6 +63,7 @@ def post_comment(device_id, text):
     # 6️⃣ Close comment bottom sheet
     # -------------------------
     d.press("back")
+    d.press("back")
     time.sleep(random.uniform(1.0, 1.8))
 
     return True
