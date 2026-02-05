@@ -1,0 +1,23 @@
+{
+  "customer_id": "okayushii",
+  "username": "okayushii",
+
+  "type": "demo",
+
+  "demo_control": {
+    "mode": "posts",
+    "max_posts": 1,
+    "max_hours": 24
+  },
+
+  "settings": {
+    "like": true,
+    "comment": true,
+    "save": true,
+    "share": true,
+    "repost": true,
+
+    "share_to_story": true,
+    "randomize_action_sequence": true
+  }
+}

@@ -1,6 +1,6 @@
 {
-  "customer_id": "DEMO_TEST",
-  "username": "okayushii",
+  "customer_id": "krissannb",
+  "username": "krissannb",
 
   "type": "demo",
 
@@ -17,7 +17,7 @@
     "share": true,
     "repost": true,
 
-    "share_to_story": true,
+    "add_to_story": true,
     "randomize_action_sequence": true
   }
 }
