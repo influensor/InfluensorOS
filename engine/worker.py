@@ -39,9 +39,10 @@ from engine.ui.actions import should_skip_actions
 from engine.ui.view import view_post
 from engine.ui.like import like_post as ui_like_post
 from engine.ui.comment import post_comment
-from engine.ui.save import save_post as ui_save_post
-from engine.ui.share import share_post as ui_share_post
 from engine.ui.repost import repost_post as ui_repost_post
+from engine.ui.share import share_post as ui_share_post
+from engine.ui.save import save_post as ui_save_post
+from engine.ui.mark_post_interested import mark_post_interested
 from engine.ui.switch_account import switch_account
 
 # 🟣 DEMO STORY (side-effect, not an action)
