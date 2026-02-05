@@ -3,7 +3,7 @@ import time, random, uiautomator2 as u2
 STORY_VIEW_MIN = 1
 STORY_VIEW_MAX = 3
 MAX_STORIES = 10
-LIKE_PROBABILITY = 0.5
+LIKE_PROBABILITY = 0.75
 
 def story_view_like(device_id):
     d = u2.connect(device_id)

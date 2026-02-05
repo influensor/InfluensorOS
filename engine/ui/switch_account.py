@@ -2,21 +2,17 @@ import time
 import uiautomator2 as u2
 
 INSTAGRAM_PKG = "com.instagram.android"
-PROFILE_TAB_ID = "com.instagram.android:id/tab_avatar"
-USERNAME_HEADER_ID = "com.instagram.android:id/action_bar_title"
 INSTAGRAM_PROFILE_URL = "http://instagram.com/_u"
+PROFILE_TAB_ID = "com.instagram.android:id/tab_avatar"
+PROFILE_ICON_XPATH = '//*[@content-desc="Profile"]'
 
 
-def switch_account(device_id):
-    """
-    Opens Instagram account switcher,
-    clicks ONE valid account row,
-    returns the username clicked.
-    """
+def switch_account(device):
+    d = u2.connect(device)
 
-    d = u2.connect(device_id)
-    
-    # Open Instagram cleanly
+    # -----------------------------
+    # Open Instagram Home Page
+    # -----------------------------
     d.shell([
         "am", "start",
         "-a", "android.intent.action.VIEW",
@@ -24,24 +20,29 @@ def switch_account(device_id):
         INSTAGRAM_PKG
     ])
     time.sleep(1)
+
+    # -----------------------------
+    # Wait for profile icon
+    # -----------------------------
+    profile_icon = d.xpath(PROFILE_ICON_XPATH)
+    if not profile_icon.wait(timeout=5):
+        print(f"[{device}] ❌ Profile icon not found")
+        return None
+
+    # -----------------------------
+    # 1️⃣ LONG PRESS ONLY
+    # -----------------------------
+    d.xpath(profile_icon).long_click()
+    time.sleep(1)
     
-    # Open profile tab
-    if not d(resourceId=PROFILE_TAB_ID).exists(timeout=3):
-        print(f"[{device_id}] Profile tab not found")
-        return None
+    # --- Swipe up inside account switcher ---
+    w, h = d.window_size()
+    d.swipe(w // 2, int(h * 0.8), w // 2, int(h * 0.2), 0.05)
+    time.sleep(1)
 
-    d(resourceId=PROFILE_TAB_ID).click()
-    time.sleep(2)
-
-    # Open account switcher
-    if not d(resourceId=USERNAME_HEADER_ID).exists(timeout=3):
-        print(f"[{device_id}] Username header not found")
-        return None
-
-    d(resourceId=USERNAME_HEADER_ID).click()
-    time.sleep(2)
-
-    # Collect clickable rows
+    # -----------------------------
+    # Collect valid account rows
+    # -----------------------------
     rows = d(className="android.view.ViewGroup", clickable=True)
     valid_rows = []
 
@@ -78,6 +79,6 @@ def switch_account(device_id):
                 break
 
     target.click()
-    time.sleep(3)
+    time.sleep(1)
 
     return username
