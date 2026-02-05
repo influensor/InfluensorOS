@@ -84,5 +84,5 @@ def add_to_story(device_id):
     time.sleep(1)
     d.press("back")
     print(f"[{device_id}] Shared to story ✅")
-    time.sleep(30)
+    time.sleep(60)
     return True
