@@ -36,7 +36,7 @@ def add_to_story(device_id):
     if not retry_step(
         "Add to story",
         retries=5,
-        delay=5,
+        delay=2,
         fn=lambda: (
             d(textContains="Add to story").exists(timeout=5)
             and d(textContains="Add to story").click() is None
@@ -50,7 +50,7 @@ def add_to_story(device_id):
     # 3️⃣ Add a caption
     if not retry_step(
         "Add a caption",
-        retries=5,
+        retries=10,
         delay=2,
         fn=lambda: (
             d(textContains="Add a caption").exists(timeout=5)
@@ -73,7 +73,7 @@ def add_to_story(device_id):
     if not retry_step(
         "Your story",
         retries=5,
-        delay=3,
+        delay=2,
         fn=lambda: (
             d(textContains="Your story").exists(timeout=10)
             and d(textContains="Your story").click() is None
@@ -84,5 +84,5 @@ def add_to_story(device_id):
     time.sleep(1)
     d.press("back")
     print(f"[{device_id}] Shared to story ✅")
-    time.sleep(10)
+    time.sleep(30)
     return True

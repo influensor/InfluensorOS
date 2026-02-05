@@ -54,7 +54,7 @@ def open_profile_by_username(device_id, username, retries=5):
             "-p", INSTAGRAM_PKG
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        time.sleep(6)
+        time.sleep(3)
 
         # Verify correct profile opened
         if d(resourceId=PROFILE_USERNAME_ID).exists(timeout=3):
@@ -75,35 +75,34 @@ def open_profile_by_username(device_id, username, retries=5):
 # ==================================================
 # OPEN POST / REEL (VERIFY AUTHOR)
 # ==================================================
+# ==================================================
+# OPEN POST / REEL (VERIFY AUTHOR)
+# ==================================================
 def open_post_by_url(device_id, post_url, username, retries=5):
     d = get_device(device_id)
+    target = username.lower() if username else None
 
     for attempt in range(1, retries + 1):
         print(f"[{device_id}] Opening post (attempt {attempt})")
 
-        subprocess.run([
-            "adb", "-s", device_id,
-            "shell", "am", "start",
-            "-a", "android.intent.action.VIEW",
-            "-d", post_url,
-            "-p", INSTAGRAM_PKG
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(
+            ["adb", "-s", device_id, "shell", "am", "start",
+             "-a", "android.intent.action.VIEW", "-d", post_url, "-p", INSTAGRAM_PKG],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
 
         time.sleep(1)
-
-        # If no username check required
-        if not username:
+        if not target:
             return True
 
-        # Verify reel/post author
         if d(resourceId=REEL_AUTHOR_ID).exists(timeout=3):
             author = d(resourceId=REEL_AUTHOR_ID).get_text().strip().lower()
-            if author == username.lower():
+            collab = [u.strip() for u in author.replace("and", ",").split(",") if u.strip()]
+
+            if target in author or target in collab:
                 return True
-            else:
-                print(
-                    f"[{device_id}] Wrong post author: {author}"
-                )
+
+            print(f"[{device_id}] Wrong profile loaded: {collab}")
 
         time.sleep(1)
 
