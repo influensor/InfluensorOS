@@ -16,10 +16,7 @@ from engine.logic.checkpoint_manager import (
 )
 from engine.logic.action_registry import build as build_actions
 from engine.logic.comment_loader import load_random_comment
-from engine.logic.delivery_tracker import (
-    mark_post_delivered,
-    account_already_done,
-)
+from engine.logic.delivery_tracker import mark_post_delivered
 
 from engine.logic.rate_limiter import can_perform, record_action
 from engine.logic.action_probability import (
@@ -50,8 +47,6 @@ from engine.ui.share import share_post as ui_share_post
 from engine.ui.save import save_post as ui_save_post
 from engine.ui.interested import mark_post_interested
 from engine.ui.switch_account import switch_account
-
-# 🟣 DEMO STORY
 from engine.ui.add_to_story import add_to_story
 
 # =========================
@@ -124,6 +119,7 @@ def device_worker(device_id):
 
     account_index = state.get("account_index", 0)
     active_account = state.get("active_account")
+    expected_accounts = state.get("expected_accounts", 0)
 
     # -------------------------
     # Load customers
@@ -160,6 +156,7 @@ def device_worker(device_id):
         else:
             clear_checkpoint(device_id)
             state = {}
+            expected_accounts = 0
 
     if not customer:
         customer = random.choice(eligible)
@@ -168,9 +165,18 @@ def device_worker(device_id):
             warn(f"No posts for customer {customer['customer_id']}", device_id)
             return
 
-        post = random.choice(posts)
+        post = posts[0]   # latest post
         active_account = None
         account_index = 0
+        expected_accounts = 0
+
+        save_checkpoint(device_id, {
+            "customer_id": customer["customer_id"],
+            "post": post,
+            "account_index": 0,
+            "active_account": None,
+            "expected_accounts": expected_accounts,
+        })
 
     # -------------------------
     # Remote config
@@ -183,23 +189,24 @@ def device_worker(device_id):
 
     enforce_execution_window(execution_window, device_id)
 
-    total_accounts = customer.get("accounts_per_device", 10)
-
     # =========================
     # ACCOUNT LOOP
     # =========================
-    for ai in range(account_index, total_accounts):
+    while True:
         if not active_account:
-            active_account = switch_account(device_id)
-            if not active_account:
-                warn("Failed to switch account", device_id)
-                continue
+            next_account = switch_account(device_id)
+            if not next_account:
+                break
+
+            active_account = next_account
+            expected_accounts += 1
 
             save_checkpoint(device_id, {
                 "customer_id": customer["customer_id"],
                 "post": post,
-                "account_index": ai,
+                "account_index": account_index,
                 "active_account": active_account,
+                "expected_accounts": expected_accounts,
             })
 
         info(f"Using account: {active_account}", device_id)
@@ -218,7 +225,6 @@ def device_worker(device_id):
         if already_liked:
             info(f"[{active_account}] Already liked → viewing only", device_id)
             view_post(device_id, 1, random.randint(30, 60))
-
         else:
             actions = build_actions(customer)
             if customer["settings"].get("randomize_action_sequence"):
@@ -243,9 +249,6 @@ def device_worker(device_id):
                     record_action(device_id, active_account, action)
                     record_device_action(device_id, action)
 
-                    if action == "share" and customer.get("type") == "demo":
-                        add_to_story(device_id)
-
         # -------- DELIVERY --------
         if already_liked or action_performed:
             mark_post_delivered(
@@ -253,21 +256,13 @@ def device_worker(device_id):
                 post,
                 device_id,
                 active_account,
-                expected_accounts=total_accounts,
+                expected_accounts=expected_accounts,
                 customer_type=customer.get("type", "paid"),
             )
 
         # -------- TRANSITION --------
-        next_account = switch_account(device_id)
-
-        save_checkpoint(device_id, {
-            "customer_id": customer["customer_id"],
-            "post": post,
-            "account_index": ai + 1,
-            "active_account": next_account,
-        })
-
-        active_account = next_account
+        active_account = None
+        account_index += 1
         time.sleep(ACCOUNT_COOLDOWN)
 
     # -------------------------
