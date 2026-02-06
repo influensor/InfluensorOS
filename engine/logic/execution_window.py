@@ -1,5 +1,7 @@
 import time
 from datetime import datetime, timedelta
+from engine.logger import info, warn
+
 
 # -------------------------
 # EXECUTION WINDOWS (24h)
@@ -60,7 +62,7 @@ def enforce_execution_window(window, device_id):
     # Safety fallback
     # -------------------------
     if not window or "start" not in window or "end" not in window:
-        print(f"[{device_id}] Execution window missing, skipping enforcement")
+        warn("Execution window missing, skipping enforcement", device_id)
         return
 
     if is_within_window(window):
@@ -69,9 +71,9 @@ def enforce_execution_window(window, device_id):
     sleep_seconds = seconds_until_next_window(window)
     hrs = round(sleep_seconds / 3600, 2)
 
-    print(
-        f"[{device_id}] Outside execution window. "
-        f"Sleeping for {hrs} hours"
+    info(
+        f"Outside execution window. Sleeping for {hrs} hours",
+        device_id
     )
 
     time.sleep(sleep_seconds)

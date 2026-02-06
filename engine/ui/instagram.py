@@ -74,7 +74,7 @@ def ui_open_profile_by_username(device_id, username, retries=1):
 # ==================================================
 # UI HELPER: OPEN POST / REEL
 # ==================================================
-def open_post_by_url(device_id, post_url, username, retries=5):
+def open_post_by_url(device_id, post_url, username, retries=3):
     d = get_device(device_id)
     target = username.lower() if username else None
 

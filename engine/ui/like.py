@@ -32,7 +32,6 @@ def like_post(device_id, retries=2):
             btn = d(resourceId=rid)
             if btn.exists(timeout=0.7):
                 like_btn = btn
-                info(f"🎯 Like button found ({rid})", device_id)
                 break
 
         if not like_btn:
@@ -46,7 +45,6 @@ def like_post(device_id, retries=2):
             return True
 
         # 👉 Perform like
-        info("👉 Clicking Like", device_id)
         like_btn.click()
         time.sleep(1)
 
