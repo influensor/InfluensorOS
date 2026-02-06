@@ -1,10 +1,8 @@
 import os
 import json
 import time
-
 from engine.config import DELIVERY_DIR
 from engine.logic.device_auth import get_authorized_devices
-
 
 # ==================================================
 # INTERNAL HELPERS
@@ -17,38 +15,11 @@ def _path(customer_id):
 
 def _load(customer_id):
     path = _path(customer_id)
-
     if not os.path.exists(path):
         return {"posts": {}}
 
     with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    # 🔁 AUTO-MIGRATE legacy format if found
-    migrated = False
-
-    for post_url, post in list(data.get("posts", {}).items()):
-        # LEGACY FORMAT DETECTED
-        if isinstance(post, dict) and "devices_done" in post:
-            new_devices = {}
-
-            for device_id in post.get("devices_done", []):
-                new_devices[device_id] = {
-                    "accounts_done": [],
-                    "completed": True
-                }
-
-            data["posts"][post_url] = {
-                "devices": new_devices,
-                "completed": post.get("completed", False),
-                "last_update": post.get("last_update")
-            }
-            migrated = True
-
-    if migrated:
-        _save(customer_id, data)
-
-    return data
+        return json.load(f)
 
 
 def _save(customer_id, data):
@@ -56,10 +27,19 @@ def _save(customer_id, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
+# ==================================================
+# READ HELPERS
+# ==================================================
 
-# ==================================================
-# PUBLIC API
-# ==================================================
+def device_already_done(customer_id, post_url, device_id):
+    data = _load(customer_id)
+    post = data["posts"].get(post_url)
+    if not isinstance(post, dict):
+        return False
+
+    device = post.get("devices", {}).get(device_id)
+    return bool(device and device.get("completed", False))
+
 
 def account_already_done(customer_id, post_url, device_id, account):
     if not account:
@@ -67,20 +47,30 @@ def account_already_done(customer_id, post_url, device_id, account):
 
     data = _load(customer_id)
     post = data["posts"].get(post_url)
-
     if not isinstance(post, dict):
         return False
 
-    devices = post.get("devices", {})
-    device = devices.get(device_id)
-
+    device = post.get("devices", {}).get(device_id)
     if not isinstance(device, dict):
         return False
 
     return account in device.get("accounts_done", [])
 
+# ==================================================
+# WRITE DELIVERY (STRICT + SAFE)
+# ==================================================
 
-def mark_post_delivered(customer_id, post_url, device_id, account):
+def mark_post_delivered(
+    customer_id,
+    post_url,
+    device_id,
+    account,
+    expected_accounts,
+    customer_type="paid",
+):
+    """
+    Called ONLY if at least one real action succeeded.
+    """
     if not account:
         return
 
@@ -93,7 +83,6 @@ def mark_post_delivered(customer_id, post_url, device_id, account):
     })
 
     devices = post.setdefault("devices", {})
-
     device = devices.setdefault(device_id, {
         "accounts_done": [],
         "completed": False
@@ -102,21 +91,27 @@ def mark_post_delivered(customer_id, post_url, device_id, account):
     if account not in device["accounts_done"]:
         device["accounts_done"].append(account)
 
-    device["completed"] = True
+    # ✅ DEVICE COMPLETE ONLY WHEN ALL ACCOUNTS ACTED
+    device["completed"] = len(device["accounts_done"]) >= expected_accounts
 
-    # GLOBAL COMPLETION CHECK
-    authorized = get_authorized_devices()
-    completed_devices = [
-        d for d, info in devices.items()
-        if info.get("completed")
-    ]
-
-    if set(completed_devices) >= set(authorized):
-        post["completed"] = True
+    # 🔒 GLOBAL COMPLETION ONLY FOR PAID CUSTOMERS
+    if customer_type == "paid":
+        authorized = get_authorized_devices()
+        completed_devices = [
+            d for d, info in devices.items()
+            if info.get("completed")
+        ]
+        post["completed"] = set(completed_devices) >= set(authorized)
+    else:
+        # Demo never globally locks posts
+        post["completed"] = False
 
     post["last_update"] = int(time.time())
     _save(customer_id, data)
 
+# ==================================================
+# ELIGIBILITY FILTER
+# ==================================================
 
 def get_eligible_posts(customer_id, posts, device_id):
     data = _load(customer_id)
@@ -139,17 +134,3 @@ def get_eligible_posts(customer_id, posts, device_id):
         eligible.append(post)
 
     return eligible
-
-
-def device_already_done(customer_id, post_url, device_id):
-    data = _load(customer_id)
-    post = data["posts"].get(post_url)
-
-    if not isinstance(post, dict):
-        return False
-
-    device = post.get("devices", {}).get(device_id)
-    if not isinstance(device, dict):
-        return False
-
-    return device.get("completed", False)

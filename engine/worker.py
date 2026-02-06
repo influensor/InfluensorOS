@@ -31,7 +31,7 @@ from engine.logic.remote_config import get_config, kill_switch_active
 from engine.ui.splash import show as show_splash
 from engine.ui.instagram import (
     open_instagram,
-    open_profile_by_username,
+    ui_open_profile_by_username,
     open_post_by_url,
 )
 from engine.ui.story_view_like import story_view_like
@@ -42,10 +42,9 @@ from engine.ui.comment import post_comment
 from engine.ui.repost import repost_post as ui_repost_post
 from engine.ui.share import share_post as ui_share_post
 from engine.ui.save import save_post as ui_save_post
-from engine.ui.mark_post_interested import mark_post_interested
 from engine.ui.switch_account import switch_account
 
-# 🟣 DEMO STORY (side-effect, not an action)
+# 🟣 DEMO STORY
 from engine.ui.add_to_story import add_to_story
 
 # =========================
@@ -54,40 +53,30 @@ from engine.ui.add_to_story import add_to_story
 ACCOUNT_COOLDOWN = 3
 CYCLE_COOLDOWN = 5
 
-
 # =========================
 # ACTION EXECUTORS
 # =========================
-def like_post(device_id, account):
-    print(f"[{device_id}] [{account}] Like")
-    return ui_like_post(device_id)
+def open_profile_by_username(device_id, account, customer):
+    print(f"[{device_id}] [{account}] Open profile @{customer['username']}")
+    return ui_open_profile_by_username(device_id, customer["username"])
 
+def like_post(device_id, account):
+    return ui_like_post(device_id)
 
 def comment_post(device_id, account, customer):
     comment = load_random_comment(customer["customer_id"])
     if not comment:
         return False
-    print(f"[{device_id}] [{account}] Comment")
     return post_comment(device_id, comment)
 
-
 def save_post(device_id, account):
-    print(f"[{device_id}] [{account}] Save")
     return ui_save_post(device_id)
 
-
 def share_post(device_id, account):
-    print(f"[{device_id}] [{account}] Share")
     return ui_share_post(device_id)
 
-
 def repost_post(device_id, account):
-    print(f"[{device_id}] [{account}] Repost")
     return ui_repost_post(device_id)
-
-def add_to_story_post(device_id, account):
-    print(f"[{device_id}] [{account}] Add To Story")
-    return ui_add_to_story_post(device_id)
 
 ACTION_EXECUTORS = {
     "like": like_post,
@@ -95,8 +84,7 @@ ACTION_EXECUTORS = {
     "save": save_post,
     "share": share_post,
     "repost": repost_post,
-    "add_to_story": add_to_story_post,}
-
+}
 
 # =========================
 # MAIN DEVICE WORKER
@@ -112,25 +100,21 @@ def device_worker(device_id):
         print(f"[{device_id}] KILL SWITCH ACTIVE: {message}")
         return
 
-    # -------------------------
-    # Splash screen
-    # -------------------------
     show_splash(1)
 
     # -------------------------
-    # Load checkpoint
+    # Load checkpoint (STATE IS BOSS)
     # -------------------------
     state = load_checkpoint(device_id) or {}
-    active_account = state.get("active_account", "")
+
     account_index = state.get("account_index", 0)
+    active_account = state.get("active_account")
 
     # -------------------------
-    # Load customers (DEMO FIRST)
+    # Load customers (demo first)
     # -------------------------
     customers = load_all_customers()
-
-    demo_customers = []
-    paid_customers = []
+    demo_customers, paid_customers = [], []
 
     for c in customers:
         if c.get("type") == "demo":
@@ -140,13 +124,9 @@ def device_worker(device_id):
             paid_customers.append(c)
 
     eligible = demo_customers if demo_customers else paid_customers
-
     if not eligible:
         print(f"[{device_id}] No eligible customers")
         return
-
-    if demo_customers:
-        print(f"[{device_id}] Demo priority active")
 
     # -------------------------
     # Resume or select customer
@@ -154,18 +134,15 @@ def device_worker(device_id):
     customer = None
     post = None
 
-    # 🔧 CHECKPOINT SAFETY FIX (KEY CHANGE)
-    if state and "customer_id" in state:
+    if state.get("customer_id"):
         customer = next(
             (c for c in eligible if c["customer_id"] == state["customer_id"]),
             None
         )
-
         if customer:
             post = state.get("post")
             print(f"[{device_id}] Resuming {customer['customer_id']}")
         else:
-            print(f"[{device_id}] Checkpoint invalid → resetting")
             clear_checkpoint(device_id)
             state = {}
 
@@ -178,18 +155,14 @@ def device_worker(device_id):
 
         post = random.choice(posts)
 
-        save_checkpoint(device_id, {
-            "customer_id": customer["customer_id"],
-            "post": post,
-            "account_index": 0,
-            "active_account": "",
-        })
+        # fresh cycle → no active account yet
+        active_account = None
+        account_index = 0
 
     # -------------------------
     # Remote config
     # -------------------------
     profile = "demo" if customer.get("type") == "demo" else "paid"
-
     rate_limits = get_config("limits", {}).get(profile, {})
     action_probability = get_config("probability", {}).get(profile, {})
     execution_window = get_config("execution_window", {}).get(profile, {})
@@ -200,20 +173,15 @@ def device_worker(device_id):
     total_accounts = customer.get("accounts_per_device", 10)
 
     # =========================
-    # ACCOUNT LOOP
+    # ACCOUNT LOOP (STATE-DRIVEN)
     # =========================
     for ai in range(account_index, total_accounts):
-
+        # -------- ACCOUNT DECISION --------
         if not active_account:
-            open_instagram(device_id)
-            time.sleep(3)
-
-            next_account = switch_account(device_id)
-            if not next_account:
-                time.sleep(5)
+            active_account = switch_account(device_id)
+            if not active_account:
+                print(f"[{device_id}] Failed to switch account")
                 continue
-
-            active_account = next_account
 
             save_checkpoint(device_id, {
                 "customer_id": customer["customer_id"],
@@ -224,73 +192,70 @@ def device_worker(device_id):
 
         print(f"[{device_id}] Using account: {active_account}")
 
-        open_instagram(device_id)
-        open_profile_by_username(device_id, customer["username"])
+        # -------- PROFILE --------
+        open_profile_by_username(device_id, active_account, customer)
         story_view_like(device_id)
+
+        # -------- POST --------
         open_post_by_url(device_id, post, customer["username"])
 
-        if account_already_done(
-            customer["customer_id"],
-            post,
-            device_id,
-            active_account,
-        ):
-            view_post(device_id, 1, 60)
+        # -------- DECISION --------
+        action_performed = False
+        already_liked = should_skip_actions(device_id)
+
+        if already_liked:
+            print(f"[{device_id}] [{active_account}] Already liked → viewing")
+            view_post(device_id, 1, random.randint(30, 60))
+
         else:
-            if should_skip_actions(device_id):
-                view_post(device_id, 1, 60)
-            else:
-                actions = build_actions(customer)
-                if customer["settings"].get("randomize_action_sequence"):
-                    random.shuffle(actions)
+            actions = build_actions(customer)
+            if customer["settings"].get("randomize_action_sequence"):
+                random.shuffle(actions)
 
-                for action in actions:
-                    if not device_can_perform(device_id, action, device_caps):
-                        continue
-                    if not can_perform(device_id, active_account, action, rate_limits):
-                        continue
-                    if not should_perform(action, action_probability):
-                        continue
+            for action in actions:
+                if not device_can_perform(device_id, action, device_caps):
+                    continue
+                if not can_perform(device_id, active_account, action, rate_limits):
+                    continue
+                if not should_perform(action, action_probability):
+                    continue
 
-                    if action == "comment":
-                        success = comment_post(device_id, active_account, customer)
-                    else:
-                        success = ACTION_EXECUTORS[action](device_id, active_account)
+                success = (
+                    comment_post(device_id, active_account, customer)
+                    if action == "comment"
+                    else ACTION_EXECUTORS[action](device_id, active_account)
+                )
 
-                    if success:
-                        record_action(device_id, active_account, action)
-                        record_device_action(device_id, action)
+                if success:
+                    action_performed = True
+                    record_action(device_id, active_account, action)
+                    record_device_action(device_id, action)
 
-                        # 🟣 DEMO STORY SIDE EFFECT
-                        if action == "share" and customer.get("type") == "demo":
-                            print(f"[{device_id}] Demo → add to story")
-                            add_to_story(device_id)
+                    if action == "share" and customer.get("type") == "demo":
+                        add_to_story(device_id)
 
-        mark_post_delivered(
-            customer["customer_id"],
-            post,
-            device_id,
-            active_account,
-        )
+        # -------- DELIVERY (PER ACCOUNT) --------
+        if already_liked or action_performed:
+            mark_post_delivered(
+                customer["customer_id"],
+                post,
+                device_id,
+                active_account,
+                expected_accounts=total_accounts,
+                customer_type=customer.get("type", "paid"),
+            )
 
-        save_checkpoint(device_id, {
-            "customer_id": customer["customer_id"],
-            "post": post,
-            "account_index": ai + 1,
-            "active_account": active_account,
-        })
-
+        # -------- TRANSITION --------
         next_account = switch_account(device_id)
-        if next_account:
-            active_account = next_account
 
         save_checkpoint(device_id, {
             "customer_id": customer["customer_id"],
             "post": post,
             "account_index": ai + 1,
-            "active_account": active_account,
+            "active_account": next_account,
         })
 
+        active_account = next_account
         time.sleep(ACCOUNT_COOLDOWN)
 
     # -------------------------

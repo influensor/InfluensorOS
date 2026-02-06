@@ -16,17 +16,14 @@ def open_instagram(device_id, retries=5):
 
     for attempt in range(1, retries + 1):
         print(f"[{device_id}] Opening Instagram (attempt {attempt})")
-
         try:
             d.app_stop(INSTAGRAM_PKG)
             time.sleep(1)
             d.app_start(INSTAGRAM_PKG)
             time.sleep(5)
 
-            # Verify app launched
             if d(resourceId=INSTAGRAM_HOME_TAB).exists(timeout=3):
                 return True
-
         except Exception:
             pass
 
@@ -37,9 +34,10 @@ def open_instagram(device_id, retries=5):
 
 
 # ==================================================
-# OPEN PROFILE BY USERNAME (VERIFY USERNAME)
+# UI HELPER: OPEN PROFILE BY USERNAME
+# (BEST-EFFORT, NO HARD VERIFY)
 # ==================================================
-def open_profile_by_username(device_id, username, retries=5):
+def ui_open_profile_by_username(device_id, username, retries=5):
     d = get_device(device_id)
     url = f"https://www.instagram.com/{username}/"
 
@@ -73,10 +71,7 @@ def open_profile_by_username(device_id, username, retries=5):
 
 
 # ==================================================
-# OPEN POST / REEL (VERIFY AUTHOR)
-# ==================================================
-# ==================================================
-# OPEN POST / REEL (VERIFY AUTHOR)
+# UI HELPER: OPEN POST / REEL
 # ==================================================
 def open_post_by_url(device_id, post_url, username, retries=5):
     d = get_device(device_id)

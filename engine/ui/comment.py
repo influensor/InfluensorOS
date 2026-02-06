@@ -55,8 +55,9 @@ def post_comment(device_id, text):
         print(f"[{device_id}] Send button not found")
         d.press("back")
         return False
-
+    
     d.press("enter")
+    send_btn.click()
     time.sleep(random.uniform(1.5, 2.5))
 
     # -------------------------
