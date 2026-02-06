@@ -3,6 +3,9 @@ import subprocess
 import uiautomator2 as u2
 from engine.ui.device import get_device
 
+from engine.logger import info, warn, error
+
+
 INSTAGRAM_PKG = "com.instagram.android"
 INSTAGRAM_HOME_TAB = "com.instagram.android:id/tab_avatar"
 PROFILE_USERNAME_ID = "com.instagram.android:id/profile_header_banner_item_title"
@@ -15,7 +18,7 @@ def open_instagram(device_id, retries=5):
     d = get_device(device_id)
 
     for attempt in range(1, retries + 1):
-        print(f"[{device_id}] Opening Instagram (attempt {attempt})")
+        info(f"Opening Instagram (attempt {attempt})", device_id)
         try:
             d.app_stop(INSTAGRAM_PKG)
             time.sleep(1)
@@ -29,7 +32,7 @@ def open_instagram(device_id, retries=5):
 
         time.sleep(1)
 
-    print(f"[{device_id}] Failed to open Instagram")
+    error("Failed to open Instagram", device_id)
     return False
 
 
@@ -42,7 +45,7 @@ def ui_open_profile_by_username(device_id, username, retries=1):
     url = f"https://www.instagram.com/{username}/"
 
     for attempt in range(1, retries + 1):
-        print(f"[{device_id}] Opening profile @{username} (attempt {attempt})")
+        info(f"Opening profile @{username} (attempt {attempt})", device_id)
 
         subprocess.run([
             "adb", "-s", device_id,
@@ -60,13 +63,11 @@ def ui_open_profile_by_username(device_id, username, retries=1):
             if ui_username == username.lower():
                 return True
             else:
-                print(
-                    f"[{device_id}] Wrong profile loaded: {ui_username}"
-                )
+                warn(f"Wrong profile loaded: {ui_username}", device_id)
 
         time.sleep(1)
 
-    print(f"[{device_id}] Failed to open profile @{username}")
+    error(f"Failed to open profile @{username}", device_id)
     return False
 
 
@@ -78,7 +79,7 @@ def open_post_by_url(device_id, post_url, username, retries=5):
     target = username.lower() if username else None
 
     for attempt in range(1, retries + 1):
-        print(f"[{device_id}] Opening post (attempt {attempt})")
+        info(f"Opening post (attempt {attempt})", device_id)
 
         subprocess.run(
             ["adb", "-s", device_id, "shell", "am", "start",
@@ -97,9 +98,9 @@ def open_post_by_url(device_id, post_url, username, retries=5):
             if target in author or target in collab:
                 return True
 
-            print(f"[{device_id}] Wrong profile loaded: {collab}")
+            warn(f"Wrong profile loaded: {collab}", device_id)
 
         time.sleep(1)
 
-    print(f"[{device_id}] Failed to open post")
+    error("Failed to open post", device_id)
     return False

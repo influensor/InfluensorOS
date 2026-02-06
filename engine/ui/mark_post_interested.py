@@ -2,8 +2,35 @@ import time
 import random
 from engine.ui.device import get_device
 
+from engine.logger import info, warn, error
 
-def mark_post_interested(device_id, retries=5):
+
+# =========================
+# SELECTOR CANDIDATES
+# =========================
+MORE_BUTTON_SELECTORS = [
+    {"descriptionContains": "More"},
+    {"resourceId": "com.instagram.android:id/row_feed_button_more"},
+]
+
+INTERESTED_SELECTORS = [
+    {"textMatches": "(?i)interested"},
+    {"textContains": "Interested"},
+]
+
+
+def _find_ui(d, selectors, timeout=1):
+    for sel in selectors:
+        ui = d(**sel)
+        if ui.exists(timeout=timeout):
+            return ui
+    return None
+
+
+# =========================
+# INTERESTED EXECUTION
+# =========================
+def mark_post_interested(device_id, retries=2):
     """
     Marks the currently opened post/reel as 'Interested'
     Returns True if successful, False otherwise
@@ -12,15 +39,15 @@ def mark_post_interested(device_id, retries=5):
     d = get_device(device_id)
 
     for attempt in range(1, retries + 1):
+        info(f"▶ Mark Interested (attempt {attempt})", device_id)
+
         # -------------------------
         # 1️⃣ Open More (⋮)
         # -------------------------
-        more_btn = d(descriptionContains="More")
-        if not more_btn.exists(timeout=2):
-            more_btn = d(resourceId="com.instagram.android:id/row_feed_button_more")
+        more_btn = _find_ui(d, MORE_BUTTON_SELECTORS, timeout=2)
 
-        if not more_btn.exists(timeout=2):
-            print(f"[{device_id}] More button not found (attempt {attempt})")
+        if not more_btn:
+            warn("⚠ More button not found", device_id)
             time.sleep(1)
             continue
 
@@ -30,19 +57,20 @@ def mark_post_interested(device_id, retries=5):
         # -------------------------
         # 2️⃣ Click Interested
         # -------------------------
-        interested = d(textMatches="(?i)interested")
+        interested = _find_ui(d, INTERESTED_SELECTORS, timeout=3)
 
-        if interested.exists(timeout=3):
+        if interested:
             interested.click()
             time.sleep(random.uniform(0.6, 1.0))
-            print(f"[{device_id}] Marked post as Interested")
+            info("✅ Post marked as Interested", device_id)
             return True
 
         # -------------------------
-        # 3️⃣ Cleanup if not found
+        # 3️⃣ Cleanup
         # -------------------------
-        print(f"[{device_id}] Interested option not found (attempt {attempt})")
+        warn("⚠ Interested option not found", device_id)
         d.press("back")
         time.sleep(1)
 
+    error("❌ Mark Interested failed after retries", device_id)
     return False

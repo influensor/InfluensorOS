@@ -1,6 +1,8 @@
 import time
 from engine.ui.device import get_device
 
+from engine.logger import info, warn
+
 
 def retry_step(step_name, retries, delay, fn):
     for attempt in range(1, retries + 1):
@@ -9,7 +11,7 @@ def retry_step(step_name, retries, delay, fn):
                 return True
             raise Exception(f"{step_name} condition failed")
         except Exception as e:
-            print(f"{step_name} failed ({attempt}/{retries}) → {e}")
+            warn(f"{step_name} failed ({attempt}/{retries}) → {e}")
             if attempt < retries:
                 time.sleep(delay)
     return False
@@ -17,6 +19,8 @@ def retry_step(step_name, retries, delay, fn):
 
 def add_to_story(device_id):
     d = get_device(device_id)
+
+    info("▶ Add to Story started", device_id)
 
     # 1️⃣ Share
     if not retry_step(
@@ -83,6 +87,7 @@ def add_to_story(device_id):
     
     time.sleep(1)
     d.press("back")
-    print(f"[{device_id}] Shared to story ✅")
+
+    info("Shared to story ✅", device_id)
     time.sleep(60)
     return True

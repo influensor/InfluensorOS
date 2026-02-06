@@ -2,41 +2,69 @@ import time
 import random
 from engine.ui.device import get_device
 
+from engine.logger import info, warn, error
 
-def share_post(device_id):
+
+# =========================
+# SELECTOR CANDIDATES
+# =========================
+SHARE_BUTTON_SELECTORS = [
+    {"resourceId": "com.instagram.android:id/row_feed_button_share"},
+    {"descriptionContains": "Share"},
+    {"text": "Share"},
+]
+
+
+def _find_ui(d, selectors, timeout=1):
+    for sel in selectors:
+        ui = d(**sel)
+        if ui.exists(timeout=timeout):
+            return ui
+    return None
+
+
+# =========================
+# SHARE EXECUTION
+# =========================
+def share_post(device_id, retries=2):
     d = get_device(device_id)
 
-    # -------------------------
-    # 1️⃣ Locate Share button (paper plane)
-    # -------------------------
-    share_btn = d(resourceId="com.instagram.android:id/row_feed_button_share")
-    if not share_btn.exists:
-        share_btn = d(descriptionContains="Share")
+    for attempt in range(1, retries + 1):
+        info(f"▶ Share Post (attempt {attempt})", device_id)
 
-    if not share_btn.exists:
-        print(f"[{device_id}] Share button not found, skipping")
-        return False
+        # -------------------------
+        # 1️⃣ Locate Share button
+        # -------------------------
+        share_btn = _find_ui(d, SHARE_BUTTON_SELECTORS)
 
-    share_btn.click()
-    time.sleep(random.uniform(1.0, 1.6))
+        if not share_btn:
+            warn("⚠ Share button not found", device_id)
+            time.sleep(1)
+            continue
 
-    # -------------------------
-    # 2️⃣ Expand Share bottom sheet (FAST swipe / flick)
-    # -------------------------
-    w, h = d.window_size()
+        share_btn.click()
+        time.sleep(random.uniform(1.0, 1.6))
 
-    x = w // 2
-    start_y = int(h * 0.88)
-    end_y = int(h * 0.55)
+        # -------------------------
+        # 2️⃣ Expand Share bottom sheet (fast flick)
+        # -------------------------
+        w, h = d.window_size()
 
-    # FAST flick (critical for IG)
-    d.swipe(x, start_y, x, end_y, duration=0.01)
-    time.sleep(random.uniform(0.6, 1.2))
+        x = w // 2
+        start_y = int(h * 0.88)
+        end_y = int(h * 0.55)
 
-    # -------------------------
-    # 3️⃣ Close Share sheet (IMPORTANT)
-    # -------------------------
-    d.press("back")
-    time.sleep(random.uniform(1.0, 1.8))
+        d.swipe(x, start_y, x, end_y, duration=0.01)
+        time.sleep(random.uniform(0.6, 1.2))
 
-    return True
+        # -------------------------
+        # 3️⃣ Close Share sheet
+        # -------------------------
+        d.press("back")
+        time.sleep(random.uniform(1.0, 1.8))
+
+        info("✅ Shared Post", device_id)
+        return True
+
+    error("❌ Share failed after retries", device_id)
+    return False

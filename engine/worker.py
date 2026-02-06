@@ -1,6 +1,8 @@
 import time
 import random
 
+from engine.logger import info, warn, error
+
 # =========================
 # ENGINE LOGIC
 # =========================
@@ -61,7 +63,7 @@ CYCLE_COOLDOWN = 5
 # ACTION EXECUTORS
 # =========================
 def open_profile_by_username(device_id, account, customer):
-    print(f"[{device_id}] [{account}] Open profile @{customer['username']}")
+    info(f"[{account}] Open profile @{customer['username']}", device_id)
     return ui_open_profile_by_username(device_id, customer["username"])
 
 def like_post(device_id, account):
@@ -94,20 +96,20 @@ ACTION_EXECUTORS = {
 # MAIN DEVICE WORKER
 # =========================
 def device_worker(device_id):
-    print(f"\n[{device_id}] Worker started")
+    info("Worker started", device_id)
 
     # -------------------------
     # Kill switch
     # -------------------------
     enabled, message = kill_switch_active()
     if enabled:
-        print(f"[{device_id}] KILL SWITCH ACTIVE: {message}")
+        error(f"KILL SWITCH ACTIVE: {message}", device_id)
         return
 
     show_splash(1)
 
     # -------------------------
-    # Load checkpoint (STATE IS BOSS)
+    # Load checkpoint
     # -------------------------
     state = load_checkpoint(device_id) or {}
 
@@ -115,7 +117,7 @@ def device_worker(device_id):
     active_account = state.get("active_account")
 
     # -------------------------
-    # Load customers (demo first)
+    # Load customers
     # -------------------------
     customers = load_all_customers()
     demo_customers, paid_customers = [], []
@@ -129,7 +131,7 @@ def device_worker(device_id):
 
     eligible = demo_customers if demo_customers else paid_customers
     if not eligible:
-        print(f"[{device_id}] No eligible customers")
+        warn("No eligible customers", device_id)
         return
 
     # -------------------------
@@ -145,7 +147,7 @@ def device_worker(device_id):
         )
         if customer:
             post = state.get("post")
-            print(f"[{device_id}] Resuming {customer['customer_id']}")
+            info(f"Resuming customer {customer['customer_id']}", device_id)
         else:
             clear_checkpoint(device_id)
             state = {}
@@ -154,12 +156,10 @@ def device_worker(device_id):
         customer = random.choice(eligible)
         posts = load_posts(customer["customer_id"])
         if not posts:
-            print(f"[{device_id}] No posts for {customer['customer_id']}")
+            warn(f"No posts for customer {customer['customer_id']}", device_id)
             return
 
         post = random.choice(posts)
-
-        # fresh cycle → no active account yet
         active_account = None
         account_index = 0
 
@@ -177,14 +177,13 @@ def device_worker(device_id):
     total_accounts = customer.get("accounts_per_device", 10)
 
     # =========================
-    # ACCOUNT LOOP (STATE-DRIVEN)
+    # ACCOUNT LOOP
     # =========================
     for ai in range(account_index, total_accounts):
-        # -------- ACCOUNT DECISION --------
         if not active_account:
             active_account = switch_account(device_id)
             if not active_account:
-                print(f"[{device_id}] Failed to switch account")
+                warn("Failed to switch account", device_id)
                 continue
 
             save_checkpoint(device_id, {
@@ -194,7 +193,7 @@ def device_worker(device_id):
                 "active_account": active_account,
             })
 
-        print(f"[{device_id}] Using account: {active_account}")
+        info(f"Using account: {active_account}", device_id)
 
         # -------- PROFILE --------
         open_profile_by_username(device_id, active_account, customer)
@@ -208,7 +207,7 @@ def device_worker(device_id):
         already_liked = should_skip_actions(device_id)
 
         if already_liked:
-            print(f"[{device_id}] [{active_account}] Already liked → viewing")
+            info(f"[{active_account}] Already liked → viewing only", device_id)
             view_post(device_id, 1, random.randint(30, 60))
 
         else:
@@ -238,7 +237,7 @@ def device_worker(device_id):
                     if action == "share" and customer.get("type") == "demo":
                         add_to_story(device_id)
 
-        # -------- DELIVERY (PER ACCOUNT) --------
+        # -------- DELIVERY --------
         if already_liked or action_performed:
             mark_post_delivered(
                 customer["customer_id"],
@@ -269,5 +268,5 @@ def device_worker(device_id):
         mark_demo_post_done(customer, device_id)
 
     clear_checkpoint(device_id)
-    print(f"[{device_id}] Cycle completed for {customer['customer_id']}")
+    info(f"Cycle completed for customer {customer['customer_id']}", device_id)
     time.sleep(CYCLE_COOLDOWN)

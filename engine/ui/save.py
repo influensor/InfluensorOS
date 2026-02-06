@@ -2,52 +2,81 @@ import time
 import random
 from engine.ui.device import get_device
 
+from engine.logger import info, warn, error
 
-def save_post(device_id):
+
+# =========================
+# SELECTOR CANDIDATES
+# =========================
+SAVE_BUTTON_SELECTORS = [
+    {"resourceId": "com.instagram.android:id/row_feed_button_save"},
+    {"descriptionContains": "Save"},
+]
+
+MORE_BUTTON_SELECTORS = [
+    {"descriptionContains": "More"},
+    {"resourceId": "com.instagram.android:id/row_feed_button_more"},
+]
+
+MENU_SAVE_SELECTORS = [
+    {"textContains": "Save"},
+    {"text": "Save"},
+]
+
+
+def _find_ui(d, selectors, timeout=1):
+    for sel in selectors:
+        ui = d(**sel)
+        if ui.exists(timeout=timeout):
+            return ui
+    return None
+
+
+# =========================
+# SAVE EXECUTION
+# =========================
+def save_post(device_id, retries=2):
     d = get_device(device_id)
 
-    saved = False
+    for attempt in range(1, retries + 1):
+        info(f"▶ Save Post (attempt {attempt})", device_id)
 
-    # -------------------------
-    # 1️⃣ Try direct Save button (bookmark)
-    # -------------------------
-    save_btn = d(resourceId="com.instagram.android:id/row_feed_button_save")
-    if not save_btn.exists:
-        save_btn = d(descriptionContains="Save")
-
-    if save_btn.exists:
-        save_btn.click()
-        time.sleep(random.uniform(1.0, 2.0))
-        saved = True
-    else:
         # -------------------------
-        # 2️⃣ Fallback: Open More (⋮) menu
+        # 1️⃣ Try direct Save button
         # -------------------------
-        more_btn = d(descriptionContains="More")
-        if not more_btn.exists:
-            more_btn = d(resourceId="com.instagram.android:id/row_feed_button_more")
+        save_btn = _find_ui(d, SAVE_BUTTON_SELECTORS)
 
-        if not more_btn.exists:
-            print(f"[{device_id}] Save button & More menu not found, skipping")
-            return False
+        if save_btn:
+            save_btn.click()
+            time.sleep(random.uniform(1.0, 2.0))
+            info("✅ Post saved (direct)", device_id)
+            return True
+
+        # -------------------------
+        # 2️⃣ Fallback: More (⋮) menu
+        # -------------------------
+        more_btn = _find_ui(d, MORE_BUTTON_SELECTORS)
+
+        if not more_btn:
+            warn("⚠ Save & More not found", device_id)
+            time.sleep(1)
+            continue
 
         more_btn.click()
         time.sleep(random.uniform(1.0, 1.8))
 
-        menu_save = d(textContains="Save")
-        if not menu_save.exists:
-            print(f"[{device_id}] Save option not found in menu, closing")
+        menu_save = _find_ui(d, MENU_SAVE_SELECTORS)
+
+        if not menu_save:
+            warn("⚠ Save option not in menu", device_id)
             d.press("back")
             time.sleep(0.8)
-            return False
+            continue
 
         menu_save.click()
         time.sleep(random.uniform(1.0, 2.0))
-        saved = True
+        info("✅ Post saved (menu)", device_id)
+        return True
 
-    # -------------------------
-    # 3️⃣ ALWAYS close Save UI (IMPORTANT)
-    # -------------------------
-    time.sleep(random.uniform(1.0, 1.8))
-
-    return saved
+    error("❌ Save failed after retries", device_id)
+    return False
