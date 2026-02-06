@@ -9,9 +9,8 @@
     "comment": true,
     "save": true,
     "share": true,
-    "repost": true,
-
-    "share_to_story": false,
+	"interested": true,
+    "add_to_story": false,
     "randomize_action_sequence": true
   }
 }

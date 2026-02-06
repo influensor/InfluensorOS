@@ -48,6 +48,7 @@ from engine.ui.comment import post_comment
 from engine.ui.repost import repost_post as ui_repost_post
 from engine.ui.share import share_post as ui_share_post
 from engine.ui.save import save_post as ui_save_post
+from engine.ui.interested import mark_post_interested
 from engine.ui.switch_account import switch_account
 
 # 🟣 DEMO STORY
@@ -84,12 +85,20 @@ def share_post(device_id, account):
 def repost_post(device_id, account):
     return ui_repost_post(device_id)
 
+def interested_post(device_id, account):
+    return mark_post_interested(device_id)
+
+def add_to_story_post(device_id, account):
+    return add_to_story(device_id)
+
 ACTION_EXECUTORS = {
     "like": like_post,
     "comment": comment_post,
     "save": save_post,
     "share": share_post,
     "repost": repost_post,
+    "interested": interested_post,
+    "add_to_story": add_to_story_post,
 }
 
 # =========================
