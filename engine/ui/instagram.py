@@ -37,7 +37,7 @@ def open_instagram(device_id, retries=5):
 # UI HELPER: OPEN PROFILE BY USERNAME
 # (BEST-EFFORT, NO HARD VERIFY)
 # ==================================================
-def ui_open_profile_by_username(device_id, username, retries=5):
+def ui_open_profile_by_username(device_id, username, retries=1):
     d = get_device(device_id)
     url = f"https://www.instagram.com/{username}/"
 
