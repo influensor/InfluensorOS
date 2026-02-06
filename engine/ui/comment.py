@@ -56,15 +56,14 @@ def post_comment(device_id, text):
         d.press("back")
         return False
     
-    d.press("enter")
-    send_btn.click()
-    time.sleep(random.uniform(1.5, 2.5))
-
-    # -------------------------
-    # 6️⃣ Close comment bottom sheet
-    # -------------------------
-    d.press("back")
-    d.press("back")
-    time.sleep(random.uniform(1.0, 1.8))
-
+    sent = d.press("enter") or send_btn.click()
+    if sent:
+        time.sleep(random.uniform(1.5, 2.5))
+        # -------------------------
+        # 6️⃣ Close comment bottom sheet
+        # -------------------------
+        d.press("back")
+        d.press("back")
+        time.sleep(random.uniform(1.0, 1.8))
+    
     return True

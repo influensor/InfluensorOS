@@ -6,17 +6,17 @@ import random
 
 DEMO_PROBABILITY = {
     "like": 100,
-    "comment": 60,
+    "comment": 35,
     "save": 50,
-    "share": 35,
+    "share": 100,
     "repost": 25,
 }
 
 PAID_PROBABILITY = {
     "like": 100,
-    "comment": 60,
+    "comment": 35,
     "save": 50,
-    "share": 35,
+    "share": 100,
     "repost": 25,
 }
 

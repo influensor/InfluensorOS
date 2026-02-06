@@ -20,7 +20,11 @@ from engine.logic.delivery_tracker import (
 )
 
 from engine.logic.rate_limiter import can_perform, record_action
-from engine.logic.action_probability import should_perform
+from engine.logic.action_probability import (
+    should_perform,
+    DEMO_PROBABILITY,
+    PAID_PROBABILITY,
+)
 from engine.logic.execution_window import enforce_execution_window
 from engine.logic.device_caps import device_can_perform, record_device_action
 from engine.logic.remote_config import get_config, kill_switch_active
@@ -164,7 +168,7 @@ def device_worker(device_id):
     # -------------------------
     profile = "demo" if customer.get("type") == "demo" else "paid"
     rate_limits = get_config("limits", {}).get(profile, {})
-    action_probability = get_config("probability", {}).get(profile, {})
+    action_probability = DEMO_PROBABILITY if customer.get("type") == "demo" else PAID_PROBABILITY
     execution_window = get_config("execution_window", {}).get(profile, {})
     device_caps = get_config("device_caps", {}).get(profile, {})
 
