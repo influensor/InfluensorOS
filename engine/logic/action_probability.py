@@ -9,7 +9,7 @@ DEMO_PROBABILITY = {
     "comment": 35,
     "repost": 45,
     "share": 100,
-    "save": 50,
+    "save": 55,
     "interested": 100,
     "add_to_story": 20,
 }
@@ -19,7 +19,7 @@ PAID_PROBABILITY = {
     "comment": 35,
     "repost": 45,
     "share": 100,
-    "save": 50,
+    "save": 55,
     "interested": 100,
     "add_to_story": 0,
 }
