@@ -26,6 +26,7 @@ from engine.logic.action_probability import (
 )
 from engine.logic.execution_window import enforce_execution_window
 from engine.logic.device_caps import device_can_perform, record_device_action
+from engine.logic.device_status import get_expected_accounts
 from engine.logic.remote_config import get_config, kill_switch_active
 
 # =========================
@@ -62,8 +63,10 @@ def open_profile_by_username(device_id, account, customer):
     info(f"[{account}] Open profile @{customer['username']}", device_id)
     return ui_open_profile_by_username(device_id, customer["username"])
 
+
 def like_post(device_id, account):
     return ui_like_post(device_id)
+
 
 def comment_post(device_id, account, customer):
     comment = load_random_comment(customer["customer_id"])
@@ -71,20 +74,26 @@ def comment_post(device_id, account, customer):
         return False
     return post_comment(device_id, comment)
 
+
 def save_post(device_id, account):
     return ui_save_post(device_id)
+
 
 def share_post(device_id, account):
     return ui_share_post(device_id)
 
+
 def repost_post(device_id, account):
     return ui_repost_post(device_id)
+
 
 def interested_post(device_id, account):
     return mark_post_interested(device_id)
 
+
 def add_to_story_post(device_id, account):
     return add_to_story(device_id)
+
 
 ACTION_EXECUTORS = {
     "like": like_post,
@@ -119,7 +128,6 @@ def device_worker(device_id):
 
     account_index = state.get("account_index", 0)
     active_account = state.get("active_account")
-    expected_accounts = state.get("expected_accounts", 0)
 
     # -------------------------
     # Load customers
@@ -156,26 +164,23 @@ def device_worker(device_id):
         else:
             clear_checkpoint(device_id)
             state = {}
-            expected_accounts = 0
 
     if not customer:
         customer = random.choice(eligible)
-        posts = load_posts(customer["customer_id"])
+        posts = load_posts(customer["customer_id"], device_id)
         if not posts:
             warn(f"No posts for customer {customer['customer_id']}", device_id)
             return
 
-        post = posts[0]   # latest post
+        post = posts[0]  # latest post
         active_account = None
         account_index = 0
-        expected_accounts = 0
 
         save_checkpoint(device_id, {
             "customer_id": customer["customer_id"],
             "post": post,
             "account_index": 0,
             "active_account": None,
-            "expected_accounts": expected_accounts,
         })
 
     # -------------------------
@@ -189,24 +194,39 @@ def device_worker(device_id):
 
     enforce_execution_window(execution_window, device_id)
 
+    # -------------------------
+    # Account switch cap (NEW)
+    # -------------------------
+    max_account_switches = random.randint(10, 20)
+    account_switch_count = 0
+    info(f"Account switch cap for this cycle: {max_account_switches}",device_id)
+    
     # =========================
     # ACCOUNT LOOP
     # =========================
     while True:
+        # 🔴 HARD STOP: prevent infinite rotation
+        if account_switch_count >= max_account_switches:
+            info(
+                f"Account switch limit reached "
+                f"({account_switch_count}/{max_account_switches}), ending cycle",
+                device_id
+            )
+            break
+
         if not active_account:
             next_account = switch_account(device_id)
             if not next_account:
                 break
 
             active_account = next_account
-            expected_accounts += 1
+            account_switch_count += 1
 
             save_checkpoint(device_id, {
                 "customer_id": customer["customer_id"],
                 "post": post,
                 "account_index": account_index,
                 "active_account": active_account,
-                "expected_accounts": expected_accounts,
             })
 
         info(f"Using account: {active_account}", device_id)
@@ -251,6 +271,8 @@ def device_worker(device_id):
 
         # -------- DELIVERY --------
         if already_liked or action_performed:
+            expected_accounts = get_expected_accounts(device_id)
+
             mark_post_delivered(
                 customer["customer_id"],
                 post,

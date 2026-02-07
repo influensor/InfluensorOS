@@ -1,8 +1,7 @@
 import time
 from engine.ui.device import get_device
-
 from engine.logger import info, warn, error
-
+from engine.logic.device_status import register_account
 
 INSTAGRAM_PKG = "com.instagram.android"
 INSTAGRAM_PROFILE_URL = "http://instagram.com/_u"
@@ -16,6 +15,7 @@ def switch_account(device_id, retries=2):
     """
     Opens Instagram profile, long-presses profile icon,
     switches to next available account.
+    Registers username in device status.
     Returns switched username or None.
     """
 
@@ -45,7 +45,7 @@ def switch_account(device_id, retries=2):
             continue
 
         # -----------------------------
-        # 1️⃣ Long press profile icon
+        # Long press profile icon
         # -----------------------------
         profile_icon.long_click()
         time.sleep(1)
@@ -65,7 +65,6 @@ def switch_account(device_id, retries=2):
 
         for r in rows:
             desc = (r.info.get("contentDescription") or "").lower()
-
             if not desc:
                 continue
             if "add instagram account" in desc:
@@ -101,7 +100,17 @@ def switch_account(device_id, retries=2):
         target.click()
         time.sleep(1)
 
-        info(f"✅ Switched account → {username}", device_id)
+        # -----------------------------
+        # Register account in status
+        # -----------------------------
+        expected = register_account(device_id, username)
+
+        info(
+            f"✅ Switched account → {username} "
+            f"(expected_accounts={expected})",
+            device_id
+        )
+
         return username
 
     error("❌ Switch account failed after retries", device_id)
