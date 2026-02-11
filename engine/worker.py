@@ -126,6 +126,9 @@ def device_worker(device_id):
     # -------------------------
     state = load_checkpoint(device_id) or {}
 
+    # 🔹 Customer skip memory (per device)
+    customers_done = set(state.get("customers_done", []))
+
     account_index = state.get("account_index", 0)
     active_account = state.get("active_account")
 
@@ -166,13 +169,30 @@ def device_worker(device_id):
             state = {}
 
     if not customer:
-        customer = random.choice(eligible)
+        # =================================================
+        # RANDOM CUSTOMER PICK (NO REPEAT UNTIL ALL DONE)
+        # =================================================
+        eligible_ids = {c["customer_id"] for c in eligible}
+        customers_done.intersection_update(eligible_ids)
+
+        remaining = [
+            c for c in eligible
+            if c["customer_id"] not in customers_done
+        ]
+
+        if not remaining:
+            info("All customers done on this device → resetting cycle", device_id)
+            customers_done.clear()
+            remaining = eligible[:]
+
+        customer = random.choice(remaining)
+
         posts = load_posts(customer["customer_id"], device_id)
         if not posts:
             warn(f"No posts for customer {customer['customer_id']}", device_id)
             return
 
-        post = posts[0]  # latest post
+        post = posts[0]
         active_account = None
         account_index = 0
 
@@ -181,6 +201,7 @@ def device_worker(device_id):
             "post": post,
             "account_index": 0,
             "active_account": None,
+            "customers_done": list(customers_done),
         })
 
     # -------------------------
@@ -195,17 +216,16 @@ def device_worker(device_id):
     enforce_execution_window(execution_window, device_id)
 
     # -------------------------
-    # Account switch cap (NEW)
+    # Account switch cap
     # -------------------------
     max_account_switches = random.randint(10, 20)
     account_switch_count = 0
-    info(f"Account switch cap for this cycle: {max_account_switches}",device_id)
-    
+    info(f"Account switch cap for this cycle: {max_account_switches}", device_id)
+
     # =========================
     # ACCOUNT LOOP
     # =========================
     while True:
-        # 🔴 HARD STOP: prevent infinite rotation
         if account_switch_count >= max_account_switches:
             info(
                 f"Account switch limit reached "
@@ -227,18 +247,16 @@ def device_worker(device_id):
                 "post": post,
                 "account_index": account_index,
                 "active_account": active_account,
+                "customers_done": list(customers_done),
             })
 
         info(f"Using account: {active_account}", device_id)
 
-        # -------- PROFILE --------
         open_profile_by_username(device_id, active_account, customer)
         story_view_like(device_id)
 
-        # -------- POST --------
         open_post_by_url(device_id, post, customer["username"])
 
-        # -------- DECISION --------
         action_performed = False
         already_liked = should_skip_actions(device_id)
 
@@ -269,10 +287,8 @@ def device_worker(device_id):
                     record_action(device_id, active_account, action)
                     record_device_action(device_id, action)
 
-        # -------- DELIVERY --------
         if already_liked or action_performed:
             expected_accounts = get_expected_accounts(device_id)
-
             mark_post_delivered(
                 customer["customer_id"],
                 post,
@@ -282,7 +298,6 @@ def device_worker(device_id):
                 customer_type=customer.get("type", "paid"),
             )
 
-        # -------- TRANSITION --------
         active_account = None
         account_index += 1
         time.sleep(ACCOUNT_COOLDOWN)
@@ -293,6 +308,13 @@ def device_worker(device_id):
     if customer.get("type") == "demo":
         mark_demo_post_done(customer, device_id)
 
-    clear_checkpoint(device_id)
+    # -------------------------
+    # Mark customer done for this device
+    # -------------------------
+    customers_done.add(customer["customer_id"])
+    save_checkpoint(device_id, {
+        "customers_done": list(customers_done)
+    })
+
     info(f"Cycle completed for customer {customer['customer_id']}", device_id)
     time.sleep(CYCLE_COOLDOWN)
