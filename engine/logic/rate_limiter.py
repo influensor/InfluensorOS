@@ -55,8 +55,19 @@ def _load_state(device_id, account):
             "last": {}
         }
 
-    with open(path, "r", encoding="utf-8") as f:
-        state = json.load(f)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read().strip()
+            if not content:
+                raise ValueError("Empty JSON file")
+            state = json.loads(content)
+    except Exception:
+        # Corrupted file → reset safely
+        return {
+            "date": str(date.today()),
+            "counts": {},
+            "last": {}
+        }
 
     # Reset if new day
     if state.get("date") != str(date.today()):
@@ -69,9 +80,25 @@ def _load_state(device_id, account):
     return state
 
 
+import tempfile
+
 def _save_state(device_id, account, state):
-    with open(_state_path(device_id, account), "w", encoding="utf-8") as f:
-        json.dump(state, f, indent=2)
+    path = _state_path(device_id, account)
+    directory = os.path.dirname(path)
+    os.makedirs(directory, exist_ok=True)
+
+    with tempfile.NamedTemporaryFile(
+        "w",
+        delete=False,
+        dir=directory,
+        encoding="utf-8"
+    ) as tmp:
+        json.dump(state, tmp, indent=2)
+        tmp.flush()
+        os.fsync(tmp.fileno())
+        temp_name = tmp.name
+
+    os.replace(temp_name, path)
 
 
 # -------------------------
