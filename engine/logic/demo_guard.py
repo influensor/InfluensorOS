@@ -1,7 +1,7 @@
 import os
-import json
 import time
 from engine.config import STATE_DIR
+from engine.utils.file_utils import safe_json_load, atomic_json_write
 
 
 def _state_path(customer_id, device_id):
@@ -12,22 +12,14 @@ def _state_path(customer_id, device_id):
 
 
 def load_demo_state(customer_id, device_id):
-    path = _state_path(customer_id, device_id)
-
-    if not os.path.exists(path):
-        return {
-            "started_at": time.time(),
-            "posts_delivered": 0
-        }
-
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return safe_json_load(_state_path(customer_id, device_id), {
+        "started_at": time.time(),
+        "posts_delivered": 0
+    })
 
 
 def save_demo_state(customer_id, device_id, state):
-    path = _state_path(customer_id, device_id)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(state, f, indent=2)
+    atomic_json_write(_state_path(customer_id, device_id), state)
 
 
 def demo_allowed(customer, device_id):

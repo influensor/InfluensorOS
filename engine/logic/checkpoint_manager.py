@@ -1,6 +1,6 @@
 import os
-import json
 from engine.config import STATE_DIR
+from engine.utils.file_utils import safe_json_load, atomic_json_write
 
 
 def _path(device_id):
@@ -8,17 +8,11 @@ def _path(device_id):
 
 
 def load(device_id):
-    path = _path(device_id)
-    if not os.path.exists(path):
-        return None
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    return safe_json_load(_path(device_id), None)
 
 
 def save(device_id, data):
-    path = _path(device_id)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    atomic_json_write(_path(device_id), data)
 
 
 def clear(device_id):

@@ -1,7 +1,7 @@
 import os
-import json
 import time
 from engine.config import STATE_DIR
+from engine.utils.file_utils import safe_json_load, atomic_json_write
 
 
 def _status_file(device_id):
@@ -9,24 +9,11 @@ def _status_file(device_id):
 
 
 def load_device_status(device_id):
-    path = _status_file(device_id)
-
-    if not os.path.exists(path):
-        return {
-            "device_id": device_id,
-            "accounts": [],
-            "expected_accounts": 0,
-        }
-
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return {
-            "device_id": device_id,
-            "accounts": [],
-            "expected_accounts": 0,
-        }
+    return safe_json_load(_status_file(device_id), {
+        "device_id": device_id,
+        "accounts": [],
+        "expected_accounts": 0,
+    })
 
 
 def save_device_status(device_id, status):
@@ -34,16 +21,10 @@ def save_device_status(device_id, status):
     status["updated_at"] = int(time.time())
     status["expected_accounts"] = len(status.get("accounts", []))
 
-    path = _status_file(device_id)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(status, f, indent=2)
+    atomic_json_write(_status_file(device_id), status)
 
 
 def register_account(device_id, username):
-    """
-    Register username for device if not seen before.
-    Returns expected_accounts count.
-    """
     if not username:
         return 0
 
@@ -59,10 +40,8 @@ def register_account(device_id, username):
 
 
 def get_expected_accounts(device_id):
-    status = load_device_status(device_id)
-    return len(status.get("accounts", []))
+    return len(load_device_status(device_id).get("accounts", []))
 
 
 def get_accounts(device_id):
-    status = load_device_status(device_id)
-    return status.get("accounts", [])
+    return load_device_status(device_id).get("accounts", [])

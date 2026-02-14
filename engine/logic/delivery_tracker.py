@@ -3,6 +3,7 @@ import json
 import time
 from engine.config import DELIVERY_DIR
 from engine.logic.device_auth import get_authorized_devices
+from engine.utils.file_utils import safe_json_load, atomic_json_write
 
 # ==================================================
 # INTERNAL HELPERS
@@ -14,18 +15,19 @@ def _path(customer_id):
 
 
 def _load(customer_id):
-    path = _path(customer_id)
-    if not os.path.exists(path):
-        return {"posts": {}}
-
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    """
+    Safe JSON load.
+    Prevents crash if file is empty or corrupted.
+    """
+    return safe_json_load(_path(customer_id), {"posts": {}})
 
 
 def _save(customer_id, data):
-    path = _path(customer_id)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    """
+    Atomic write.
+    Prevents file corruption during crashes.
+    """
+    atomic_json_write(_path(customer_id), data)
 
 # ==================================================
 # READ HELPERS
