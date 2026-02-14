@@ -1,8 +1,8 @@
 {
-  "customer_id": "syed_swaleh",
-  "username": "syed_swaleh",
+  "customer_id": "muralisa_i",
+  "username": "muralisa_i",
 
-  "type": "demo",
+  "type": "paid",
 
   "settings": {
     "like": true,
@@ -10,7 +10,7 @@
     "save": true,
     "share": true,
 	"interested": true,
-    "add_to_story": true,
+    "add_to_story": false,
     "randomize_action_sequence": true
   }
 }
