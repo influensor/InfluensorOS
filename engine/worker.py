@@ -197,7 +197,7 @@ def device_worker(device_id):
     # -------------------------
     # Account switch cap (NEW)
     # -------------------------
-    max_account_switches = random.randint(10, 20)
+    max_account_switches = random.randint(10, 15)
     account_switch_count = 0
     info(f"Account switch cap for this cycle: {max_account_switches}",device_id)
     
