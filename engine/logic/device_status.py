@@ -1,11 +1,13 @@
 import os
 import time
-from engine.config import STATE_DIR
+from engine.config import STATE_DEVICES_DIR
 from engine.utils.file_utils import safe_json_load, atomic_json_write
 
 
 def _status_file(device_id):
-    return os.path.join(STATE_DIR, f"{device_id}_status.json")
+    folder = os.path.join(STATE_DEVICES_DIR, device_id)
+    os.makedirs(folder, exist_ok=True)
+    return os.path.join(folder, "device_status.json")
 
 
 def load_device_status(device_id):
@@ -20,7 +22,6 @@ def save_device_status(device_id, status):
     status["device_id"] = device_id
     status["updated_at"] = int(time.time())
     status["expected_accounts"] = len(status.get("accounts", []))
-
     atomic_json_write(_status_file(device_id), status)
 
 

@@ -1,11 +1,13 @@
 import os
 from datetime import date
-from engine.config import STATE_DIR
+from engine.config import STATE_DEVICES_DIR
 from engine.utils.file_utils import safe_json_load, atomic_json_write
 
 
 def _state_path(device_id):
-    return os.path.join(STATE_DIR, f"device_{device_id}.json")
+    folder = os.path.join(STATE_DEVICES_DIR, device_id)
+    os.makedirs(folder, exist_ok=True)
+    return os.path.join(folder, "device_caps.json")
 
 
 def _default_state():
@@ -16,8 +18,7 @@ def _default_state():
 
 
 def _load_state(device_id):
-    path = _state_path(device_id)
-    state = safe_json_load(path, _default_state())
+    state = safe_json_load(_state_path(device_id), _default_state())
 
     if state.get("date") != str(date.today()):
         return _default_state()
@@ -42,6 +43,5 @@ def device_can_perform(device_id, action, caps):
 
 def record_device_action(device_id, action):
     state = _load_state(device_id)
-
     state["counts"][action] = state["counts"].get(action, 0) + 1
     _save_state(device_id, state)

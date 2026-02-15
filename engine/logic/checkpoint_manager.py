@@ -1,10 +1,12 @@
 import os
-from engine.config import STATE_DIR
+from engine.config import STATE_DEVICES_DIR
 from engine.utils.file_utils import safe_json_load, atomic_json_write
 
 
 def _path(device_id):
-    return os.path.join(STATE_DIR, f"device_{device_id}.json")
+    folder = os.path.join(STATE_DEVICES_DIR, device_id)
+    os.makedirs(folder, exist_ok=True)
+    return os.path.join(folder, "checkpoint.json")
 
 
 def load(device_id):

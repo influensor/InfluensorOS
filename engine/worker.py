@@ -197,7 +197,7 @@ def device_worker(device_id):
     # -------------------------
     # Account switch cap (NEW)
     # -------------------------
-    max_account_switches = random.randint(10, 15)
+    max_account_switches = random.randint(10, 10)
     account_switch_count = 0
     info(f"Account switch cap for this cycle: {max_account_switches}",device_id)
     
@@ -244,7 +244,7 @@ def device_worker(device_id):
 
         if already_liked:
             info(f"[{active_account}] Already liked → viewing only", device_id)
-            view_post(device_id, 1, random.randint(30, 60))
+            view_post(device_id, 1, random.randint(1, 10))
         else:
             actions = build_actions(customer)
             if customer["settings"].get("randomize_action_sequence"):
