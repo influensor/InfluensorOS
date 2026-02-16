@@ -1,6 +1,5 @@
 import time
 import random
-
 from engine.logger import info, warn, error
 
 # =========================
@@ -28,6 +27,12 @@ from engine.logic.execution_window import enforce_execution_window
 from engine.logic.device_caps import device_can_perform, record_device_action
 from engine.logic.device_status import get_expected_accounts
 from engine.logic.remote_config import get_config, kill_switch_active
+
+# 🔥 Phase-3 Rotation
+from engine.logic.customer_cycle import (
+    get_next_customer,
+    mark_customer_completed,
+)
 
 # =========================
 # UI
@@ -133,7 +138,9 @@ def device_worker(device_id):
     # Load customers
     # -------------------------
     customers = load_all_customers()
-    demo_customers, paid_customers = [], []
+
+    demo_customers = []
+    paid_customers = []
 
     for c in customers:
         if c.get("type") == "demo":
@@ -142,13 +149,17 @@ def device_worker(device_id):
         else:
             paid_customers.append(c)
 
-    eligible = demo_customers if demo_customers else paid_customers
+    # 🔥 Phase-3: Equal pool
+    eligible = demo_customers + paid_customers
+
     if not eligible:
         warn("No eligible customers", device_id)
         return
 
+    eligible_ids = [c["customer_id"] for c in eligible]
+
     # -------------------------
-    # Resume or select customer
+    # Resume or Select Customer (Phase-3)
     # -------------------------
     customer = None
     post = None
@@ -156,7 +167,7 @@ def device_worker(device_id):
     if state.get("customer_id"):
         customer = next(
             (c for c in eligible if c["customer_id"] == state["customer_id"]),
-            None
+            None,
         )
         if customer:
             post = state.get("post")
@@ -166,13 +177,28 @@ def device_worker(device_id):
             state = {}
 
     if not customer:
-        customer = random.choice(eligible)
+        next_customer_id = get_next_customer(device_id, eligible_ids)
+
+        if not next_customer_id:
+            warn("No next customer found", device_id)
+            return
+
+        customer = next(
+            (c for c in eligible if c["customer_id"] == next_customer_id),
+            None,
+        )
+
+        if not customer:
+            warn("Customer missing from pool", device_id)
+            return
+
         posts = load_posts(customer["customer_id"], device_id)
+
         if not posts:
             warn(f"No posts for customer {customer['customer_id']}", device_id)
             return
 
-        post = posts[0]  # latest post
+        post = posts[0]
         active_account = None
         account_index = 0
 
@@ -188,28 +214,33 @@ def device_worker(device_id):
     # -------------------------
     profile = "demo" if customer.get("type") == "demo" else "paid"
     rate_limits = get_config("limits", {}).get(profile, {})
-    action_probability = DEMO_PROBABILITY if customer.get("type") == "demo" else PAID_PROBABILITY
+    action_probability = (
+        DEMO_PROBABILITY if profile == "demo" else PAID_PROBABILITY
+    )
     execution_window = get_config("execution_window", {}).get(profile, {})
     device_caps = get_config("device_caps", {}).get(profile, {})
 
     enforce_execution_window(execution_window, device_id)
 
     # -------------------------
-    # Account switch cap (NEW)
+    # Account Switch Cap
     # -------------------------
     max_account_switches = random.randint(10, 10)
     account_switch_count = 0
-    info(f"Account switch cap for this cycle: {max_account_switches}",device_id)
-    
+
+    info(
+        f"Account switch cap for this cycle: {max_account_switches}",
+        device_id
+    )
+
     # =========================
     # ACCOUNT LOOP
     # =========================
     while True:
-        # 🔴 HARD STOP: prevent infinite rotation
         if account_switch_count >= max_account_switches:
             info(
                 f"Account switch limit reached "
-                f"({account_switch_count}/{max_account_switches}), ending cycle",
+                f"({account_switch_count}/{max_account_switches})",
                 device_id
             )
             break
@@ -238,23 +269,25 @@ def device_worker(device_id):
         # -------- POST --------
         open_post_by_url(device_id, post, customer["username"])
 
-        # -------- DECISION --------
+        # -------- ACTIONS --------
         action_performed = False
         already_liked = should_skip_actions(device_id)
 
         if already_liked:
-            info(f"[{active_account}] Already liked → viewing only", device_id)
             view_post(device_id, 1, random.randint(1, 10))
         else:
             actions = build_actions(customer)
+
             if customer["settings"].get("randomize_action_sequence"):
                 random.shuffle(actions)
 
             for action in actions:
                 if not device_can_perform(device_id, action, device_caps):
                     continue
+
                 if not can_perform(device_id, active_account, action, rate_limits):
                     continue
+
                 if not should_perform(action, action_probability):
                     continue
 
@@ -279,10 +312,9 @@ def device_worker(device_id):
                 device_id,
                 active_account,
                 expected_accounts=expected_accounts,
-                customer_type=customer.get("type", "paid"),
+                customer_type=profile,
             )
 
-        # -------- TRANSITION --------
         active_account = None
         account_index += 1
         time.sleep(ACCOUNT_COOLDOWN)
@@ -290,9 +322,17 @@ def device_worker(device_id):
     # -------------------------
     # Demo accounting
     # -------------------------
-    if customer.get("type") == "demo":
+    if profile == "demo":
         mark_demo_post_done(customer, device_id)
 
+    # 🔥 Mark customer completed for rotation
+    mark_customer_completed(device_id, customer["customer_id"])
+
     clear_checkpoint(device_id)
-    info(f"Cycle completed for customer {customer['customer_id']}", device_id)
+
+    info(
+        f"Cycle completed for customer {customer['customer_id']}",
+        device_id
+    )
+
     time.sleep(CYCLE_COOLDOWN)
