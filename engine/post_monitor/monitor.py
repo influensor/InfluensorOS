@@ -4,6 +4,8 @@ import time
 import random
 
 USER_DATA_DIR = r"C:\Users\yagha\OneDrive\Desktop\insta_profile"
+
+
 class PostMonitor:
 
     def __init__(self, headless=True):
@@ -18,13 +20,19 @@ class PostMonitor:
         self.context.close()
         self.playwright.stop()
 
-    # 🔥 Normalize link: convert /p/ → /reel/
-    def normalize_link(self, url):
-        if "/p/" in url:
-            return url.replace("/p/", "/reel/")
-        return url
+    def extract_shortcode(self, href):
+        """
+        Extract shortcode from:
+        /username/p/ABC123/
+        /username/reel/ABC123/
+        """
+        parts = href.strip("/").split("/")
+        return parts[-1] if parts else None
 
-    def fetch_posts(self, username, limit=10):
+    def build_reel_path(self, shortcode):
+        return f"https://www.instagram.com/reel/{shortcode}/"
+
+    def fetch_reel_paths(self, username, limit=10):
         self.page.goto(
             f"https://www.instagram.com/{username}/",
             wait_until="domcontentloaded"
@@ -37,39 +45,39 @@ class PostMonitor:
         posts = self.page.locator("a[href*='/p/'], a[href*='/reel/']")
         count = posts.count()
 
-        links = []
+        reel_paths = []
+
         for i in range(count):
             href = posts.nth(i).get_attribute("href")
             if href:
-                full_url = "https://www.instagram.com" + href
+                shortcode = self.extract_shortcode(href)
+                if shortcode:
+                    reel_path = self.build_reel_path(shortcode)
 
-                # 🔥 Normalize here
-                normalized_url = self.normalize_link(full_url)
+                    if reel_path not in reel_paths:
+                        reel_paths.append(reel_path)
 
-                if normalized_url not in links:
-                    links.append(normalized_url)
-
-        return links[:limit]
+        return reel_paths[:limit]
 
     def check_user(self, username, limit=10):
-        latest_posts = self.fetch_posts(username, limit)
-        saved_posts = load_saved_posts(username)
+        latest_reels = self.fetch_reel_paths(username, limit)
+        saved_reels = load_saved_posts(username)
 
-        new_posts = [p for p in latest_posts if p not in saved_posts]
+        new_reels = [r for r in latest_reels if r not in saved_reels]
 
-        if new_posts:
-            updated = new_posts + saved_posts
+        if new_reels:
+            updated = new_reels + saved_reels
             save_posts(username, updated)
 
-        return new_posts
+        return new_reels
 
     def check_multiple(self, usernames, limit=10):
         results = {}
 
         for username in usernames:
             try:
-                new_posts = self.check_user(username, limit)
-                results[username] = new_posts
+                new_reels = self.check_user(username, limit)
+                results[username] = new_reels
             except Exception as e:
                 print(f"Error processing {username}: {e}")
                 results[username] = []
