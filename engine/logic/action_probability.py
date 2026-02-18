@@ -11,7 +11,7 @@ DEMO_PROBABILITY = {
     "share": 100,
     "save": 55,
     "interested": 100,
-    "add_to_story": 30,
+    "add_to_story": 40,
 }
 
 PAID_PROBABILITY = {
