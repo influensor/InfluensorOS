@@ -1,6 +1,15 @@
 from engine.post_monitor.monitor import PostMonitor
 usernames = [
-    "a4agharkar.in",
+    "_immanzar_",
+    "akashviraniphotography",
+    "ashok__chaudhary___",
+    "diyasingh_dynameets",
+    "eternalbright.in",
+    "muralisa_i",
+    "naeemsyedofficial",
+    "pixelwithprotein",
+    "thedevpurush",
+    "thedouble.spark",
 ]
 
 monitor = PostMonitor(headless=True)
@@ -14,3 +23,4 @@ for username, posts in results.items():
     else:
         print(f"No new posts for {username}")
 
+time.sleep(random.uniform(10, 60))
