@@ -3,7 +3,7 @@ from .storage import load_saved_posts, save_posts
 import time
 import random
 
-USER_DATA_DIR = r"C:\Users\yagha\OneDrive\Desktop\insta_profile"
+USER_DATA_DIR = r"C:\Users\003\Desktop\insta_profile"
 
 
 class PostMonitor:
