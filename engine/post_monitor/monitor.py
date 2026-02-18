@@ -4,8 +4,6 @@ import time
 import random
 
 USER_DATA_DIR = r"C:\Users\yagha\OneDrive\Desktop\insta_profile"
-
-
 class PostMonitor:
 
     def __init__(self, headless=True):
@@ -19,6 +17,12 @@ class PostMonitor:
     def close(self):
         self.context.close()
         self.playwright.stop()
+
+    # 🔥 Normalize link: convert /p/ → /reel/
+    def normalize_link(self, url):
+        if "/p/" in url:
+            return url.replace("/p/", "/reel/")
+        return url
 
     def fetch_posts(self, username, limit=10):
         self.page.goto(
@@ -38,8 +42,12 @@ class PostMonitor:
             href = posts.nth(i).get_attribute("href")
             if href:
                 full_url = "https://www.instagram.com" + href
-                if full_url not in links:
-                    links.append(full_url)
+
+                # 🔥 Normalize here
+                normalized_url = self.normalize_link(full_url)
+
+                if normalized_url not in links:
+                    links.append(normalized_url)
 
         return links[:limit]
 
