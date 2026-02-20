@@ -1,0 +1,18 @@
+{
+  "customer_id": "naari_collegeroad",
+  "username": "naari_collegeroad",
+
+  "type": "demo",
+
+  "settings": {
+    "like": true,
+    "comment": true,
+	"gif_comment": true,
+    "save": true,
+    "share": true,
+    "repost": true,
+	"interested": true,
+    "add_to_story": true,
+    "randomize_action_sequence": true
+  }
+}
