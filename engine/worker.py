@@ -48,6 +48,7 @@ from engine.ui.actions import should_skip_actions
 from engine.ui.view import view_post
 from engine.ui.like import like_post as ui_like_post
 from engine.ui.comment import post_comment
+from engine.ui.gif import post_gif_comment
 from engine.ui.repost import repost_post as ui_repost_post
 from engine.ui.share import share_post as ui_share_post
 from engine.ui.save import save_post as ui_save_post
@@ -80,6 +81,10 @@ def comment_post(device_id, account, customer):
     return post_comment(device_id, comment)
 
 
+def gif_comment(device_id, account):
+    return post_gif_comment(device_id)
+
+
 def save_post(device_id, account):
     return ui_save_post(device_id)
 
@@ -103,6 +108,7 @@ def add_to_story_post(device_id, account):
 ACTION_EXECUTORS = {
     "like": like_post,
     "comment": comment_post,
+    "gif_comment": gif_comment,
     "save": save_post,
     "share": share_post,
     "repost": repost_post,

@@ -5,6 +5,7 @@ def build(customer):
     for key in [
         "like",
         "comment",
+        "gif_comment",
         "save",
         "share",
         "repost",

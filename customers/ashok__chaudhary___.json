@@ -7,6 +7,7 @@
   "settings": {
     "like": true,
     "comment": true,
+	"gif_comment": true,
     "save": true,
     "share": true,
 	"interested": true,

@@ -39,7 +39,7 @@ def _find_ui(d, selectors, timeout=1):
 # =========================
 # STORY VIEW + LIKE
 # =========================
-def story_view_like(device_id, retries=2):
+def story_view_like(device_id, retries=1):
     d = get_device(device_id)
 
     for attempt in range(1, retries + 1):

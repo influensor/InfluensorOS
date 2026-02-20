@@ -23,9 +23,11 @@ def post_gif_comment(device_id, retries=2):
     """
     Posts a random GIF comment on currently opened Instagram post/reel.
 
-    Requirements:
-    - Post must already be open
-    - Comment icon must be visible
+    Handles:
+    - Normal GIF screen
+    - Avatar sticker default tab issue
+    - Resolution independence
+    - Multi-device compatibility
 
     Returns True if successful, else False
     """
@@ -64,7 +66,28 @@ def post_gif_comment(device_id, retries=2):
             time.sleep(1.5)
 
             # -------------------------
-            # 3️⃣ Wait for Search GIPHY box
+            # 3️⃣ Handle Avatar Stickers Screen (Edge Case)
+            # -------------------------
+            avatar_title = d(
+                resourceId="com.instagram.android:id/no_avatar_nux_title"
+            )
+
+            if avatar_title.exists(timeout=2):
+                info("Avatar screen detected → switching to GIF tab", device_id)
+
+                gif_tab = d(description="GIFs")
+
+                if gif_tab.exists(timeout=3):
+                    gif_tab.click()
+                    time.sleep(1.2)
+                else:
+                    warn("GIF tab button not found", device_id)
+                    d.press("back")
+                    d.press("back")
+                    return False
+
+            # -------------------------
+            # 4️⃣ Wait for Search GIPHY field
             # -------------------------
             search_box = d(
                 resourceId="com.instagram.android:id/search_edit_text"
@@ -80,7 +103,7 @@ def post_gif_comment(device_id, retries=2):
             time.sleep(0.5)
 
             # -------------------------
-            # 4️⃣ Type random keyword
+            # 5️⃣ Type random keyword
             # -------------------------
             keyword = random.choice(GIF_KEYWORDS)
             info(f"GIF keyword → {keyword}", device_id)
@@ -90,7 +113,7 @@ def post_gif_comment(device_id, retries=2):
             time.sleep(2)
 
             # -------------------------
-            # 5️⃣ Wait for GIF results
+            # 6️⃣ Wait for GIF results
             # -------------------------
             gif_buttons = d(
                 className="android.widget.Button",
@@ -126,18 +149,17 @@ def post_gif_comment(device_id, retries=2):
                 return False
 
             # -------------------------
-            # 6️⃣ Click random GIF
+            # 7️⃣ Click random GIF
             # -------------------------
             index = random.randint(0, count - 1)
             gif_buttons[index].click()
             time.sleep(1)
 
             # -------------------------
-            # 7️⃣ Close comment sheet
+            # 8️⃣ Close comment sheet
             # -------------------------
             d.press("back")
             time.sleep(0.5)
-            d.press("back")
 
             info("✅ GIF comment posted", device_id)
             return True
