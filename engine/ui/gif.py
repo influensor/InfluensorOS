@@ -1,9 +1,9 @@
 import time
 import random
-import subprocess
 
 from engine.ui.device import get_device
 from engine.logger import info, warn, error
+
 
 # =========================
 # CONFIG
@@ -14,92 +14,127 @@ GIF_KEYWORDS = [
     "amazing", "awesome", "fire"
 ]
 
-SEARCH_GIPHY_CENTER = (612, 243)  # confirmed working
-KEYBOARD_TAP = (600, 1200)        # dummy tap to force keyboard
-
-# =========================
-# ADB HELPERS
-# =========================
-
-def adb(device_id, cmd):
-    subprocess.run(
-        ["adb", "-s", device_id, "shell"] + cmd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
-    )
-
-def adb_tap(device_id, x, y):
-    adb(device_id, ["input", "tap", str(x), str(y)])
-
-def adb_swipe(device_id, x1, y1, x2, y2, duration=300):
-    adb(device_id, [
-        "input", "swipe",
-        str(x1), str(y1), str(x2), str(y2), str(duration)
-    ])
 
 # =========================
 # MAIN FUNCTION
 # =========================
 
 def post_gif_comment(device_id, retries=2):
+    """
+    Posts a random GIF comment on currently opened Instagram post/reel.
+
+    Requirements:
+    - Post must already be open
+    - Comment icon must be visible
+
+    Returns True if successful, else False
+    """
+
     d = get_device(device_id)
 
     for attempt in range(1, retries + 1):
         info(f"▶ GIF Comment (attempt {attempt})", device_id)
 
         try:
+            # -------------------------
             # 1️⃣ Open comment sheet
-            d(descriptionContains="Comment").click()
-            time.sleep(1.8)
+            # -------------------------
+            comment_btn = d(descriptionContains="Comment")
 
+            if not comment_btn.exists(timeout=3):
+                warn("Comment button not found", device_id)
+                return False
+
+            comment_btn.click()
+            time.sleep(1.5)
+
+            # -------------------------
             # 2️⃣ Open GIF picker
-            d(resourceId="com.instagram.android:id/comment_composer_animated_image_picker_button").click()
-            time.sleep(1.8)
-
-            w, h = d.window_size()
-
-            # 3️⃣ FORCE expand bottom sheet (CRITICAL)
-            adb_swipe(
-                device_id,
-                w // 2, int(h * 0.85),
-                w // 2, int(h * 0.30),
-                duration=400
+            # -------------------------
+            gif_btn = d(
+                resourceId="com.instagram.android:id/comment_composer_animated_image_picker_button"
             )
-            time.sleep(1.2)
 
-            # 4️⃣ Tap Search GIPHY TWICE (focus hack)
-            adb_tap(device_id, *SEARCH_GIPHY_CENTER)
-            time.sleep(0.4)
-            adb_tap(device_id, *SEARCH_GIPHY_CENTER)
-            time.sleep(0.6)
+            if not gif_btn.exists(timeout=3):
+                warn("GIF picker button not found", device_id)
+                d.press("back")
+                return False
 
-            # 5️⃣ Force keyboard
-            adb_tap(device_id, *KEYBOARD_TAP)
-            time.sleep(0.4)
+            gif_btn.click()
+            time.sleep(1.5)
 
-            # 6️⃣ Type keyword
+            # -------------------------
+            # 3️⃣ Wait for Search GIPHY box
+            # -------------------------
+            search_box = d(
+                resourceId="com.instagram.android:id/search_edit_text"
+            )
+
+            if not search_box.exists(timeout=5):
+                warn("Search GIPHY box not found", device_id)
+                d.press("back")
+                d.press("back")
+                return False
+
+            search_box.click()
+            time.sleep(0.5)
+
+            # -------------------------
+            # 4️⃣ Type random keyword
+            # -------------------------
             keyword = random.choice(GIF_KEYWORDS)
             info(f"GIF keyword → {keyword}", device_id)
-            adb(device_id, ["input", "text", keyword])
+
+            d.clear_text()
+            d.send_keys(keyword, clear=False)
             time.sleep(2)
 
-            # 7️⃣ Scroll results
-            adb_swipe(
-                device_id,
-                w // 2, int(h * 0.75),
-                w // 2, int(h * 0.45),
-                duration=250
+            # -------------------------
+            # 5️⃣ Wait for GIF results
+            # -------------------------
+            gif_buttons = d(
+                className="android.widget.Button",
+                resourceId="com.instagram.android:id/gif_image"
             )
+
+            if not gif_buttons.exists(timeout=5):
+                warn("GIF results not loaded", device_id)
+                d.press("back")
+                d.press("back")
+                return False
+
+            count = gif_buttons.count
+
+            if count == 0:
+                warn("GIF list empty", device_id)
+                d.press("back")
+                d.press("back")
+                return False
+
+            # -------------------------
+            # Optional human-like scroll
+            # -------------------------
+            grid = d(resourceId="com.instagram.android:id/gifs_tray_grid")
+
+            if grid.exists and random.random() < 0.4:
+                grid.scroll.vert.forward(steps=10)
+                time.sleep(1)
+                count = gif_buttons.count
+
+            if count == 0:
+                warn("No GIFs after scroll", device_id)
+                return False
+
+            # -------------------------
+            # 6️⃣ Click random GIF
+            # -------------------------
+            index = random.randint(0, count - 1)
+            gif_buttons[index].click()
             time.sleep(1)
 
-            # 8️⃣ Tap random GIF
-            x = random.randint(int(w * 0.2), int(w * 0.8))
-            y = random.randint(int(h * 0.45), int(h * 0.80))
-
-            adb_tap(device_id, x, y)
-            time.sleep(1)
-
-            # 9️⃣ Exit
+            # -------------------------
+            # 7️⃣ Close comment sheet
+            # -------------------------
             d.press("back")
             time.sleep(0.5)
             d.press("back")
@@ -109,10 +144,12 @@ def post_gif_comment(device_id, retries=2):
 
         except Exception as e:
             warn(f"GIF error: {e}", device_id)
+
             try:
                 d.press("back")
             except Exception:
                 pass
+
             time.sleep(1)
 
     error("❌ GIF comment failed after retries", device_id)
