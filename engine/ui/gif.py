@@ -10,10 +10,89 @@ from engine.logger import info, warn, error
 # =========================
 
 GIF_KEYWORDS = [
-    "love", "wow", "cool", "nice",
-    "amazing", "awesome", "fire"
-]
 
+    # 🔥 Hype / Fire
+    "fire", "lit", "legend", "goat", "insane", "crazy",
+    "epic", "unreal", "mad", "next level", "boom",
+    "explosion", "wow", "omg", "shocked", "mind blown",
+
+    # ❤️ Love / Cute
+    "love", "heart", "kiss", "cute", "adorable",
+    "aww", "sweet", "romantic", "hug", "blush",
+    "baby", "cutie", "beautiful", "pretty", "gorgeous",
+
+    # 😂 Funny / Laugh
+    "lol", "haha", "funny", "laugh", "rofl",
+    "lmao", "crying laughing", "dead", "hilarious",
+    "comedy", "clown", "meme", "sarcasm", "awkward",
+
+    # 👏 Appreciation
+    "clap", "applause", "respect", "salute",
+    "well done", "bravo", "proud", "amazing",
+    "fantastic", "incredible", "nice", "cool",
+
+    # 😎 Attitude / Savage
+    "savage", "boss", "attitude", "flex",
+    "mic drop", "period", "queen", "king",
+    "slay", "iconic", "confidence", "swagger",
+
+    # 🤯 Shock / Reaction
+    "what", "seriously", "no way", "impressed",
+    "speechless", "surprised", "stunned",
+    "dramatic", "slow clap", "facepalm",
+
+    # 💃 Celebration
+    "party", "celebrate", "dance", "happy",
+    "excited", "yay", "cheers", "victory",
+    "win", "success", "congrats", "champion",
+
+    # 😢 Emotional
+    "cry", "emotional", "tears", "sad",
+    "heartbreak", "feels", "deep", "mood",
+    "relatable", "vibes", "energy",
+
+    # 😍 Reaction Faces
+    "shy", "wink", "smile", "grin",
+    "eye roll", "side eye", "nervous",
+    "thinking", "hmm", "huh",
+
+    # 🧠 Smart / Genius
+    "genius", "smart", "brain", "idea",
+    "calculated", "strategy", "plan",
+    "thinking hard", "plot twist",
+
+    # 💯 Validation
+    "facts", "true", "exactly", "accurate",
+    "this", "approved", "certified",
+    "100", "real talk", "on point",
+
+    # 🎬 Pop Culture
+    "marvel", "bollywood", "hollywood",
+    "anime", "kpop", "celebrity",
+    "movie reaction", "tv show",
+    "friends tv", "office reaction",
+
+    # 🤡 Fun Extras
+    "vibing", "chill", "bro", "bruh",
+    "girl power", "boy energy",
+    "dramatic entrance", "slow motion",
+    "dance move", "happy dance",
+
+    # 💪 Motivation
+    "motivation", "grind", "hustle",
+    "focus", "determined", "strong",
+    "power move", "level up",
+
+    # 🧨 Trendy
+    "trending", "viral", "mood",
+    "aesthetic", "vibe check",
+    "main character", "energy shift",
+
+    # 🫡 Respect / Support
+    "support", "loyal", "solid",
+    "trust", "respectfully",
+    "big respect", "legendary"
+]
 
 # =========================
 # MAIN FUNCTION
