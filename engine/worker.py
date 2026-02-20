@@ -225,7 +225,7 @@ def device_worker(device_id):
     # -------------------------
     # Account Switch Cap
     # -------------------------
-    max_account_switches = random.randint(10, 10)
+    max_account_switches = random.randint(10, 20)
     account_switch_count = 0
 
     info(
@@ -274,7 +274,7 @@ def device_worker(device_id):
         already_liked = should_skip_actions(device_id)
 
         if already_liked:
-            view_post(device_id, 1, random.randint(1, 10))
+            view_post(device_id, 1, random.randint(10, 90))
         else:
             actions = build_actions(customer)
 
