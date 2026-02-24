@@ -119,12 +119,11 @@ ACTION_EXECUTORS = {
 # =========================
 # MAIN DEVICE WORKER
 # =========================
+# (imports unchanged above)
+
 def device_worker(device_id):
     info("Worker started", device_id)
 
-    # -------------------------
-    # Kill switch
-    # -------------------------
     enabled, message = kill_switch_active()
     if enabled:
         error(f"KILL SWITCH ACTIVE: {message}", device_id)
@@ -132,17 +131,10 @@ def device_worker(device_id):
 
     show_splash(1)
 
-    # -------------------------
-    # Load checkpoint
-    # -------------------------
     state = load_checkpoint(device_id) or {}
-
     account_index = state.get("account_index", 0)
     active_account = state.get("active_account")
 
-    # -------------------------
-    # Load customers
-    # -------------------------
     customers = load_all_customers()
 
     demo_customers = []
@@ -155,7 +147,6 @@ def device_worker(device_id):
         else:
             paid_customers.append(c)
 
-    # 🔥 Phase-3: Equal pool
     eligible = demo_customers + paid_customers
 
     if not eligible:
@@ -165,58 +156,72 @@ def device_worker(device_id):
     eligible_ids = [c["customer_id"] for c in eligible]
 
     # -------------------------
-    # Resume or Select Customer (Phase-3)
+    # CUSTOMER SELECTION LOOP (FIXED)
     # -------------------------
     customer = None
     post = None
 
-    if state.get("customer_id"):
-        customer = next(
-            (c for c in eligible if c["customer_id"] == state["customer_id"]),
-            None,
-        )
-        if customer:
-            post = state.get("post")
-            info(f"Resuming customer {customer['customer_id']}", device_id)
-        else:
-            clear_checkpoint(device_id)
-            state = {}
-
-    if not customer:
-        next_customer_id = get_next_customer(device_id, eligible_ids)
-
-        if not next_customer_id:
-            warn("No next customer found", device_id)
-            return
-
-        customer = next(
-            (c for c in eligible if c["customer_id"] == next_customer_id),
-            None,
-        )
+    while True:
+        if state.get("customer_id"):
+            customer = next(
+                (c for c in eligible if c["customer_id"] == state["customer_id"]),
+                None,
+            )
+            if customer:
+                post = state.get("post")
+                info(f"Resuming customer {customer['customer_id']}", device_id)
+            else:
+                clear_checkpoint(device_id)
+                state = {}
+                customer = None
 
         if not customer:
-            warn("Customer missing from pool", device_id)
-            return
+            next_customer_id = get_next_customer(device_id, eligible_ids)
 
-        posts = load_posts(customer["customer_id"], device_id)
+            if not next_customer_id:
+                warn("No next customer found", device_id)
+                return
 
-        if not posts:
-            warn(f"No posts for customer {customer['customer_id']}", device_id)
-            return
+            customer = next(
+                (c for c in eligible if c["customer_id"] == next_customer_id),
+                None,
+            )
 
-        post = posts[0]
-        active_account = None
-        account_index = 0
+            if not customer:
+                warn("Customer missing from pool", device_id)
+                return
 
-        save_checkpoint(device_id, {
-            "customer_id": customer["customer_id"],
-            "post": post,
-            "account_index": 0,
-            "active_account": None,
-        })
+            posts = load_posts(customer["customer_id"], device_id)
+
+            # 🔥 FIX STARTS HERE
+            if not posts:
+                warn(f"No posts for customer {customer['customer_id']}", device_id)
+
+                # Mark this customer as completed in rotation
+                mark_customer_completed(device_id, customer["customer_id"])
+
+                # Reset state and try next customer
+                clear_checkpoint(device_id)
+                state = {}
+                customer = None
+                continue
+            # 🔥 FIX ENDS HERE
+
+            post = posts[0]
+            active_account = None
+            account_index = 0
+
+            save_checkpoint(device_id, {
+                "customer_id": customer["customer_id"],
+                "post": post,
+                "account_index": 0,
+                "active_account": None,
+            })
+
+        break  # exit selection loop once valid customer found
 
     # -------------------------
-    # Remote config
+    # Remote config (unchanged)
     # -------------------------
     profile = "demo" if customer.get("type") == "demo" else "paid"
     rate_limits = get_config("limits", {}).get(profile, {})
@@ -228,9 +233,6 @@ def device_worker(device_id):
 
     enforce_execution_window(execution_window, device_id)
 
-    # -------------------------
-    # Account Switch Cap
-    # -------------------------
     max_account_switches = random.randint(10, 20)
     account_switch_count = 0
 
@@ -240,7 +242,7 @@ def device_worker(device_id):
     )
 
     # =========================
-    # ACCOUNT LOOP
+    # ACCOUNT LOOP (UNCHANGED)
     # =========================
     while True:
         if account_switch_count >= max_account_switches:
@@ -268,14 +270,10 @@ def device_worker(device_id):
 
         info(f"Using account: {active_account}", device_id)
 
-        # -------- PROFILE --------
         open_profile_by_username(device_id, active_account, customer)
         story_view_like(device_id)
-
-        # -------- POST --------
         open_post_by_url(device_id, post, customer["username"])
 
-        # -------- ACTIONS --------
         action_performed = False
         already_liked = should_skip_actions(device_id)
 
@@ -290,10 +288,8 @@ def device_worker(device_id):
             for action in actions:
                 if not device_can_perform(device_id, action, device_caps):
                     continue
-
                 if not can_perform(device_id, active_account, action, rate_limits):
                     continue
-
                 if not should_perform(action, action_probability):
                     continue
 
@@ -308,7 +304,6 @@ def device_worker(device_id):
                     record_action(device_id, active_account, action)
                     record_device_action(device_id, action)
 
-        # -------- DELIVERY --------
         if already_liked or action_performed:
             expected_accounts = get_expected_accounts(device_id)
 
@@ -325,15 +320,10 @@ def device_worker(device_id):
         account_index += 1
         time.sleep(ACCOUNT_COOLDOWN)
 
-    # -------------------------
-    # Demo accounting
-    # -------------------------
     if profile == "demo":
         mark_demo_post_done(customer, device_id)
 
-    # 🔥 Mark customer completed for rotation
     mark_customer_completed(device_id, customer["customer_id"])
-
     clear_checkpoint(device_id)
 
     info(
@@ -342,3 +332,4 @@ def device_worker(device_id):
     )
 
     time.sleep(CYCLE_COOLDOWN)
+
