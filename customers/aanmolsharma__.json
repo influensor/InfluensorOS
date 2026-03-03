@@ -1,0 +1,17 @@
+{
+  "customer_id": "aanmolsharma__",
+  "username": "aanmolsharma__",
+
+  "type": "paid",
+
+  "settings": {
+    "like": true,
+    "comment": true,
+	"gif_comment": true,
+    "save": true,
+    "share": true,
+	"interested": true,
+    "add_to_story": false,
+    "randomize_action_sequence": true
+  }
+}

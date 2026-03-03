@@ -14,15 +14,33 @@ COMMENT_BUTTON_SELECTORS = [
 ]
 
 COMMENT_INPUT_SELECTORS = [
-    {
-        "className": "android.widget.AutoCompleteTextView",
-        "resourceId": "com.instagram.android:id/layout_comment_thread_edittext"
-    }
+    # 🔥 NEW 2026 Instagram ID (CRITICAL FIX)
+    {"resourceId": "com.instagram.android:id/layout_comment_thread_edittext_multiline"},
+
+    # Older versions
+    {"resourceId": "com.instagram.android:id/comment_edit_text"},
+    {"resourceId": "com.instagram.android:id/layout_comment_thread_edittext"},
+    {"resourceId": "com.instagram.android:id/row_comment_textview"},
+
+    # Generic fallback
+    {"className": "android.widget.EditText"},
+    {"className": "android.widget.AutoCompleteTextView"},
+
+    # Hint fallback
+    {"textContains": "Add a comment"},
+    {"textContains": "Join the conversation"},
+    {"textContains": "What do you think of this?"},
 ]
 
 SEND_BUTTON_SELECTORS = [
+    # 🔥 2026 Instagram (CRITICAL)
+    {"resourceId": "com.instagram.android:id/layout_comment_thread_post_button_icon"},
+
+    # Fallbacks
     {"descriptionContains": "Post"},
+    {"descriptionContains": "Send"},
     {"text": "Post"},
+    {"text": "Send"},
 ]
 
 
@@ -80,7 +98,6 @@ def post_comment(device_id, text, retries=2):
 
             time.sleep(random.uniform(0.6, 1.2))
 
-            # Confirm still exists
             if not input_box.exists:
                 warn("⚠ Input lost after focus", device_id)
                 d.press("back")
@@ -92,7 +109,7 @@ def post_comment(device_id, text, retries=2):
             try:
                 d.clear_text()
             except Exception:
-                pass  # Safe ignore
+                pass
 
             try:
                 d.send_keys(text, clear=False)
@@ -102,7 +119,6 @@ def post_comment(device_id, text, retries=2):
                 d.press("back")
                 continue
 
-            # Optional verification (very safe)
             try:
                 current_text = input_box.get_text()
                 if not current_text or text[:5] not in current_text:
@@ -111,8 +127,16 @@ def post_comment(device_id, text, retries=2):
                 pass
 
             # -------------------------
-            # 5️⃣ Send comment
+            # 5️⃣ Send comment (FIXED – NO ENTER)
             # -------------------------
+
+            # Hide keyboard so Post button becomes visible
+            try:
+                d.press("back")
+                time.sleep(0.8)
+            except Exception:
+                pass
+
             send_btn = _find_ui(d, SEND_BUTTON_SELECTORS)
 
             if not send_btn:
@@ -121,13 +145,14 @@ def post_comment(device_id, text, retries=2):
                 continue
 
             try:
-                sent = d.press("enter") or send_btn.click()
+                send_btn.click()
+                time.sleep(random.uniform(1.5, 2.5))
+                sent = True
             except Exception:
                 sent = False
 
             if sent:
                 info("✅ Comment Posted", device_id)
-                time.sleep(random.uniform(1.5, 2.5))
 
                 # -------------------------
                 # 6️⃣ Close comment sheet
@@ -145,7 +170,6 @@ def post_comment(device_id, text, retries=2):
             time.sleep(1)
 
         except Exception as e:
-            # 🔒 Ultimate protection — never crash worker
             error(f"❌ Comment attempt crashed: {e}", device_id)
 
             try:

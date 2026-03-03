@@ -195,7 +195,7 @@ def device_worker(device_id):
 
             # 🔥 FIX STARTS HERE
             if not posts:
-                warn(f"No posts for customer {customer['customer_id']}", device_id)
+                #warn(f"No posts for customer {customer['customer_id']}", device_id)
 
                 # Mark this customer as completed in rotation
                 mark_customer_completed(device_id, customer["customer_id"])
@@ -279,6 +279,9 @@ def device_worker(device_id):
 
         if already_liked:
             view_post(device_id, 1, random.randint(10, 90))
+            if should_perform("comment", action_probability):
+                if can_perform(device_id, active_account, "comment", rate_limits):
+                    comment_post(device_id, active_account, customer)
         else:
             actions = build_actions(customer)
 
