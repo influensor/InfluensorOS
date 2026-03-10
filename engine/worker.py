@@ -279,9 +279,6 @@ def device_worker(device_id):
 
         if already_liked:
             view_post(device_id, 1, random.randint(10, 90))
-            if should_perform("comment", action_probability):
-                if can_perform(device_id, active_account, "comment", rate_limits):
-                    comment_post(device_id, active_account, customer)
         else:
             actions = build_actions(customer)
 

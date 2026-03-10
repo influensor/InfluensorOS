@@ -3,15 +3,11 @@ import random
 from engine.post_monitor.monitor import PostMonitor
 usernames = [
     "_immanzar_",
-    "akashviraniphotography",
     "ashok__chaudhary___",
     "diyasingh_dynameets",
     "eternalbright.in",
     "muralisa_i",
-    "naeemsyedofficial",
-    "pixelwithprotein",
     "thedevpurush",
-    "thedouble.spark",
 ]
 
 monitor = PostMonitor(headless=True)
