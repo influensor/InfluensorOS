@@ -1,0 +1,17 @@
+{
+  "customer_id": "khushi_kukreja.07",
+  "username": "khushi_kukreja.07",
+
+  "type": "demo",
+
+  "settings": {
+    "like": true,
+    "comment": true,
+	"gif_comment": true,
+    "save": true,
+    "share": true,
+	"interested": true,
+    "add_to_story": true,
+    "randomize_action_sequence": true
+  }
+}

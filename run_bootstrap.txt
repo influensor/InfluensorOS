@@ -1,0 +1,23 @@
+Bootstrap
+python -c "from engine.bootstrap import start; start()"
+
+
+Device Worker
+python -c "from engine.worker import device_worker; device_worker('ZA222TB6ZX')"
+
+
+adb shell uiautomator dump /sdcard/view.xml
+adb pull /sdcard/view.xml C:\Users\yagha\OneDrive\Desktop\view.xml
+
+
+python -c "import subprocess; d=[l.split()[0] for l in subprocess.check_output(['adb','devices']).decode().splitlines()[1:] if 'device' in l][0]; from engine.ui.gif import post_gif_comment; print(post_gif_comment(d))"
+
+
+adb shell uiautomator dump /sdcard/view.xml
+adb pull /sdcard/view.xml C:\Users\DELL\Desktop\view.xml
+
+
+
+python -m analysis.options_scanner.current_month_green_options
+python -m analysis.options_scanner.current_week_expiry_single_green
+python -m analysis.options_scanner.current_month_expiry_single_green
