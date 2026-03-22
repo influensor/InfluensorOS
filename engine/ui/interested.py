@@ -1,7 +1,6 @@
 import time
 import random
 from engine.ui.device import get_device
-
 from engine.logger import info, warn, error
 
 

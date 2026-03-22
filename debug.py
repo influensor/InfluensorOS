@@ -1,7 +1,6 @@
 import time
 import threading
 from datetime import datetime
-
 from engine.ui.instagram import (
     open_instagram,
     ui_open_profile_by_username,
@@ -14,11 +13,9 @@ from engine.ui.save import save_post
 from engine.ui.share import share_post
 from engine.ui.repost import repost_post
 from engine.ui.switch_account import switch_account
-
 from engine.ui.follow import follow_user
-from engine.ui.message import send_promotional_message   # ✅ NEW
+from engine.ui.message import send_promotional_message
 from engine.ui.gif import post_gif_comment
-
 from engine.logic.comment_loader import load_random_comment
 from engine.ui.device import get_device
 
@@ -28,9 +25,9 @@ from engine.ui.device import get_device
 # =========================
 
 #ACTIONS = ["open_instagram", "profile", "follow", "message", "story", "post", "like", "comment", "gif_comment", "save", "share", "repost", "switch"]
-ACTIONS = ["open_instagram", "profile", "message", "switch"]
+ACTIONS = ["open_instagram", "profile"]
 
-TEST_USERNAME = "sakshishrivas___"
+TEST_USERNAME = "ilahabysanya"
 TEST_POST_URL = "https://www.instagram.com/reel/DQoEE3wAKL-/"
 
 # =========================

@@ -16,6 +16,7 @@ We can boost your reach using real devices. Interested?",
 Want to scale it with real engagement? Let’s connect 💬"""
 ]
 
+
 # =========================
 # SELECTORS
 # =========================
@@ -33,9 +34,19 @@ SEND_BTN_SELECTORS = [
     {"text": "Send"},
 ]
 
+# 🔥 Detect existing messages
+EXISTING_MESSAGE_SELECTORS = [
+    {"resourceId": "com.instagram.android:id/row_message_text"},
+    {"textContains": "Seen"},
+    {"textContains": "Delivered"},
+    {"textContains": "Hey"},
+    {"textContains": "@influensor.in"},
+    {"textContains": "@blackaquaindia.in"},
+]
+
 
 # =========================
-# HELPER
+# HELPERS
 # =========================
 def _find_ui(d, selectors, timeout=3):
     for sel in selectors:
@@ -45,16 +56,24 @@ def _find_ui(d, selectors, timeout=3):
     return None
 
 
+def has_existing_messages(d):
+    for sel in EXISTING_MESSAGE_SELECTORS:
+        obj = d(**sel)
+        if obj.exists(timeout=2):
+            return True
+    return False
+
+
 # =========================
 # MAIN FUNCTION
 # =========================
 def send_promotional_message(device_id, message=None):
     """
-    Sends DM to currently opened profile.
+    Sends DM ONLY if no previous messages exist.
 
     Returns:
         True → message sent
-        False → failed / not possible
+        False → skipped / failed
     """
 
     d = get_device(device_id)
@@ -65,15 +84,30 @@ def send_promotional_message(device_id, message=None):
         # -------------------------
         msg_btn = _find_ui(d, MESSAGE_BTN_SELECTORS)
 
-        if not msg_btn:
-            warn("Message button not found", device_id)
-            return False
+        if msg_btn:
+            msg_btn.click()
+            time.sleep(2)
 
-        msg_btn.click()
-        time.sleep(2)
+        else:
+            # 🔥 Already in chat case
+            input_box = _find_ui(d, INPUT_SELECTORS)
+
+            if input_box:
+                warn("⚠ Already inside chat", device_id)
+            else:
+                warn("Message button not found", device_id)
+                return False
 
         # -------------------------
-        # 2️⃣ Find input box
+        # 2️⃣ Check existing chat
+        # -------------------------
+        if has_existing_messages(d):
+            warn("⚠ Chat already exists → skipping message", device_id)
+            d.press("back")
+            return False
+
+        # -------------------------
+        # 3️⃣ Find input box
         # -------------------------
         input_box = _find_ui(d, INPUT_SELECTORS, timeout=5)
 
@@ -83,7 +117,7 @@ def send_promotional_message(device_id, message=None):
             return False
 
         # -------------------------
-        # 3️⃣ Prepare message
+        # 4️⃣ Prepare message
         # -------------------------
         if not message:
             message = random.choice(DEFAULT_MESSAGES)
@@ -98,7 +132,7 @@ def send_promotional_message(device_id, message=None):
         time.sleep(1)
 
         # -------------------------
-        # 4️⃣ Click Send
+        # 5️⃣ Click Send
         # -------------------------
         send_btn = _find_ui(d, SEND_BTN_SELECTORS)
 
@@ -112,7 +146,7 @@ def send_promotional_message(device_id, message=None):
         info("✅ Message sent", device_id)
 
         # -------------------------
-        # 5️⃣ Exit chat
+        # 6️⃣ Exit chat
         # -------------------------
         d.press("back")
         time.sleep(1)

@@ -1,7 +1,6 @@
 import time
 import random
 from engine.ui.device import get_device
-
 from engine.logger import info, warn, error
 
 
@@ -90,8 +89,8 @@ def story_view_like(device_id, retries=1):
             # -------------------------
             # 3️⃣ Exit stories
             # -------------------------
-            d.press("back")
-            time.sleep(1)
+            #d.press("back")
+            #time.sleep(1)
 
             info(f"✅ Story View Like done ({stories_viewed} stories)", device_id)
             return True
