@@ -8,7 +8,7 @@ from engine.logger import info, warn, error
 
 INSTAGRAM_PKG = "com.instagram.android"
 INSTAGRAM_HOME_TAB = "com.instagram.android:id/tab_avatar"
-PROFILE_USERNAME_ID = "com.instagram.android:id/profile_header_banner_item_title"
+PROFILE_USERNAME_ID = "com.instagram.android:id/action_bar_title"
 REEL_AUTHOR_ID = "com.instagram.android:id/clips_author_username"
 
 # ==================================================

@@ -8,8 +8,8 @@ from engine.logger import info, warn, error
 # =========================
 # CONFIG
 # =========================
-STORY_VIEW_MIN = 1
-STORY_VIEW_MAX = 3
+STORY_VIEW_MIN = 0.25
+STORY_VIEW_MAX = 1.25
 MAX_STORIES = 10
 LIKE_PROBABILITY = 0.75
 

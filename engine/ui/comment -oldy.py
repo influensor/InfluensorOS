@@ -14,7 +14,7 @@ COMMENT_BUTTON_SELECTORS = [
 ]
 
 COMMENT_INPUT_SELECTORS = [
-    # 🔥 2026 Instagram ID
+    # 🔥 NEW 2026 Instagram ID (CRITICAL FIX)
     {"resourceId": "com.instagram.android:id/layout_comment_thread_edittext_multiline"},
 
     # Older versions
@@ -33,7 +33,7 @@ COMMENT_INPUT_SELECTORS = [
 ]
 
 SEND_BUTTON_SELECTORS = [
-    # 🔥 2026 Instagram (your confirmed selector)
+    # 🔥 2026 Instagram (CRITICAL)
     {"resourceId": "com.instagram.android:id/layout_comment_thread_post_button_icon"},
 
     # Fallbacks
@@ -44,10 +44,7 @@ SEND_BUTTON_SELECTORS = [
 ]
 
 
-# =========================
-# HELPER
-# =========================
-def _find_ui(d, selectors, timeout=2):
+def _find_ui(d, selectors, timeout=1):
     for sel in selectors:
         ui = d(**sel)
         if ui.exists(timeout=timeout):
@@ -90,7 +87,7 @@ def post_comment(device_id, text, retries=2):
                 continue
 
             # -------------------------
-            # 3️⃣ Focus input
+            # 3️⃣ Focus input safely
             # -------------------------
             try:
                 input_box.click()
@@ -99,7 +96,7 @@ def post_comment(device_id, text, retries=2):
                 d.press("back")
                 continue
 
-            time.sleep(random.uniform(0.5, 1.5))
+            time.sleep(random.uniform(0.6, 1.2))
 
             if not input_box.exists:
                 warn("⚠ Input lost after focus", device_id)
@@ -107,7 +104,7 @@ def post_comment(device_id, text, retries=2):
                 continue
 
             # -------------------------
-            # 4️⃣ Type comment
+            # 4️⃣ Type comment safely
             # -------------------------
             try:
                 d.clear_text()
@@ -116,13 +113,12 @@ def post_comment(device_id, text, retries=2):
 
             try:
                 d.send_keys(text, clear=False)
-                time.sleep(0.5)  # 🔥 CRITICAL FIX (wait for button activation)
+                time.sleep(random.uniform(1.0, 1.8))
             except Exception as e:
                 warn(f"⚠ send_keys failed: {e}", device_id)
                 d.press("back")
                 continue
 
-            # Optional verification
             try:
                 current_text = input_box.get_text()
                 if not current_text or text[:5] not in current_text:
@@ -131,56 +127,47 @@ def post_comment(device_id, text, retries=2):
                 pass
 
             # -------------------------
-            # 5️⃣ Send comment (FIXED)
+            # 5️⃣ Send comment (FIXED – NO ENTER)
             # -------------------------
-            send_btn = None
 
-            for _ in range(3):  # retry loop
-                send_btn = _find_ui(d, SEND_BUTTON_SELECTORS, timeout=2)
-
-                if send_btn:
-                    break
-            
-            if send_btn:
-                try:
-                    send_btn.click()
-                    time.sleep(random.uniform(0.5, 1.5))
-
-                    info("✅ Comment Posted", device_id)
-
-                    # -------------------------
-                    # 6️⃣ Close comment sheet
-                    # -------------------------
-                    try:
-                        d.press("back")
-                        d.press("back")
-                    except Exception:
-                        pass
-
-                    time.sleep(random.uniform(0.5, 1.5))
-                    return True
-
-                except Exception as e:
-                    warn(f"⚠ Send click failed: {e}", device_id)
-
-            # -------------------------
-            # 🔥 FALLBACK (ICON CLICK)
-            # -------------------------
-            warn("⚠ Send button not found → fallback tap", device_id)
-
-            w, h = d.window_size()
-            d.click(int(w * 0.92), int(h * 0.92))
-            time.sleep(0.5)
-
-            info("✅ Comment Posted (fallback)", device_id)
-
+            # Hide keyboard so Post button becomes visible
             try:
                 d.press("back")
-                d.press("back")
+                time.sleep(0.8)
             except Exception:
                 pass
 
-            return True
+            send_btn = _find_ui(d, SEND_BUTTON_SELECTORS)
+
+            if not send_btn:
+                warn("⚠ Send button not found", device_id)
+                d.press("back")
+                continue
+
+            try:
+                send_btn.click()
+                time.sleep(random.uniform(1.5, 2.5))
+                sent = True
+            except Exception:
+                sent = False
+
+            if sent:
+                info("✅ Comment Posted", device_id)
+
+                # -------------------------
+                # 6️⃣ Close comment sheet
+                # -------------------------
+                try:
+                    d.press("back")
+                    d.press("back")
+                except Exception:
+                    pass
+
+                time.sleep(random.uniform(1.0, 1.8))
+                return True
+
+            warn("⚠ Comment send failed", device_id)
+            time.sleep(1)
 
         except Exception as e:
             error(f"❌ Comment attempt crashed: {e}", device_id)

@@ -8,6 +8,7 @@ LIKE_BUTTON_IDS = [
     "com.instagram.android:id/like_button",
     "com.instagram.android:id/row_feed_button_like",
     "com.instagram.android:id/like_icon",
+    "com.instagram.android:id/clips_like_button",
 ]
 
 # =========================
