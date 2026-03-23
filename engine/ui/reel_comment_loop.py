@@ -32,7 +32,7 @@ def reel_comment_loop(device_id, total_reels=5):
         # -------------------------
         # 3️⃣ Swipe to next reel
         # -------------------------
-        swipe_up(d)
+        swipe_up(device_id)
 
     print(f"[{device_id}] ✅ Reel comment loop completed")
     return True
