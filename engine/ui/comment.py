@@ -130,6 +130,13 @@ def post_comment(device_id, text, retries=2):
             except Exception:
                 pass
 
+            # Hide keyboard so Post button becomes visible
+            try:
+                d.press("back")
+                time.sleep(0.8)
+            except Exception:
+                pass
+
             # -------------------------
             # 5️⃣ Send comment (FIXED)
             # -------------------------
