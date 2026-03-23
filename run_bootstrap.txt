@@ -6,6 +6,8 @@ Device Worker
 python -c "from engine.worker import device_worker; device_worker('ZA222TB6ZX')"
 
 
+python -m engine.bootstrap_reel
+
 adb shell uiautomator dump /sdcard/view.xml
 adb pull /sdcard/view.xml C:\Users\yagha\OneDrive\Desktop\view.xml
 
@@ -21,3 +23,5 @@ adb pull /sdcard/view.xml C:\Users\DELL\Desktop\view.xml
 python -m analysis.options_scanner.current_month_green_options
 python -m analysis.options_scanner.current_week_expiry_single_green
 python -m analysis.options_scanner.current_month_expiry_single_green
+
+

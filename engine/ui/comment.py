@@ -2,6 +2,7 @@ import time
 import random
 from engine.ui.device import get_device
 from engine.logger import info, warn, error
+from engine.ui.swipe import swipe_down
 
 
 # =========================
@@ -85,7 +86,7 @@ def post_comment(device_id, text, retries=2):
 
             if not input_box:
                 warn("⚠ Comment input not found", device_id)
-                d.press("back")
+                swipe_down(device_id)
                 time.sleep(1)
                 continue
 
@@ -96,14 +97,14 @@ def post_comment(device_id, text, retries=2):
                 input_box.click()
             except Exception:
                 warn("⚠ Failed to focus input", device_id)
-                d.press("back")
+                swipe_down(device_id)
                 continue
 
             time.sleep(random.uniform(0.5, 1.5))
 
             if not input_box.exists:
                 warn("⚠ Input lost after focus", device_id)
-                d.press("back")
+                swipe_down(device_id)
                 continue
 
             # -------------------------
@@ -119,7 +120,7 @@ def post_comment(device_id, text, retries=2):
                 time.sleep(0.5)  # 🔥 CRITICAL FIX (wait for button activation)
             except Exception as e:
                 warn(f"⚠ send_keys failed: {e}", device_id)
-                d.press("back")
+                swipe_down(device_id)
                 continue
 
             # Optional verification
@@ -129,14 +130,8 @@ def post_comment(device_id, text, retries=2):
                     warn("⚠ Text not properly entered", device_id)
             except Exception:
                 pass
-
-            # Hide keyboard so Post button becomes visible
-            try:
-                d.press("back")
-                time.sleep(0.8)
-            except Exception:
-                pass
-
+            
+            
             # -------------------------
             # 5️⃣ Send comment (FIXED)
             # -------------------------
@@ -152,15 +147,12 @@ def post_comment(device_id, text, retries=2):
                 try:
                     send_btn.click()
                     time.sleep(random.uniform(0.5, 1.5))
-
                     info("✅ Comment Posted", device_id)
-
                     # -------------------------
                     # 6️⃣ Close comment sheet
                     # -------------------------
                     try:
-                        d.press("back")
-                        d.press("back")
+                        swipe_down(device_id)
                     except Exception:
                         pass
 
@@ -182,8 +174,7 @@ def post_comment(device_id, text, retries=2):
             info("✅ Comment Posted (fallback)", device_id)
 
             try:
-                d.press("back")
-                d.press("back")
+                swipe_down(device_id)
             except Exception:
                 pass
 
@@ -193,7 +184,7 @@ def post_comment(device_id, text, retries=2):
             error(f"❌ Comment attempt crashed: {e}", device_id)
 
             try:
-                d.press("back")
+                swipe_down(device_id)
             except Exception:
                 pass
 
