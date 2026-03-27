@@ -22,20 +22,20 @@ from engine.logic.comment_loader import load_random_comment
 # =========================
 
 MAX_POSTS = 5
-TEST_USERNAME = "mahimamahajanofficial"
+TEST_USERNAME = "iamsonalbhardwaj"
 POST_URLS = [
-    "https://www.instagram.com/reel/DWLJX9IjwRy/",
-    "https://www.instagram.com/reel/DWJi6wrj7nW/",
-    "https://www.instagram.com/reel/DWJLp58j-ZT/",
-    "https://www.instagram.com/reel/DWGJOk6jyNp/",
-    "https://www.instagram.com/reel/DWGEGBwjzJL/",
-    "https://www.instagram.com/reel/DWD0bp9D6FM/",
-    "https://www.instagram.com/reel/DWBzmp5jzxp/",
-    "https://www.instagram.com/reel/DWBWfUAj0tH/",
-    "https://www.instagram.com/reel/DV_cLOvD36s/",
-    "https://www.instagram.com/reel/DV-moOCj5Wi/",
-    "https://www.instagram.com/reel/DV8pNS_jzaf/",
-    "https://www.instagram.com/reel/DV6WPXHj0Hk/",
+    "https://www.instagram.com/reel/C2KQLNHJ1FY/",
+    "https://www.instagram.com/reel/DLPlTqpTQjF/",
+    "https://www.instagram.com/reel/DQrHLn6E0r3/",
+    "https://www.instagram.com/reel/DWRFUEZE_lq/",
+    "https://www.instagram.com/reel/DWOWsC2E898/",
+    "https://www.instagram.com/reel/DWGw9x4kxut/",
+    "https://www.instagram.com/reel/DV8cpCqE_Xz/",
+    "https://www.instagram.com/reel/DV0txW_CNAJ/",
+    "https://www.instagram.com/reel/DVvjvjRE0DS/",
+    "https://www.instagram.com/reel/DVqaweakwvX/",
+    "https://www.instagram.com/reel/DVgG6leE59Z/",
+    "https://www.instagram.com/reel/DVYZWTJE02Y/",
 ]
 
 # =========================
@@ -44,8 +44,8 @@ POST_URLS = [
 #PROFILE_ACTIONS = ["story","follow","message"]
 #POST_ACTIONS = ["like","comment","gif_comment","save","share","repost","interested"]
 
-PROFILE_ACTIONS = []
-POST_ACTIONS = []
+PROFILE_ACTIONS = ["story", "follow", "message"]
+POST_ACTIONS = ["like", "comment", "gif_comment", "save", "share", "repost", "interested"]
 
 # =========================
 # LOGGER
