@@ -26,7 +26,7 @@ def reel_comment_loop(device_id, total_reels=5):
         # -------------------------
         # 2️⃣ Watch (important for realism)
         # -------------------------
-        watch_time = random.uniform(1, 10)
+        watch_time = random.uniform(1, 30)
         time.sleep(watch_time)
 
         # -------------------------

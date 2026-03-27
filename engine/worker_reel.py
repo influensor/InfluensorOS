@@ -15,7 +15,7 @@ def worker_reel(device_id):
             # run loop
             reel_comment_loop(
                 device_id,
-                total_reels=random.randint(10, 25)
+                total_reels=random.randint(1, 25)
             )
 
             # cooldown between cycles

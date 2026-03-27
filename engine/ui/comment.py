@@ -122,20 +122,18 @@ def post_comment(device_id, text, retries=2):
                 warn(f"⚠ send_keys failed: {e}", device_id)
                 swipe_down(device_id)
                 continue
-
-            # Optional verification
-            try:
-                current_text = input_box.get_text()
-                if not current_text or text[:5] not in current_text:
-                    warn("⚠ Text not properly entered", device_id)
-            except Exception:
-                pass
-            
             
             # -------------------------
             # 5️⃣ Send comment (FIXED)
             # -------------------------
             send_btn = None
+            
+            # Hide keyboard so Post button becomes visible
+            try:
+                d.press("back")
+                time.sleep(0.8)
+            except Exception:
+                pass
 
             for _ in range(3):  # retry loop
                 send_btn = _find_ui(d, SEND_BUTTON_SELECTORS, timeout=2)
@@ -146,7 +144,7 @@ def post_comment(device_id, text, retries=2):
             if send_btn:
                 try:
                     send_btn.click()
-                    time.sleep(random.uniform(0.5, 1.5))
+                    time.sleep(random.uniform(1, 2))
                     info("✅ Comment Posted", device_id)
                     # -------------------------
                     # 6️⃣ Close comment sheet
@@ -161,17 +159,6 @@ def post_comment(device_id, text, retries=2):
 
                 except Exception as e:
                     warn(f"⚠ Send click failed: {e}", device_id)
-
-            # -------------------------
-            # 🔥 FALLBACK (ICON CLICK)
-            # -------------------------
-            warn("⚠ Send button not found → fallback tap", device_id)
-
-            w, h = d.window_size()
-            d.click(int(w * 0.92), int(h * 0.92))
-            time.sleep(0.5)
-
-            info("✅ Comment Posted (fallback)", device_id)
 
             try:
                 swipe_down(device_id)

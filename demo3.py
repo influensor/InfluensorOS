@@ -44,8 +44,8 @@ POST_URLS = [
 #PROFILE_ACTIONS = ["story","follow","message"]
 #POST_ACTIONS = ["like","comment","gif_comment","save","share","repost","interested"]
 
-PROFILE_ACTIONS = ["story", "follow", "message"]
-POST_ACTIONS = ["like", "comment", "gif_comment", "save", "share", "repost", "interested"]
+PROFILE_ACTIONS = []
+POST_ACTIONS = []
 
 # =========================
 # LOGGER
