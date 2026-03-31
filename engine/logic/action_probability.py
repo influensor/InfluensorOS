@@ -6,13 +6,13 @@ import random
 
 DEMO_PROBABILITY = {
     "like": 100,
-    "comment": 35,
-    "gif_comment": 5,
-    "repost": 45,
+    "comment": 60,
+    "gif_comment": 25,
+    "repost": 60,
     "share": 100,
-    "save": 55,
+    "save": 60,
     "interested": 100,
-    "add_to_story": 40,
+    "add_to_story": 60,
 }
 
 PAID_PROBABILITY = {
