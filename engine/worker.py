@@ -237,7 +237,7 @@ def device_worker(device_id):
     account_switch_count = 0
 
     info(
-        f"Account switch cap for this cycle: {max_account_switches}",
+        f"Account Switch Cap for This Cycle: {max_account_switches}",
         device_id
     )
 
@@ -268,7 +268,7 @@ def device_worker(device_id):
                 "active_account": active_account,
             })
 
-        info(f"Using account: {active_account}", device_id)
+        info(f"Using Account: {active_account}", device_id)
 
         open_profile_by_username(device_id, active_account, customer)
         story_view_like(device_id)
@@ -327,7 +327,7 @@ def device_worker(device_id):
     clear_checkpoint(device_id)
 
     info(
-        f"Cycle completed for customer {customer['customer_id']}",
+        f"Cycle Completed for Customer {customer['customer_id']}",
         device_id
     )
 
