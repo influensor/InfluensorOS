@@ -51,7 +51,7 @@ def story_view_like(device_id, retries=1):
             avatar = _find_ui(d, STORY_AVATAR_SELECTORS, timeout=3)
 
             if not avatar:
-                warn("⚠ Story avatar not found", device_id)
+                warn("⚠ Story Avatar Not Found", device_id)
                 time.sleep(1)
                 continue
 
@@ -74,34 +74,41 @@ def story_view_like(device_id, retries=1):
                 view_time = random.randint(STORY_VIEW_MIN, STORY_VIEW_MAX)
                 time.sleep(view_time)
 
-                # ❤️ Random like
+                # ❤️ Random like (only if NOT already liked)
                 if random.random() < LIKE_PROBABILITY:
-                    like_btn.click()
-                    info("❤️ Liked story", device_id)
-                    time.sleep(0.1)
+                    try:
+                        info_obj = like_btn.info
+                        desc = (info_obj.get("contentDescription") or "").lower()
+
+                        if "liked" not in desc:
+                            like_btn.click()
+                            info("❤️ Liked Story", device_id)
+                            time.sleep(0.1)
+                        else:
+                            info("⚠ Story Already Liked → Skipping", device_id)
+
+                    except Exception:
+                        # fallback (keep original behavior safe)
+                        like_btn.click()
+                        info("❤️ Liked Story (fallback)", device_id)
+                        time.sleep(0.1)
 
                 # 👉 Next story (tap right side)
                 d.click(int(w * 0.99), int(h * 0.25))
-                time.sleep(0.5)
+                time.sleep(0.1)
 
                 stories_viewed += 1
 
-            # -------------------------
-            # 3️⃣ Exit stories
-            # -------------------------
-            #d.press("back")
-            #time.sleep(1)
-
-            info(f"✅ Story View Like done ({stories_viewed} stories)", device_id)
+            info(f"✅ Story View Like Done ({stories_viewed} Stories)", device_id)
             return True
 
         except Exception as e:
-            warn(f"⚠ Story View Like error: {e}", device_id)
+            warn(f"⚠ Story View Like Error: {e}", device_id)
             try:
                 d.press("back")
             except Exception:
                 pass
             time.sleep(1)
 
-    error("❌ Story View Like failed after retries", device_id)
+    error("❌ Story View Like Failed After Retries", device_id)
     return False
