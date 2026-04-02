@@ -93,12 +93,12 @@ def open_post_by_url(device_id, post_url, username, retries=5):
 
         if d(resourceId=REEL_AUTHOR_ID).exists(timeout=3):
             author = d(resourceId=REEL_AUTHOR_ID).get_text().strip().lower()
-            collab = [u.strip() for u in author.replace("and", ",").split(",") if u.strip()]
+            primary_author = author.split("and")[0].strip()
 
-            if target in author or target in collab:
+            if target in author or target == primary_author:
                 return True
 
-            warn(f"Wrong profile loaded: {collab}", device_id)
+            warn(f"Wrong Profile: {primary_author}, Expected: {target}", device_id)
 
         time.sleep(1)
 

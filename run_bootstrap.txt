@@ -3,7 +3,12 @@ python -c "from engine.bootstrap import start; start()"
 
 
 Device Worker
-python -c "from engine.worker import device_worker; device_worker('ZA222TB6ZX')"
+python -c "from engine.worker import device_worker; device_worker('ZA222TPGMK')"
+python -c "from engine.worker import device_worker; device_worker('ZA222TPKX2')"
+python -c "from engine.worker import device_worker; device_worker('ZA222TPTVT')"
+python -c "from engine.worker import device_worker; device_worker('ZA222TQ4P7')"
+python -c "from engine.worker import device_worker; device_worker('ZA222TQFRW')"
+python -c "from engine.worker import device_worker; device_worker('ZA222TR7GL')"
 
 
 python -m engine.bootstrap_reel
