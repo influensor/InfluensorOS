@@ -45,7 +45,7 @@ def ui_open_profile_by_username(device_id, username, retries=1):
     url = f"https://www.instagram.com/{username}/"
 
     for attempt in range(1, retries + 1):
-        info(f"Opening profile @{username} (attempt {attempt})", device_id)
+        info(f"Opening Profile @{username} (attempt {attempt})", device_id)
 
         subprocess.run([
             "adb", "-s", device_id,
@@ -63,11 +63,11 @@ def ui_open_profile_by_username(device_id, username, retries=1):
             if ui_username == username.lower():
                 return True
             else:
-                warn(f"Wrong profile loaded: {ui_username}", device_id)
+                warn(f"Wrong Profile Loaded: {ui_username}", device_id)
 
         time.sleep(1)
 
-    error(f"Failed to open profile @{username}", device_id)
+    error(f"Failed to Open Profile @{username}", device_id)
     return False
 
 
@@ -79,7 +79,7 @@ def open_post_by_url(device_id, post_url, username, retries=5):
     target = username.lower() if username else None
 
     for attempt in range(1, retries + 1):
-        info(f"Opening post (attempt {attempt})", device_id)
+        info(f"Opening Post (attempt {attempt})", device_id)
 
         subprocess.run(
             ["adb", "-s", device_id, "shell", "am", "start",
@@ -102,5 +102,5 @@ def open_post_by_url(device_id, post_url, username, retries=5):
 
         time.sleep(1)
 
-    error("Failed to open post", device_id)
+    error("Failed to Open Post", device_id)
     return False
