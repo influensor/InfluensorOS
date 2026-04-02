@@ -1,0 +1,1 @@
+﻿Run, cmd.exe /k title InfluensorOS by Black Aqua India && cd /d "C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS" && InfluensorOS.py

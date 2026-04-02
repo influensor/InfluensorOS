@@ -1,1 +1,4 @@
-from engine.bootstrap import start; start()
+from engine.bootstrap import start
+
+if __name__ == "__main__":
+    start()
