@@ -104,11 +104,6 @@ def story_view_like(device_id, retries=1):
 
         except Exception as e:
             warn(f"⚠ Story View Like Error: {e}", device_id)
-            try:
-                d.press("back")
-            except Exception:
-                pass
             time.sleep(1)
-
     error("❌ Story View Like Failed After Retries", device_id)
     return False
