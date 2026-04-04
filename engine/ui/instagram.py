@@ -2,9 +2,7 @@ import time
 import subprocess
 import uiautomator2 as u2
 from engine.ui.device import get_device
-
 from engine.logger import info, warn, error
-
 
 INSTAGRAM_PKG = "com.instagram.android"
 INSTAGRAM_HOME_TAB = "com.instagram.android:id/tab_avatar"
@@ -23,7 +21,7 @@ def open_instagram(device_id, retries=5):
             d.app_stop(INSTAGRAM_PKG)
             time.sleep(1)
             d.app_start(INSTAGRAM_PKG)
-            time.sleep(5)
+            time.sleep(1)
 
             if d(resourceId=INSTAGRAM_HOME_TAB).exists(timeout=3):
                 return True

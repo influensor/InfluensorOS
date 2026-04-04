@@ -162,6 +162,7 @@ def device_worker(device_id):
     post = None
 
     while True:
+        open_instagram(device_id)
         if state.get("customer_id"):
             customer = next(
                 (c for c in eligible if c["customer_id"] == state["customer_id"]),
