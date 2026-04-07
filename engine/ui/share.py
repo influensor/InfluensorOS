@@ -75,7 +75,7 @@ def _expand_share_sheet(device_id):
 # =========================
 
 def _select_random_users(d, device_id):
-    users = _find_ui(d, USER_SELECTORS, multiple=True)[:15]
+    users = _find_ui(d, USER_SELECTORS, multiple=True)[:12]
     if not users:
         warn("⚠ No Users Found in Share Sheet", device_id)
         return 0
