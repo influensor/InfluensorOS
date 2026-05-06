@@ -101,12 +101,7 @@ def post_comment(device_id, text, retries=2):
                 continue
 
             time.sleep(random.uniform(0.5, 1.5))
-
-            if not input_box.exists:
-                warn("⚠ Input lost after focus", device_id)
-                swipe_down(device_id)
-                continue
-
+            
             # -------------------------
             # 4️⃣ Type comment
             # -------------------------
@@ -128,12 +123,12 @@ def post_comment(device_id, text, retries=2):
             # -------------------------
             send_btn = None
             
-            # Hide keyboard so Post button becomes visible
-            try:
-                d.press("back")
-                time.sleep(0.8)
-            except Exception:
-                pass
+#            # Hide keyboard so Post button becomes visible
+#            try:
+#                d.press("back")
+#                time.sleep(0.8)
+#            except Exception:
+#                pass
 
             for _ in range(3):  # retry loop
                 send_btn = _find_ui(d, SEND_BUTTON_SELECTORS, timeout=2)
