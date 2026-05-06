@@ -280,7 +280,6 @@ def device_worker(device_id):
 
         if already_liked:
             view_post(device_id, 1, random.randint(10, 90))
-            comment_post(device_id, active_account, customer)
         else:
             actions = build_actions(customer)
 

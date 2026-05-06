@@ -17,7 +17,7 @@ DEMO_PROBABILITY = {
 
 PAID_PROBABILITY = {
     "like": 100,
-    "comment": 100,
+    "comment": 50,
     "gif_comment": 5,
     "repost": 45,
     "share": 100,
