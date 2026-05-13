@@ -5,12 +5,12 @@ usernames = [
     "_immanzar_",
     "diyasingh_dynameets",
     "eternalbright.in",
-    "aanmolsharma__",
     "thedevpurush",
+    "gauravkotharii",
 ]
 
 monitor = PostMonitor(headless=True)
-results = monitor.check_multiple(usernames, limit=6)
+results = monitor.check_multiple(usernames, limit=8)
 monitor.close()
 for username, posts in results.items():
     if posts:
