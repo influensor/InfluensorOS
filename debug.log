@@ -204,3 +204,131 @@ Subsequent non-fatal errors won't be logged; see https://fburl.com/debugjs. [obj
 
 Subsequent non-fatal errors won't be logged; see https://fburl.com/debugjs. [object Object]", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (79)
 [0515/112230.731:ERROR:net\disk_cache\simple\simple_index_file.cc:331] Failed to write the temporary index file
+[0517/232612.217:ERROR:content\browser\network_sandbox.cc:385] Failed to grant sandbox access to cache directory C:\Users\003\Desktop\insta_profile\Default\Cache\Cache_Data: Access is denied. (0x5)
+[0517/232612.224:ERROR:content\browser\network_sandbox.cc:318] Failed to grant sandbox access to NoVarySearch directory C:\Users\003\Desktop\insta_profile\Default\Cache\No_Vary_Search: Access is denied. (0x5)
+[0517/232612.226:ERROR:content\browser\network_sandbox.cc:318] Failed to grant sandbox access to SharedDictionary directory C:\Users\003\Desktop\insta_profile\Default\Shared Dictionary: Access is denied. (0x5)
+[0517/232612.229:ERROR:content\browser\network_sandbox.cc:490] Failed to grant sandbox access to network context data directory C:\Users\003\Desktop\insta_profile\Default\Network: Access is denied. (0x5)
+[0517/232612.257:ERROR:content\browser\network_service_instance_impl.cc:243] Encountered error while migrating network context data or granting sandbox access for C:\Users\003\Desktop\insta_profile\Default\Network. Result: 11: The operation completed successfully. (0x0)
+[0517/232612.257:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Access is denied. (0x5)
+[0517/232612.258:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Access is denied. (0x5)
+[0517/232612.258:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Access is denied. (0x5)
+[0517/232612.259:ERROR:net\disk_cache\disk_cache.cc:272] Unable to create cache
+[0517/232612.259:ERROR:gpu\ipc\host\gpu_disk_cache.cc:725] Gpu Cache Creation failed: -2
+[0517/232612.259:ERROR:net\disk_cache\disk_cache.cc:272] Unable to create cache
+[0517/232612.260:ERROR:gpu\ipc\host\gpu_disk_cache.cc:725] Gpu Cache Creation failed: -2
+[0517/232612.260:ERROR:net\disk_cache\disk_cache.cc:272] Unable to create cache
+[0517/232612.260:ERROR:gpu\ipc\host\gpu_disk_cache.cc:725] Gpu Cache Creation failed: -2
+[0517/232612.541:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Access is denied. (0x5)
+[0517/232612.541:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Access is denied. (0x5)
+[0517/232612.541:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Access is denied. (0x5)
+[0517/232612.542:ERROR:net\disk_cache\disk_cache.cc:272] Unable to create cache
+[0517/232612.542:ERROR:gpu\ipc\host\gpu_disk_cache.cc:725] Gpu Cache Creation failed: -2
+[0517/232612.542:ERROR:net\disk_cache\disk_cache.cc:272] Unable to create cache
+[0517/232612.542:ERROR:gpu\ipc\host\gpu_disk_cache.cc:725] Gpu Cache Creation failed: -2
+[0517/232612.542:ERROR:net\disk_cache\disk_cache.cc:272] Unable to create cache
+[0517/232612.542:ERROR:gpu\ipc\host\gpu_disk_cache.cc:725] Gpu Cache Creation failed: -2
+[0517/232614.243:WARNING:components\leveldb_proto\internal\leveldb_database.cc:124] Unable to open C:\Users\003\Desktop\insta_profile\Default\PersistentOriginTrials: IO error: C:\Users\003\Desktop\insta_profile\Default\PersistentOriginTrials/LOCK: Access denied. (ChromeMethodBFE: 15::LockFile::5)
+[0517/232615.254:ERROR:components\services\storage\service_worker\service_worker_storage.cc:1808] Failed to delete the database: Database IO error
+[0517/232616.268:WARNING:components\leveldb_proto\internal\leveldb_database.cc:124] Unable to open C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata: IO error: C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata/LOCK: Access denied. (ChromeMethodBFE: 15::LockFile::5)
+[0517/232618.275:WARNING:components\leveldb_proto\internal\leveldb_database.cc:124] Unable to open C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata: IO error: C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata/LOCK: Access denied. (ChromeMethodBFE: 15::LockFile::5)
+[0517/232620.303:WARNING:components\leveldb_proto\internal\leveldb_database.cc:124] Unable to open C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata: IO error: C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata/LOCK: Access denied. (ChromeMethodBFE: 15::LockFile::5)
+[0517/232622.331:WARNING:components\leveldb_proto\internal\leveldb_database.cc:124] Unable to open C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata: IO error: C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata/LOCK: Access denied. (ChromeMethodBFE: 15::LockFile::5)
+[0517/232628.189:ERROR:storage\browser\quota\quota_database.cc:988] Could not open the quota database, resetting.
+[0517/232629.069:INFO:CONSOLE:244] "
+%cStop! font-family:helvetica; font-size:20px; font-size:50px; font-weight:bold; color:red; -webkit-text-stroke:1px black;", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232629.070:INFO:CONSOLE:244] "
+%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to enable an Instagram feature or "hack" someone's account, it is a scam and will give them access to your Instagram account. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232629.070:INFO:CONSOLE:244] "
+%cSee https://www.facebook.com/selfxss for more information. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232629.070:INFO:CONSOLE:244] "
+%c ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232631.069:ERROR:storage\browser\quota\quota_database.cc:988] Could not open the quota database, resetting.
+[0517/232634.030:ERROR:storage\browser\quota\quota_database.cc:993] Failed to reset the quota database.
+[0517/232634.030:ERROR:storage\browser\quota\quota_database.cc:993] Failed to reset the quota database.
+[0517/232634.485:INFO:CONSOLE:244] "
+%cStop! font-family:helvetica; font-size:20px; font-size:50px; font-weight:bold; color:red; -webkit-text-stroke:1px black;", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232634.486:INFO:CONSOLE:244] "
+%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to enable an Instagram feature or "hack" someone's account, it is a scam and will give them access to your Instagram account. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232634.486:INFO:CONSOLE:244] "
+%cSee https://www.facebook.com/selfxss for more information. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232634.486:INFO:CONSOLE:244] "
+%c ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232646.905:INFO:CONSOLE:244] "
+%cStop! font-family:helvetica; font-size:20px; font-size:50px; font-weight:bold; color:red; -webkit-text-stroke:1px black;", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232646.905:INFO:CONSOLE:244] "
+%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to enable an Instagram feature or "hack" someone's account, it is a scam and will give them access to your Instagram account. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232646.905:INFO:CONSOLE:244] "
+%cSee https://www.facebook.com/selfxss for more information. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232646.905:INFO:CONSOLE:244] "
+%c ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232657.924:INFO:CONSOLE:244] "
+%cStop! font-family:helvetica; font-size:20px; font-size:50px; font-weight:bold; color:red; -webkit-text-stroke:1px black;", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232657.924:INFO:CONSOLE:244] "
+%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to enable an Instagram feature or "hack" someone's account, it is a scam and will give them access to your Instagram account. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232657.924:INFO:CONSOLE:244] "
+%cSee https://www.facebook.com/selfxss for more information. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232657.924:INFO:CONSOLE:244] "
+%c ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232708.121:INFO:CONSOLE:244] "
+%cStop! font-family:helvetica; font-size:20px; font-size:50px; font-weight:bold; color:red; -webkit-text-stroke:1px black;", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232708.121:INFO:CONSOLE:244] "
+%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to enable an Instagram feature or "hack" someone's account, it is a scam and will give them access to your Instagram account. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232708.121:INFO:CONSOLE:244] "
+%cSee https://www.facebook.com/selfxss for more information. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232708.121:INFO:CONSOLE:244] "
+%c ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232717.872:INFO:CONSOLE:244] "
+%cStop! font-family:helvetica; font-size:20px; font-size:50px; font-weight:bold; color:red; -webkit-text-stroke:1px black;", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232717.874:INFO:CONSOLE:244] "
+%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to enable an Instagram feature or "hack" someone's account, it is a scam and will give them access to your Instagram account. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232717.874:INFO:CONSOLE:244] "
+%cSee https://www.facebook.com/selfxss for more information. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232717.874:INFO:CONSOLE:244] "
+%c ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232729.138:INFO:CONSOLE:244] "
+%cStop! font-family:helvetica; font-size:20px; font-size:50px; font-weight:bold; color:red; -webkit-text-stroke:1px black;", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232729.138:INFO:CONSOLE:244] "
+%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to enable an Instagram feature or "hack" someone's account, it is a scam and will give them access to your Instagram account. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232729.138:INFO:CONSOLE:244] "
+%cSee https://www.facebook.com/selfxss for more information. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232729.138:INFO:CONSOLE:244] "
+%c ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232738.748:ERROR:net\disk_cache\simple\simple_index_file.cc:331] Failed to write the temporary index file
+[0517/232817.030:ERROR:content\browser\network_sandbox.cc:385] Failed to grant sandbox access to cache directory C:\Users\003\Desktop\insta_profile\Default\Cache\Cache_Data: Access is denied. (0x5)
+[0517/232817.031:ERROR:content\browser\network_sandbox.cc:318] Failed to grant sandbox access to NoVarySearch directory C:\Users\003\Desktop\insta_profile\Default\Cache\No_Vary_Search: Access is denied. (0x5)
+[0517/232817.031:ERROR:content\browser\network_sandbox.cc:318] Failed to grant sandbox access to SharedDictionary directory C:\Users\003\Desktop\insta_profile\Default\Shared Dictionary: Access is denied. (0x5)
+[0517/232817.032:ERROR:content\browser\network_sandbox.cc:490] Failed to grant sandbox access to network context data directory C:\Users\003\Desktop\insta_profile\Default\Network: Access is denied. (0x5)
+[0517/232817.057:ERROR:content\browser\network_service_instance_impl.cc:243] Encountered error while migrating network context data or granting sandbox access for C:\Users\003\Desktop\insta_profile\Default\Network. Result: 11: The operation completed successfully. (0x0)
+[0517/232817.058:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Access is denied. (0x5)
+[0517/232817.058:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Access is denied. (0x5)
+[0517/232817.058:ERROR:net\disk_cache\cache_util_win.cc:25] Unable to move the cache: Access is denied. (0x5)
+[0517/232817.058:ERROR:net\disk_cache\disk_cache.cc:272] Unable to create cache
+[0517/232817.058:ERROR:gpu\ipc\host\gpu_disk_cache.cc:725] Gpu Cache Creation failed: -2
+[0517/232817.058:ERROR:net\disk_cache\disk_cache.cc:272] Unable to create cache
+[0517/232817.058:ERROR:gpu\ipc\host\gpu_disk_cache.cc:725] Gpu Cache Creation failed: -2
+[0517/232817.058:ERROR:net\disk_cache\disk_cache.cc:272] Unable to create cache
+[0517/232817.059:ERROR:gpu\ipc\host\gpu_disk_cache.cc:725] Gpu Cache Creation failed: -2
+[0517/232819.061:WARNING:components\leveldb_proto\internal\leveldb_database.cc:124] Unable to open C:\Users\003\Desktop\insta_profile\Default\PersistentOriginTrials: IO error: C:\Users\003\Desktop\insta_profile\Default\PersistentOriginTrials/LOCK: Access denied. (ChromeMethodBFE: 15::LockFile::5)
+[0517/232820.074:ERROR:components\services\storage\service_worker\service_worker_storage.cc:1808] Failed to delete the database: Database IO error
+[0517/232821.075:WARNING:components\leveldb_proto\internal\leveldb_database.cc:124] Unable to open C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata: IO error: C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata/LOCK: Access denied. (ChromeMethodBFE: 15::LockFile::5)
+[0517/232823.097:WARNING:components\leveldb_proto\internal\leveldb_database.cc:124] Unable to open C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata: IO error: C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata/LOCK: Access denied. (ChromeMethodBFE: 15::LockFile::5)
+[0517/232825.112:WARNING:components\leveldb_proto\internal\leveldb_database.cc:124] Unable to open C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata: IO error: C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata/LOCK: Access denied. (ChromeMethodBFE: 15::LockFile::5)
+[0517/232825.480:ERROR:storage\browser\quota\quota_database.cc:988] Could not open the quota database, resetting.
+[0517/232825.770:INFO:CONSOLE:244] "
+%cStop! font-family:helvetica; font-size:20px; font-size:50px; font-weight:bold; color:red; -webkit-text-stroke:1px black;", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232825.771:INFO:CONSOLE:244] "
+%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to enable an Instagram feature or "hack" someone's account, it is a scam and will give them access to your Instagram account. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232825.771:INFO:CONSOLE:244] "
+%cSee https://www.facebook.com/selfxss for more information. font-family:helvetica; font-size:20px; ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232825.771:INFO:CONSOLE:244] "
+%c ", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (244)
+[0517/232827.134:WARNING:components\leveldb_proto\internal\leveldb_database.cc:124] Unable to open C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata: IO error: C:\Users\003\Desktop\insta_profile\Default\shared_proto_db\metadata/LOCK: Access denied. (ChromeMethodBFE: 15::LockFile::5)
+[0517/232827.743:INFO:CONSOLE:79] "ErrorUtils caught an error:
+
+ [Caught in: unexpected]
+
+Subsequent non-fatal errors won't be logged; see https://fburl.com/debugjs. [object Object]", source: https://static.cdninstagram.com/rsrc.php/v4/yI/r/A3PSxQB1RSd.js (79)
+[0517/232828.400:ERROR:storage\browser\quota\quota_database.cc:988] Could not open the quota database, resetting.
+[0517/232831.066:ERROR:net\disk_cache\simple\simple_index_file.cc:331] Failed to write the temporary index file
+[0517/232831.324:ERROR:storage\browser\quota\quota_database.cc:993] Failed to reset the quota database.
+[0517/232831.324:ERROR:storage\browser\quota\quota_database.cc:993] Failed to reset the quota database.
