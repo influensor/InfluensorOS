@@ -7,7 +7,7 @@ import random
 DEMO_PROBABILITY = {
     "like": 100,
     "comment": 60,
-    "gif_comment": 25,
+    "gif_comment": 10,
     "repost": 60,
     "share": 100,
     "save": 60,
@@ -18,10 +18,10 @@ DEMO_PROBABILITY = {
 PAID_PROBABILITY = {
     "like": 100,
     "comment": 50,
-    "gif_comment": 5,
-    "repost": 45,
+    "gif_comment": 10,
+    "repost": 50,
     "share": 100,
-    "save": 55,
+    "save": 50,
     "interested": 100,
     "add_to_story": 0,
 }

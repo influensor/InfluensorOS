@@ -8,6 +8,7 @@
     "like": true,
     "comment": true,
 	"gif_comment": true,
+	"repost": true,
     "save": true,
     "share": true,
 	"interested": true,
