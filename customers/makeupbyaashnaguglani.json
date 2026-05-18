@@ -6,6 +6,9 @@
 
   "plan": {
     "type": "single_post_per_day"
+	"start_date": "2026-05-14",
+	"expiry_date": "2026-06-14",
+	"posts_per_day": 1
   },
 
   "settings": {
