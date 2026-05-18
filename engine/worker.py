@@ -29,10 +29,7 @@ from engine.logic.device_status import get_expected_accounts
 from engine.logic.remote_config import get_config, kill_switch_active
 
 # 🔥 Phase-3 Rotation
-from engine.logic.customer_cycle import (
-    get_next_customer,
-    mark_customer_completed,
-)
+from engine.logic.customer_cycle import (get_next_customer,mark_customer_completed,)
 
 # =========================
 # UI
@@ -186,7 +183,7 @@ def device_worker(device_id):
 
     while True:
 
-        open_instagram(device_id)
+        #open_instagram(device_id)
 
         # -------------------------
         # Resume checkpoint
@@ -384,8 +381,8 @@ def device_worker(device_id):
     # =========================
     # ACCOUNT LOOP
     # =========================
+    open_instagram(device_id)
     while True:
-
         if account_switch_count >= max_account_switches:
 
             info(
