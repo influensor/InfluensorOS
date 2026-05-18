@@ -3,6 +3,10 @@
   "username": "aradhanasometimes",
 
   "type": "paid",
+  
+  "plan": {
+    "type": "single_post_per_day"
+  },
 
   "settings": {
     "like": true,

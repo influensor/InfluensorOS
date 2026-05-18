@@ -4,14 +4,18 @@
 
   "type": "paid",
 
+  "plan": {
+    "type": "single_post_per_day"
+  },
+
   "settings": {
     "like": true,
     "comment": true,
-	"gif_comment": true,
-	"repost": true,
+    "gif_comment": true,
+    "repost": true,
     "save": true,
     "share": true,
-	"interested": true,
+    "interested": true,
     "add_to_story": false,
     "randomize_action_sequence": true
   }

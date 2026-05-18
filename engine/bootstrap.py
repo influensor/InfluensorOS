@@ -11,7 +11,7 @@ from engine.logic.remote_config import kill_switch_active
 # =========================
 # BOOTSTRAP CONFIG
 # =========================
-BOOTSTRAP_REFRESH_SECONDS = 10
+BOOTSTRAP_REFRESH_SECONDS = 60
 
 
 def start_device_worker(device_id):
