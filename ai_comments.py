@@ -27,7 +27,7 @@ API_KEYS = [
     #"AIzaSyCOetdbLnaRHBHqt_e-iW_559irNVplU2Y", #riddhimakes@gmail.com
     #"AIzaSyDVb6PyfRNiNj0oskJn-r9AwA2kvtQRkiA", #harshdarajput.in@gmail.com
     #"AIzaSyAc-D4lZxBKB7ujl1UGE-0xgQMXLp1hUuU", #rutikaher.in@gmail.com
-    "AIzaSyDhlVpzpaoRbj3LVu8PfDGfPa8yP2n7RI8", #parmishgautam55@gmail.com
+    #"AIzaSyDhlVpzpaoRbj3LVu8PfDGfPa8yP2n7RI8", #parmishgautam55@gmail.com
     "AIzaSyBqbqaHB_Q-p7HgeAPxBbmMwbn8YDBaffs", #smrgadkari@gmail.com
     "AIzaSyCSnSXoWJXFO81pDUM6T414bzzLHuHa34U", #shivam.trixie@gmail.com
     "AIzaSyAqJHtmPaAF7WSmIL-8ivTfOhSh6sOZnDs", #jagrutipatil5.in@gmail.com

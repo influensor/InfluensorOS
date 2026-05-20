@@ -2,23 +2,22 @@ import time
 import random
 from engine.post_monitor.monitor_new import PostMonitor
 usernames = [
-    #"a4agharkar.in",
-    #"_immanzar_",
-    #"angelsmakeover.2005",
-    #"arvindyadav",
-    #"bholenath_jatt1811",
+    "_immanzar_",
+    "angelsmakeover.2005",
+    "arvindyadav",
+    "bholenath_jatt1811",
     "brijeshpatelfotographi",
     "choreographer_akash",
-    #"diyasingh_dynameets",
+    "diyasingh_dynameets",
     "dr_divyaprakashgavel",
-    #"eternalbright.in",
-    #"gauravkotharii",
-    #"iam.pushpindersingh",
-    #"ls_beautysalon_and_makeover",
-    #"makeupbyaashnaguglani",
-    #"syed_swaleh",
-    #"tanmaynagpal_",
-    #"thedevpurush",
+    "eternalbright.in",
+    "gauravkotharii",
+    "iam.pushpindersingh",
+    "ls_beautysalon_and_makeover",
+    "makeupbyaashnaguglani",
+    "syed_swaleh",
+    "tanmaynagpal_",
+    "thedevpurush",
 ]
 
 monitor = PostMonitor(headless=True)
