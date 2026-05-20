@@ -5,39 +5,24 @@ import json
 import time
 import re
 from google.genai import Client
+from dotenv import load_dotenv
 
 
 # =====================================================
 # CONFIG
 # =====================================================
 
+load_dotenv()
+raw_keys = os.getenv("GEMINI_API_KEYS","")
 API_KEYS = [
-    #"AIzaSyB_VO_s0Bmk_VDjUAKq2dT_SsutiOZiMf0", #blackaquaprojects
-    #"AIzaSyCMd-RU4nIVfYOr-ZOhTwwkOKpHATNRFDg", #yagharkar
-    #"AIzaSyDtbDZnr4iRK_58hXb24HlpEKGY8sSFCVw", #AbhijeetAgharkarOfficial
-    #"AIzaSyBAGrT8NdchW5eGr8ViQ9dgz8YjS3vGLyo", #dishapatil.ai
-    #"AIzaSyBlS5K_dzgU1sLT-9jR_-VLW6MZ-YeG2Rs", #influensoros
-    #"AIzaSyDMCNvA_LK9Cs7hXhAlJ0U3hgHldLARYBI", #blackaquapydroid
-    #"AIzaSyAU1JmFKwBzj8Irm2HxnJF_KdvImOvhdmg", #meowbhow.in
-    #"AIzaSyAyqMtm0f2JqKYTUuVjlo39QhgiSsDlyWA", #nashikonwheels
-    #"AIzaSyB9I3ITYFvfAoO4OO4E5sLiqHQjIbhoEks", #blackaquaindia
-    #"AIzaSyDvYRsxh7dnZn9n6FJsszs0ftqMQt83o-A", #mimyai.com
-    #"AIzaSyB7lx3bpkYcVZosntYb8c88cfbthMEFkkk", #jhaaminakshi@gmail.com
-    #"AIzaSyBoHP1DxC_wdJAPG3w_egGDGEvbdC9Qb_I", #utkharshax@gmail.com
-    #"AIzaSyCOetdbLnaRHBHqt_e-iW_559irNVplU2Y", #riddhimakes@gmail.com
-    #"AIzaSyDVb6PyfRNiNj0oskJn-r9AwA2kvtQRkiA", #harshdarajput.in@gmail.com
-    #"AIzaSyAc-D4lZxBKB7ujl1UGE-0xgQMXLp1hUuU", #rutikaher.in@gmail.com
-    #"AIzaSyDhlVpzpaoRbj3LVu8PfDGfPa8yP2n7RI8", #parmishgautam55@gmail.com
-    "AIzaSyBqbqaHB_Q-p7HgeAPxBbmMwbn8YDBaffs", #smrgadkari@gmail.com
-    "AIzaSyCSnSXoWJXFO81pDUM6T414bzzLHuHa34U", #shivam.trixie@gmail.com
-    "AIzaSyAqJHtmPaAF7WSmIL-8ivTfOhSh6sOZnDs", #jagrutipatil5.in@gmail.com
-    "AIzaSyA6pg2PEQdcjKMdltHYq_uj_MCwHiWlAto", #shahshekhar.89@gmail.com
+    line.strip()
+    for line in raw_keys.splitlines()
+    if line.strip()
+    and not line.strip().startswith("#")
 ]
 
 TOTAL_COMMENTS = 150
-
 MODEL_NAME = "models/gemini-2.5-flash"
-
 
 # =====================================================
 # INFLUENSOR OS PATHS
