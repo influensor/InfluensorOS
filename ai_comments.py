@@ -22,12 +22,12 @@ API_KEYS = [
     #"AIzaSyAyqMtm0f2JqKYTUuVjlo39QhgiSsDlyWA", #nashikonwheels
     #"AIzaSyB9I3ITYFvfAoO4OO4E5sLiqHQjIbhoEks", #blackaquaindia
     #"AIzaSyDvYRsxh7dnZn9n6FJsszs0ftqMQt83o-A", #mimyai.com
-    #"AIzaSyCmfERYjHZx3O158rwqW4fNORxwqMWVg9k", #jhaaminakshi@gmail.com
-    #"AIzaSyAkU9cU5gidoWN9UdrEiiw79JBbRraE4K8", #utkharshax@gmail.com
-    "AIzaSyD3h9K89XJcx53ZrwIJkd03shRsyahlHE0", #riddhimakes@gmail.com
+    #"AIzaSyB7lx3bpkYcVZosntYb8c88cfbthMEFkkk", #jhaaminakshi@gmail.com
+    #"AIzaSyBoHP1DxC_wdJAPG3w_egGDGEvbdC9Qb_I", #utkharshax@gmail.com
+    #"AIzaSyCOetdbLnaRHBHqt_e-iW_559irNVplU2Y", #riddhimakes@gmail.com
     #"AIzaSyDVb6PyfRNiNj0oskJn-r9AwA2kvtQRkiA", #harshdarajput.in@gmail.com
-    "AIzaSyD_v51dZoKYgOI1nrdWq7zwFr2Kz5flgCs", #rutikaher.in@gmail.com
-    "AIzaSyA_ZCvAC1N3VeSEHXSZ0D8R71S59BDTHZM", #parmishgautam55@gmail.com
+    "AIzaSyAc-D4lZxBKB7ujl1UGE-0xgQMXLp1hUuU", #rutikaher.in@gmail.com
+    "AIzaSyDhlVpzpaoRbj3LVu8PfDGfPa8yP2n7RI8", #parmishgautam55@gmail.com
 ]
 
 TOTAL_COMMENTS = 150
