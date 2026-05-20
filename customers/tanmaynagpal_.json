@@ -1,24 +1,24 @@
 {
-  "customer_id": "angelsmakeover.2005",
-  "username": "angelsmakeover.2005",
+  "customer_id": "tanmaynagpal_",
+  "username": "tanmaynagpal_",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-05-17",
-	"expiry_date": "2026-05-31",
+	"start_date": "2026-05-18",
+	"expiry_date": "2026-06-18",
 	"posts_per_day": 1
   },
 
   "settings": {
     "like": true,
     "comment": true,
-    "gif_comment": true,
-    "repost": true,
+	"gif_comment": true,
+	"repost": true,
     "save": true,
     "share": true,
-    "interested": true,
+	"interested": true,
     "add_to_story": false,
     "randomize_action_sequence": true
   }
