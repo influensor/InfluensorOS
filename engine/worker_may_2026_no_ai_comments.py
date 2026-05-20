@@ -72,14 +72,13 @@ def like_post(device_id, account):
     return ui_like_post(device_id)
 
 
-def comment_post(device_id,account,customer,post):
-    comment = load_random_comment(
-        customer_id=customer["customer_id"],
-        shortcode=post.get("shortcode")
-    )
+def comment_post(device_id, account, customer):
+    comment = load_random_comment(customer["customer_id"])
+
     if not comment:
         return False
-    return post_comment(device_id,comment)
+
+    return post_comment(device_id, comment)
 
 
 def gif_comment(device_id, account):
@@ -369,7 +368,7 @@ def device_worker(device_id):
     # =========================
     # ACCOUNT SWITCH LIMIT
     # =========================
-    max_account_switches = random.randint(3, 3)
+    max_account_switches = random.randint(10, 20)
 
     account_switch_count = 0
 
@@ -453,7 +452,7 @@ def device_worker(device_id):
             view_post(
                 device_id,
                 1,
-                random.randint(10, 10)
+                random.randint(10, 90)
             )
 
         # -------------------------
@@ -495,8 +494,7 @@ def device_worker(device_id):
                     comment_post(
                         device_id,
                         active_account,
-                        customer,
-                        post
+                        customer
                     )
                     if action == "comment"
                     else ACTION_EXECUTORS[action](
@@ -531,7 +529,7 @@ def device_worker(device_id):
 
             mark_post_delivered(
                 customer["customer_id"],
-                post["url"],
+                post,
                 device_id,
                 active_account,
                 expected_accounts=expected_accounts,

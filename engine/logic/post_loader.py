@@ -11,17 +11,25 @@ from engine.utils.file_utils import (
     atomic_json_write,
 )
 
+
 # ==================================================
 # DEVICE-SPECIFIC PLAN STATE
 # ==================================================
 
-def _plan_state_path(customer_id, device_id):
+def _plan_state_path(
+    customer_id,
+    device_id
+):
+
     folder = os.path.join(
         STATE_DEVICES_DIR,
         device_id,
     )
 
-    os.makedirs(folder, exist_ok=True)
+    os.makedirs(
+        folder,
+        exist_ok=True
+    )
 
     return os.path.join(
         folder,
@@ -29,9 +37,18 @@ def _plan_state_path(customer_id, device_id):
     )
 
 
-def _load_plan_state(customer_id, device_id):
+def _load_plan_state(
+    customer_id,
+    device_id
+):
+
     return safe_json_load(
-        _plan_state_path(customer_id, device_id),
+
+        _plan_state_path(
+            customer_id,
+            device_id
+        ),
+
         {
             "date": str(date.today()),
             "current_index": 0,
@@ -39,121 +56,232 @@ def _load_plan_state(customer_id, device_id):
     )
 
 
-def _save_plan_state(customer_id, device_id, state):
+def _save_plan_state(
+    customer_id,
+    device_id,
+    state
+):
+
     atomic_json_write(
-        _plan_state_path(customer_id, device_id),
+
+        _plan_state_path(
+            customer_id,
+            device_id
+        ),
+
         state
     )
 
 
 # ==================================================
-# MAIN POST LOADER
+# POSTS FILE
 # ==================================================
 
-def load_posts(customer, device_id=None):
+def _posts_file_path(customer_id):
 
-    customer_id = customer["customer_id"]
-
-    path = os.path.join(
+    return os.path.join(
         "data",
         "posts",
-        f"{customer_id}.txt"
+        f"{customer_id}.json"
+    )
+
+
+# ==================================================
+# LOAD POSTS
+# ==================================================
+
+def _load_posts(customer_id):
+
+    path = _posts_file_path(
+        customer_id
     )
 
     if not os.path.exists(path):
         return []
 
-    with open(path, "r", encoding="utf-8") as f:
-
-        all_posts = [
-            line.strip()
-            for line in f
-            if line.strip()
-        ]
-
-    if not all_posts:
-        return []
-
-    # ==================================================
-    # PLAN CONFIG
-    # ==================================================
-
-    plan = customer.get("plan", {})
-
-    plan_type = plan.get(
-        "type",
-        "multi_post_per_day"
+    data = safe_json_load(
+        path,
+        []
     )
 
-    # ==================================================
-    # SINGLE POST PER DAY
-    # ==================================================
+    if not isinstance(data, list):
+        return []
 
-    if plan_type == "single_post_per_day":
+    valid_posts = []
 
-        if not device_id:
-            return [all_posts[0]]
+    for post in data:
 
-        state = _load_plan_state(
-            customer_id,
-            device_id
-        )
+        if not isinstance(post, dict):
+            continue
 
-        # ------------------------------------------
-        # DAILY ROTATION
-        # ------------------------------------------
+        if not post.get("url"):
+            continue
 
-        if state["date"] != str(date.today()):
+        if not post.get("shortcode"):
+            continue
 
-            state["date"] = str(date.today())
+        valid_posts.append(post)
 
-            state["current_index"] += 1
+    return valid_posts
 
-        idx = state["current_index"]
 
-        if idx >= len(all_posts):
+# ==================================================
+# DELIVERY STATE
+# ==================================================
 
-            idx = 0
-            state["current_index"] = 0
+def _load_delivery_state(
+    customer_id,
+    device_id
+):
 
-        selected_post = all_posts[idx]
+    delivery_path = os.path.join(
+        DELIVERY_DIR,
+        device_id,
+        f"{customer_id}.json"
+    )
 
-        # ------------------------------------------
-        # DELIVERY CHECK
-        # ------------------------------------------
+    return safe_json_load(
+        delivery_path,
+        {"posts": {}}
+    )
 
-        delivery_path = os.path.join(
-            DELIVERY_DIR,
-            device_id,
-            f"{customer_id}.json"
-        )
 
-        delivery = safe_json_load(
-            delivery_path,
-            {"posts": {}}
-        )
+# ==================================================
+# GET DELIVERY RECORD
+# SUPPORTS:
+# - OLD URL KEYS
+# - NEW SHORTCODE KEYS
+# ==================================================
 
-        posts_state = delivery.get("posts", {})
+def _get_delivery_record(
+    posts_state,
+    post
+):
 
-        record = posts_state.get(selected_post)
+    shortcode = post.get(
+        "shortcode"
+    )
 
-        # ------------------------------------------
-        # TODAY'S POST ALREADY COMPLETED
-        # ------------------------------------------
+    url = post.get(
+        "url"
+    )
 
-        if record and record.get("completed"):
+    return (
 
-            _save_plan_state(
-                customer_id,
-                device_id,
-                state
+        posts_state.get(shortcode)
+
+        or
+
+        posts_state.get(url)
+
+        or
+
+        {}
+    )
+
+
+# ==================================================
+# CHECK COMPLETED
+# ==================================================
+
+def _is_completed(record):
+
+    return (
+
+        str(
+            record.get(
+                "completed",
+                False
             )
+        ).lower() == "true"
+    )
 
-            return []
 
-        # ------------------------------------------
-        # RETURN TODAY'S ASSIGNED POST
-        # ------------------------------------------
+# ==================================================
+# SINGLE POST LOADER
+# ==================================================
+
+def _single_post_per_day(
+
+    customer_id,
+    device_id,
+    posts
+):
+
+    if not device_id:
+        return [posts[0]]
+
+    state = _load_plan_state(
+        customer_id,
+        device_id
+    )
+
+    delivery = _load_delivery_state(
+        customer_id,
+        device_id
+    )
+
+    posts_state = delivery.get(
+        "posts",
+        {}
+    )
+
+    # ---------------------------------------------
+    # DAILY ROTATION
+    # ---------------------------------------------
+
+    if state["date"] != str(date.today()):
+
+        state["date"] = str(date.today())
+
+        state["current_index"] += 1
+
+    total_posts = len(posts)
+
+    start_idx = state.get(
+        "current_index",
+        0
+    )
+
+    # ---------------------------------------------
+    # FIND FIRST INCOMPLETE POST
+    # ---------------------------------------------
+
+    for offset in range(total_posts):
+
+        idx = (
+            start_idx + offset
+        ) % total_posts
+
+        selected_post = posts[idx]
+
+        record = _get_delivery_record(
+            posts_state,
+            selected_post
+        )
+
+        completed = _is_completed(
+            record
+        )
+
+        print(
+            f"[POST CHECK] "
+            f"{selected_post['shortcode']} "
+            f"completed={completed}"
+        )
+
+        # -----------------------------------------
+        # SKIP COMPLETED
+        # -----------------------------------------
+
+        if completed:
+            continue
+
+        # -----------------------------------------
+        # SAVE CURRENT INDEX
+        # -----------------------------------------
+
+        state["current_index"] = idx
 
         _save_plan_state(
             customer_id,
@@ -163,40 +291,164 @@ def load_posts(customer, device_id=None):
 
         return [selected_post]
 
-    # ==================================================
-    # MULTI POST PER DAY
-    # ==================================================
+    # ---------------------------------------------
+    # ALL POSTS COMPLETED
+    # ---------------------------------------------
+
+    return []
+
+
+# ==================================================
+# MULTI POST LOADER
+# ==================================================
+
+def _multi_post_per_day(
+
+    customer_id,
+    device_id,
+    posts
+):
 
     if not device_id:
-        return [all_posts[0]]
+        return [posts[0]]
+
+    # ---------------------------------------------
+    # LOAD STATE
+    # ---------------------------------------------
 
     state = _load_plan_state(
         customer_id,
         device_id
     )
 
-    idx = state.get("current_index", 0)
-
-    if idx >= len(all_posts):
-
-        idx = 0
-        state["current_index"] = 0
-
-    selected_post = all_posts[idx]
-
-    # ------------------------------------------
-    # ROTATE FOR NEXT CYCLE
-    # ------------------------------------------
-
-    state["current_index"] += 1
-
-    if state["current_index"] >= len(all_posts):
-        state["current_index"] = 0
-
-    _save_plan_state(
+    delivery = _load_delivery_state(
         customer_id,
-        device_id,
-        state
+        device_id
     )
 
-    return [selected_post]
+    posts_state = delivery.get(
+        "posts",
+        {}
+    )
+
+    start_idx = state.get(
+        "current_index",
+        0
+    )
+
+    total_posts = len(posts)
+
+    # ---------------------------------------------
+    # FIND FIRST INCOMPLETE POST
+    # ---------------------------------------------
+
+    for offset in range(total_posts):
+
+        idx = (
+            start_idx + offset
+        ) % total_posts
+
+        post = posts[idx]
+
+        record = _get_delivery_record(
+            posts_state,
+            post
+        )
+
+        completed = _is_completed(
+            record
+        )
+
+        print(
+            f"[POST CHECK] "
+            f"{post['shortcode']} "
+            f"completed={completed}"
+        )
+
+        # -----------------------------------------
+        # SKIP COMPLETED
+        # -----------------------------------------
+
+        if completed:
+            continue
+
+        # -----------------------------------------
+        # SAVE NEXT ROTATION INDEX
+        # -----------------------------------------
+
+        state["current_index"] = (
+            idx + 1
+        ) % total_posts
+
+        _save_plan_state(
+            customer_id,
+            device_id,
+            state
+        )
+
+        return [post]
+
+    # ---------------------------------------------
+    # ALL POSTS COMPLETED
+    # ---------------------------------------------
+
+    return []
+
+
+# ==================================================
+# MAIN POST LOADER
+# ==================================================
+
+def load_posts(
+    customer,
+    device_id=None
+):
+
+    customer_id = customer[
+        "customer_id"
+    ]
+
+    posts = _load_posts(
+        customer_id
+    )
+
+    if not posts:
+        return []
+
+    # ==================================================
+    # PLAN CONFIG
+    # ==================================================
+
+    plan = customer.get(
+        "plan",
+        {}
+    )
+
+    plan_type = plan.get(
+        "type",
+        "multi_post_per_day"
+    )
+
+    # ==================================================
+    # SINGLE POST PLAN
+    # ==================================================
+
+    if plan_type == "single_post_per_day":
+
+        return _single_post_per_day(
+
+            customer_id,
+            device_id,
+            posts
+        )
+
+    # ==================================================
+    # MULTI POST PLAN
+    # ==================================================
+
+    return _multi_post_per_day(
+
+        customer_id,
+        device_id,
+        posts
+    )

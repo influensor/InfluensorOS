@@ -72,132 +72,33 @@ def ui_open_profile_by_username(device_id, username, retries=1):
 # ==================================================
 # UI HELPER: OPEN POST / REEL
 # ==================================================
-# ==================================================
-# UI HELPER: OPEN POST / REEL
-# ==================================================
-def open_post_by_url(
-    device_id,
-    post,
-    username,
-    retries=5
-):
-
+def open_post_by_url(device_id, post_url, username, retries=5):
     d = get_device(device_id)
-
-    target = (
-        username.lower()
-        if username
-        else None
-    )
-
-    # ----------------------------------------------
-    # SUPPORT BOTH:
-    # string url
-    # dict post object
-    # ----------------------------------------------
-
-    if isinstance(post, dict):
-
-        post_url = post.get("url")
-
-    else:
-
-        post_url = post
-
-    if not post_url:
-
-        error(
-            "Invalid Post URL",
-            device_id
-        )
-
-        return False
-
-    # ----------------------------------------------
-    # OPEN POST
-    # ----------------------------------------------
+    target = username.lower() if username else None
 
     for attempt in range(1, retries + 1):
-
-        info(
-            f"Opening Post "
-            f"{post['shortcode']} "
-            f"(attempt {attempt})",
-            device_id
-        )
+        info(f"Opening Post (attempt {attempt})", device_id)
 
         subprocess.run(
-
-            [
-                "adb",
-                "-s",
-                device_id,
-
-                "shell",
-                "am",
-                "start",
-
-                "-a",
-                "android.intent.action.VIEW",
-
-                "-d",
-                post_url,
-
-                "-p",
-                INSTAGRAM_PKG
-            ],
-
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            ["adb", "-s", device_id, "shell", "am", "start",
+             "-a", "android.intent.action.VIEW", "-d", post_url, "-p", INSTAGRAM_PKG],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
 
         time.sleep(1)
-
-        # ------------------------------------------
-        # NO USERNAME VERIFY
-        # ------------------------------------------
-
         if not target:
             return True
 
-        # ------------------------------------------
-        # VERIFY AUTHOR
-        # ------------------------------------------
+        if d(resourceId=REEL_AUTHOR_ID).exists(timeout=3):
+            author = d(resourceId=REEL_AUTHOR_ID).get_text().strip().lower()
+            primary_author = author.split("and")[0].strip()
 
-        if d(
-            resourceId=REEL_AUTHOR_ID
-        ).exists(timeout=3):
-
-            author = d(
-                resourceId=REEL_AUTHOR_ID
-            ).get_text().strip().lower()
-
-            primary_author = (
-                author
-                .split("and")[0]
-                .strip()
-            )
-
-            if (
-                target in author
-                or target == primary_author
-            ):
+            if target in author or target == primary_author:
                 return True
 
-            warn(
-
-                f"Wrong Profile: "
-                f"{primary_author}, "
-                f"Expected: {target}",
-
-                device_id
-            )
+            warn(f"Wrong Profile: {primary_author}, Expected: {target}", device_id)
 
         time.sleep(1)
 
-    error(
-        "Failed to Open Post",
-        device_id
-    )
-
+    error("Failed to Open Post", device_id)
     return False
