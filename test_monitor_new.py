@@ -1,23 +1,24 @@
 import time
 import random
+import subprocess
 from engine.post_monitor.monitor_new import PostMonitor
 usernames = [
     "_immanzar_",
-    "angelsmakeover.2005",
-    "arvindyadav",
-    "bholenath_jatt1811",
-    "brijeshpatelfotographi",
-    "choreographer_akash",
-    "diyasingh_dynameets",
-    "dr_divyaprakashgavel",
-    "eternalbright.in",
-    "gauravkotharii",
-    "iam.pushpindersingh",
-    "ls_beautysalon_and_makeover",
-    "makeupbyaashnaguglani",
-    "syed_swaleh",
-    "tanmaynagpal_",
-    "thedevpurush",
+    #"angelsmakeover.2005",
+    #"arvindyadav",
+    #"bholenath_jatt1811",
+    #"brijeshpatelfotographi",
+    #"choreographer_akash",
+    #"diyasingh_dynameets",
+    #"dr_divyaprakashgavel",
+    #"eternalbright.in",
+    #"gauravkotharii",
+    #"iam.pushpindersingh",
+    #"ls_beautysalon_and_makeover",
+    #"makeupbyaashnaguglani",
+    #"syed_swaleh",
+    #"tanmaynagpal_",
+    #"thedevpurush",
 ]
 
 monitor = PostMonitor(headless=True)
@@ -31,4 +32,13 @@ for username, posts in results.items():
     else:
         print(f"No new posts for {username}")
 
-time.sleep(random.uniform(10, 60))
+time.sleep(random.uniform(1, 30))
+
+# =========================================
+# AI COMMENT GENERATION
+# =========================================
+try:
+    print("\n[AI] Starting ""comment generation...")
+    subprocess.run(["python","ai_comments.py"])
+except Exception as e:
+    print(f"[AI] generator failed: {e}")

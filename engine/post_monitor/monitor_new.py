@@ -556,7 +556,6 @@ class PostMonitor:
                 )
 
             except Exception as e:
-
                 print(
                     f"[ERROR] processing "
                     f"{username}: {e}"
