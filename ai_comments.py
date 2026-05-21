@@ -13,13 +13,14 @@ from dotenv import load_dotenv
 # =====================================================
 
 load_dotenv()
-raw_keys = os.getenv("GEMINI_API_KEYS","")
+raw_keys = os.getenv("GEMINI_API_KEYS", "")
 API_KEYS = [
     line.strip()
     for line in raw_keys.splitlines()
-    if line.strip()
-    and not line.strip().startswith("#")
+    if line.strip() and not line.strip().startswith("#")
 ]
+# Randomize order every run
+random.shuffle(API_KEYS)
 
 TOTAL_COMMENTS = 150
 MODEL_NAME = "models/gemini-2.5-flash"
