@@ -55,11 +55,27 @@ os.makedirs(
 # =====================================================
 
 COMMENT_DISTRIBUTION = {
-    "emoji_only_or_1word": 30,
-    "1_to_3_words": 30,
-    "1_to_5_words": 30,
-    "1_to_10_words": 30,
-    "generic_short_reactions": 30
+    "emoji_only": 15,
+    "single_word_reactions": 15,
+    "very_short_casual": 30,
+    "short_natural_reactions": 35,
+    "medium_human_reactions": 35,
+    "generic_short_reactions": 20,
+}
+
+DISTRIBUTION_GUIDE = {
+    "emoji_only":
+        "only emoji reactions",
+    "single_word_reactions":
+        "single word casual reactions",
+    "very_short_casual":
+        "very short casual comments with 1 to 3 words",
+    "short_natural_reactions":
+        "natural short comments with 3 to 6 words",
+    "medium_human_reactions":
+        "human realistic comments with 5 to 10 words",
+    "generic_short_reactions":
+        "generic natural Instagram reactions"
 }
 
 LANGUAGE_DISTRIBUTION = {
@@ -297,8 +313,8 @@ def create_comments(
 
     distribution_text = "\n".join([
 
-        f"- {count} comments for "
-        f"{name.replace('_', ' ')}"
+        f"- {count} comments should be "
+        f"{DISTRIBUTION_GUIDE[name]}"
 
         for name, count
         in COMMENT_DISTRIBUTION.items()
@@ -332,36 +348,55 @@ Comment Length Distribution:
 Language Distribution:
 {language_text}
 
-Rules:
-- Strictly create comments only in given languages
-- Comments must feel organic
-- Mix casual typing styles
-- Some comments can feel incomplete
+RULES:
+LANGUAGE & STYLE:
+- Strictly generate comments only in the given languages
+- Comments must feel organic and human
+- Mix casual typing styles naturally
+- Some comments can feel slightly incomplete
 - Some comments can use Indian slang
 - Avoid polished grammar
-- Exactly 1 emoji per comment
-- Emoji should match vibe
-- Avoid repeating emojis
 - Match tone: {niche['tone']}
 - Match energy: {niche['energy_level']}
-- No Comments Numbers at all
-- No hashtags
+
+EMOJI RULES:
+- Exactly 1 emoji per comment
+- Emoji must match the vibe of the comment
+- Avoid repeating emojis frequently
+- After the emoji, STOP the line completely
+- Do not continue the sentence after emoji
+
+FORMAT RULES:
+- Output ONLY comments
+- One line = one comment
+- One comment per line only
+- Start directly with the comment text
+- Never generate multiple comments in a single line
+
+STRICT OUTPUT RESTRICTIONS:
 - No numbering
+- No comment numbers
+- No bullets
 - No markdown
+- No quotes
+- No hashtags
 - No links
 - No @ mentions
 - No friend tagging
 - No share-to-friend comments
-- One line = one comment only
-- Never generate multiple comments in one line
+- Never prefix comments with:
+  - 1.
+  - 1)
+  - -
+  - *
+  - etc
+
+BEHAVIOR RESTRICTIONS:
 - Never explain comments
 - Never self-correct
 - Never say "oops"
 - Never generate variants
 - Never rewrite comments
-- Do not continue comments after emoji
-- After one emoji STOP the line
-- Output ONLY comments
 """
 
     return generate_with_rotation(
@@ -487,41 +522,104 @@ def clean_symbols(comment):
 # CLEAN COMMENTS
 # =====================================================
 
+# =====================================================
+# CLEAN COMMENTS
+# =====================================================
+
 def clean_comments(lines):
-
     cleaned = []
-
     blocked_words = [
         "descriptive",
         "engagement",
         "reaction",
         "comments",
         "category",
-        "oops",
+        "example",
+        "invalid",
+        "valid",
+        "rules",
+        "instruction",
     ]
-
     for line in lines:
-
+        # ---------------------------------
+        # BASIC CLEAN
+        # ---------------------------------
         line = line.strip()
-
         if not line:
             continue
-
+        # ---------------------------------
+        # REMOVE NUMBERING
+        # ---------------------------------
+        line = re.sub(
+            r"^\d+[\.\)\-\:]*\s*",
+            "",
+            line
+        )
+        # ---------------------------------
+        # REMOVE BULLETS
+        # ---------------------------------
+        line = re.sub(
+            r"^[-*•]+\s*",
+            "",
+            line
+        )
+        # ---------------------------------
+        # REMOVE MULTIPLE SPACES
+        # ---------------------------------
+        line = " ".join(
+            line.split()
+        )
+        if not line:
+            continue
         lower = line.lower()
-
+        # ---------------------------------
+        # BLOCK BAD SYSTEM TEXT
+        # ---------------------------------
         if any(
             word in lower
             for word in blocked_words
         ):
             continue
-
-        if line.startswith("#"):
+        # ---------------------------------
+        # REMOVE COMMENTS WITH #
+        # ---------------------------------
+        if "#" in line:
             continue
-
+        # ---------------------------------
+        # REMOVE MENTIONS
+        # ---------------------------------
+        if "@" in line:
+            continue
+        # ---------------------------------
+        # REMOVE URLS
+        # ---------------------------------
+        if (
+            "http" in lower
+            or "www." in lower
+        ):
+            continue
+        # ---------------------------------
+        # REMOVE EMPTY AFTER CLEAN
+        # ---------------------------------
+        if len(line) < 2:
+            continue
+        # ---------------------------------
+        # REMOVE AI EXPLANATION STYLE
+        # ---------------------------------
+        if line.endswith(":"):
+            continue
+        # ---------------------------------
+        # REMOVE MULTI-COMMENT LINES
+        # ---------------------------------
+        emoji_count = sum(
+            1
+            for ch in line
+            if ord(ch) > 10000
+        )
+        if emoji_count > 1:
+            continue
         cleaned.append(line)
-
     return cleaned
-
 
 # =====================================================
 # REMOVE SIMILAR
