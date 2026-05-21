@@ -20,6 +20,7 @@ usernames = [
     "syed_swaleh",
     "tanmaynagpal_",
     "thedevpurush",
+    "wander_bites_duo",
 ]
 
 monitor = PostMonitor(headless=True)

@@ -217,7 +217,7 @@ def get_latest_posts(
                 "0, document.body.scrollHeight)"
             )
 
-            page.wait_for_timeout(3000)
+            page.wait_for_timeout(5000)
 
         context.close()
 
@@ -229,7 +229,7 @@ def get_latest_posts(
 # =====================================================
 
 if __name__ == "__main__":
-    username = "aesthetic.viren"
+    username = "wander_bites_duo"
     posts = get_latest_posts(
         username,
         limit=36
