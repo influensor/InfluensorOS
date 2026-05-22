@@ -539,6 +539,9 @@ def clean_comments(lines):
         "valid",
         "rules",
         "instruction",
+        "hinglish",
+        "english",
+        "hindi",
     ]
     for line in lines:
         # ---------------------------------
