@@ -1,0 +1,25 @@
+{
+  "customer_id": "hussainraniwala_",
+  "username": "hussainraniwala_",
+
+  "type": "paid",
+
+  "plan": {
+    "type": "single_post_per_day",
+	"start_date": "2026-05-23",
+	"expiry_date": "2026-06-23",
+	"posts_per_day": 1
+  },
+
+  "settings": {
+    "like": true,
+    "comment": true,
+	"gif_comment": true,
+	"repost": true,
+    "save": true,
+    "share": true,
+	"interested": true,
+    "add_to_story": false,
+    "randomize_action_sequence": true
+  }
+}

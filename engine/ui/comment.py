@@ -77,7 +77,7 @@ def post_comment(device_id, text, retries=2):
                 continue
 
             comment_btn.click()
-            time.sleep(random.uniform(2.0, 3.0))
+            time.sleep(random.uniform(1.0, 1.0))
 
             # -------------------------
             # 2️⃣ Locate comment input
