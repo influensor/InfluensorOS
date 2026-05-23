@@ -32,7 +32,7 @@ class PostMonitor:
     def build_reel_path(self, shortcode):
         return f"https://www.instagram.com/reel/{shortcode}/"
 
-    def fetch_reel_paths(self, username, limit=10):
+    def fetch_reel_paths(self, username, limit=12):
         self.page.goto(
             f"https://www.instagram.com/{username}/",
             wait_until="domcontentloaded"
@@ -59,7 +59,7 @@ class PostMonitor:
 
         return reel_paths[:limit]
 
-    def check_user(self, username, limit=10):
+    def check_user(self, username, limit=12):
         latest_reels = self.fetch_reel_paths(username, limit)
         saved_reels = load_saved_posts(username)
 

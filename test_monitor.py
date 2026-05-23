@@ -13,7 +13,7 @@ usernames = [
 ]
 
 monitor = PostMonitor(headless=True)
-results = monitor.check_multiple(usernames, limit=8)
+results = monitor.check_multiple(usernames, limit=12)
 monitor.close()
 for username, posts in results.items():
     if posts:
