@@ -351,6 +351,7 @@ Language Distribution:
 RULES:
 LANGUAGE & STYLE:
 - Strictly generate comments only in the given languages
+- Strictly generate comments only based on caption, dont add any extra topics in it
 - Comments must feel organic and human
 - Mix casual typing styles naturally
 - Some comments can feel slightly incomplete
