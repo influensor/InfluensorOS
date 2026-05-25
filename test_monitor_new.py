@@ -17,6 +17,7 @@ usernames = [
     "gauravkotharii",
     "hussainraniwala_",
     "iam.pushpindersingh",
+    "ifbbprojyotigupta",
     "ls_beautysalon_and_makeover",
     "makeupbyaashnaguglani",
     "nasuschauhan",
