@@ -332,77 +332,36 @@ Comment Length Distribution:
 Language Distribution:
 {language_text}
 
-RULES:
-LANGUAGE & STYLE:
-- Strictly create comments only in the given languages
-- Comments must feel organic and human
-- Mix casual typing styles naturally
-- Some comments can feel slightly incomplete
+Rules:
+- Strictly create comments only in given languages
+- Comments must feel organic
+- Mix casual typing styles
+- Some comments can feel incomplete
 - Some comments can use Indian slang
 - Avoid polished grammar
+- Exactly 1 emoji per comment
+- Emoji should match vibe
+- Avoid repeating emojis
 - Match tone: {niche['tone']}
 - Match energy: {niche['energy_level']}
-
-COMMENT STYLE:
-- Some comments should be extremely short
-- Some comments should be single-word reactions
-- Some comments should feel emotional
-- Some comments should feel lazy typed
-- Some comments can contain repeated letters naturally
-- Some comments can feel spontaneous
-- Keep comments realistic like actual Instagram users
-
-EMOJI RULES:
-- Around 75% comments should contain emojis
-- Remaining comments should contain NO emojis
-- If emoji is used, use ONLY 1 emoji
-- Emoji should match the vibe naturally
-- Avoid repeating the same emojis frequently
-- Emoji should usually appear at the end
-- Add a single space before emoji
-- Examples:
-  this hard 🔥
-  clean edit 😭
-  you'd look amazing in this 💫
-- Some comments can be emoji only
-- Never force emojis in every comment
-
-STRICT OUTPUT RULES:
-- Output ONLY comments
-- One line = one comment only
-- One comment per line
-- Start directly with the comment text
-- Never generate multiple comments in one line
-
-FORBIDDEN CONTENT:
-- No numbering
-- No bullets
-- No markdown
-- No quotes
+- No Comments Numbers at all
 - No hashtags
+- No numbering
+- No markdown
 - No links
 - No @ mentions
 - No friend tagging
 - No share-to-friend comments
-- No promotional text
-- No CTA style comments
-
-NEVER PREFIX COMMENTS WITH:
-- 1.
-- 1)
-- -
-- *
-- etc
-
-BEHAVIOR RESTRICTIONS:
+- One line = one comment only
+- Never generate multiple comments in one line
 - Never explain comments
 - Never self-correct
 - Never say "oops"
 - Never generate variants
 - Never rewrite comments
-- Never describe categories
-- Never output instructions
-- Never output headings
+- Do not continue comments after emoji
+- After one emoji STOP the line
+- Output ONLY comments
 """
 
     return generate_with_rotation(
