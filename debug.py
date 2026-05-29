@@ -1,34 +1,31 @@
 import time
 import threading
 from datetime import datetime
-from engine.ui.instagram import (
-    open_instagram,
-    ui_open_profile_by_username,
-    open_post_by_url
-)
-from engine.ui.story_view_like import story_view_like
-from engine.ui.like import like_post
-from engine.ui.comment import post_comment
-from engine.ui.save import save_post
-from engine.ui.share import share_post
-from engine.ui.repost import repost_post
-from engine.ui.switch_account import switch_account
-from engine.ui.follow import follow_user
-from engine.ui.message import send_promotional_message
-from engine.ui.gif import post_gif_comment
-from engine.logic.comment_loader import load_random_comment
 from engine.ui.device import get_device
+from engine.ui.instagram import (open_instagram,ui_open_profile_by_username,open_post_by_url)
+from engine.ui.follow import follow_user
+from engine.ui.story_view_like import story_view_like
+from engine.ui.message import send_promotional_message
+from engine.ui.like import like_post
+from engine.logic.comment_loader import load_random_comment
+from engine.ui.comment import post_comment
+from engine.ui.gif import post_gif_comment
+from engine.ui.repost import repost_post
+from engine.ui.share import share_post
+from engine.ui.save import save_post
+from engine.ui.interested import mark_post_interested
+from engine.ui.switch_account import switch_account
 
 
 # =========================
 # 🔥 CONTROL PANEL
 # =========================
 
-#ACTIONS = ["open_instagram", "profile", "follow", "message", "story", "post", "like", "comment", "gif_comment", "save", "share", "repost", "switch"]
-ACTIONS = ["open_instagram", "profile"]
+ACTIONS = ["open_instagram", "profile", "follow", "story", "message", "post", "like", "comment", "gif_comment", "repost", "share", "save", "interested", "switch"]
+#ACTIONS = ["open_instagram", "profile"]
 
-TEST_USERNAME = "ilahabysanya"
-TEST_POST_URL = "https://www.instagram.com/reel/DQoEE3wAKL-/"
+TEST_USERNAME = "authenticallyadderall"
+TEST_POST_URL = {"url": "https://www.instagram.com/reel/DY4RxaSButo/","shortcode": "DY4RxaSButo"}
 
 # =========================
 # 📄 LOCAL DEBUG LOGGER
@@ -85,7 +82,7 @@ def debug_device(device_id):
         d = get_device(device_id)
 
         # -------------------------
-        # 1️⃣ Open Instagram
+        # Open Instagram
         # -------------------------
         if "open_instagram" in ACTIONS:
             if not run_step(
@@ -96,7 +93,7 @@ def debug_device(device_id):
                 return
 
         # -------------------------
-        # 2️⃣ Open Profile
+        # Open Profile
         # -------------------------
         if "profile" in ACTIONS:
             if not run_step(
@@ -105,11 +102,10 @@ def debug_device(device_id):
                 device_id
             ):
                 return
-
             time.sleep(2)  # 🔥 important for UI load
 
         # -------------------------
-        # 3️⃣ FOLLOW USER
+        # FOLLOW USER
         # -------------------------
         if "follow" in ACTIONS:
             run_step(
@@ -120,7 +116,18 @@ def debug_device(device_id):
             time.sleep(1)
 
         # -------------------------
-        # 4️⃣ SEND MESSAGE
+        # Story View Like
+        # -------------------------
+        if "story" in ACTIONS:
+            run_step(
+                "Story View Like",
+                lambda: story_view_like(device_id),
+                device_id
+            )
+            time.sleep(1)
+
+        # -------------------------
+        # SEND MESSAGE
         # -------------------------
         if "message" in ACTIONS:
             run_step(
@@ -131,17 +138,7 @@ def debug_device(device_id):
             time.sleep(1)
 
         # -------------------------
-        # 5️⃣ Story View Like
-        # -------------------------
-        if "story" in ACTIONS:
-            run_step(
-                "Story View Like",
-                lambda: story_view_like(device_id),
-                device_id
-            )
-
-        # -------------------------
-        # 6️⃣ Open Post/Reel
+        # Open Post/Reel
         # -------------------------
         if "post" in ACTIONS:
             if not run_step(
@@ -153,7 +150,7 @@ def debug_device(device_id):
             time.sleep(2)
 
         # -------------------------
-        # 7️⃣ Like
+        # Like
         # -------------------------
         if "like" in ACTIONS:
             run_step(
@@ -164,7 +161,7 @@ def debug_device(device_id):
             time.sleep(1)
 
         # -------------------------
-        # 8️⃣ TEXT COMMENT
+        # TEXT COMMENT
         # -------------------------
         if "comment" in ACTIONS:
             def comment_action():
@@ -180,7 +177,7 @@ def debug_device(device_id):
             time.sleep(1)
 
         # -------------------------
-        # 9️⃣ GIF COMMENT
+        # GIF COMMENT
         # -------------------------
         if "gif_comment" in ACTIONS:
             def gif_comment_action():
@@ -191,29 +188,7 @@ def debug_device(device_id):
             time.sleep(1)
 
         # -------------------------
-        # 🔟 Save
-        # -------------------------
-        if "save" in ACTIONS:
-            run_step(
-                "Save",
-                lambda: save_post(device_id),
-                device_id
-            )
-            time.sleep(1)
-
-        # -------------------------
-        # 1️⃣1️⃣ Share
-        # -------------------------
-        if "share" in ACTIONS:
-            run_step(
-                "Share",
-                lambda: share_post(device_id),
-                device_id
-            )
-            time.sleep(1)
-
-        # -------------------------
-        # 1️⃣2️⃣ Repost
+        # Repost
         # -------------------------
         if "repost" in ACTIONS:
             run_step(
@@ -224,7 +199,40 @@ def debug_device(device_id):
             time.sleep(1)
 
         # -------------------------
-        # 🔁 Switch Account
+        # Share
+        # -------------------------
+        if "share" in ACTIONS:
+            run_step(
+                "Share",
+                lambda: share_post(device_id),
+                device_id
+            )
+            time.sleep(1)
+
+        # -------------------------
+        # Save
+        # -------------------------
+        if "save" in ACTIONS:
+            run_step(
+                "Save",
+                lambda: save_post(device_id),
+                device_id
+            )
+            time.sleep(1)
+
+        # -------------------------
+        # Interested
+        # -------------------------
+        if "interested" in ACTIONS:
+            run_step(
+                "interested",
+                lambda: mark_post_interested(device_id),
+                device_id
+            )
+            time.sleep(1)
+
+        # -------------------------
+        # Switch Account
         # -------------------------
         if "switch" in ACTIONS:
             run_step(
