@@ -6,6 +6,7 @@ usernames = [
     "_immanzar_",
     "aesthetic.viren",
     "angelsmakeover.2005",
+    "anshusworld",
     "aradhanasometimes",
     "arvindyadav",
     "bholenath_jatt1811",
@@ -14,10 +15,13 @@ usernames = [
     "diyasingh_dynameets",
     "dr_divyaprakashgavel",
     "eternalbright.in",
+    "farzeencouture",
     "gauravkotharii",
+    "hrishitaachopra",
     "hussainraniwala_",
     "iam.pushpindersingh",
     "ifbbprojyotigupta",
+    "lipika_maheshwari",
     "ls_beautysalon_and_makeover",
     "makeupbyaashnaguglani",
     "nasuschauhan",
@@ -25,7 +29,7 @@ usernames = [
     "tanmaynagpal_",
     "thedevpurush",
     "wander_bites_duo",
-]
+ ]
 
 monitor = PostMonitor(headless=True)
 results = monitor.check_multiple(usernames, limit=12)

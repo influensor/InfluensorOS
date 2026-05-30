@@ -141,9 +141,8 @@ class PostMonitor:
         try:
 
             patterns = [
-
-                r'"caption":\{"text":"(.*?)","pk"',
-
+                r'"caption":\{.*?"text":"(.*?)"',
+                r'"caption":\{[^}]*"text":"(.*?)"',
                 r'"edge_media_to_caption":\{"edges":\[\{"node":\{"text":"(.*?)"\}\}\]',
             ]
 
@@ -194,7 +193,7 @@ class PostMonitor:
             wait_until="domcontentloaded"
         )
 
-        self.page.wait_for_timeout(5000)
+        self.page.wait_for_timeout(30000)
 
         collected_posts = []
 
@@ -300,6 +299,8 @@ class PostMonitor:
     # =====================================================
     # FETCH SINGLE POST DATA
     # =====================================================
+    def build_p_url(self, shortcode):
+        return f"https://www.instagram.com/p/{shortcode}/"
 
     def fetch_post_data(
         self,
