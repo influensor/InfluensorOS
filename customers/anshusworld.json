@@ -1,13 +1,13 @@
 {
-  "customer_id": "lipika_maheshwari",
-  "username": "lipika_maheshwari",
+  "customer_id": "anshusworld",
+  "username": "anshusworld",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-05-30",
-	"expiry_date": "2026-06-30",
+	"start_date": "2026-06-01",
+	"expiry_date": "2026-07-01",
 	"posts_per_day": 1
   },
 
