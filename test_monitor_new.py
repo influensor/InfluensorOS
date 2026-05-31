@@ -27,7 +27,6 @@ usernames = [
     "nasuschauhan",
     "syed_swaleh",
     "tanmaynagpal_",
-    "thedevpurush",
     "wander_bites_duo",
  ]
 
