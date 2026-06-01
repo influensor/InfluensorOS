@@ -141,9 +141,11 @@ class PostMonitor:
         try:
 
             patterns = [
-                r'"caption":\{.*?"text":"(.*?)"',
-                r'"caption":\{[^}]*"text":"(.*?)"',
-                r'"edge_media_to_caption":\{"edges":\[\{"node":\{"text":"(.*?)"\}\}\]',
+                r'"caption":\{.*?"text":"((?:\\.|[^"])*)"',
+                r'"caption":\{[^}]*"text":"((?:\\.|[^"])*)"'
+                #r'"caption":\{.*?"text":"(.*?)"',
+                #r'"caption":\{[^}]*"text":"(.*?)"',
+                #r'"edge_media_to_caption":\{"edges":\[\{"node":\{"text":"(.*?)"\}\}\]',
             ]
 
             for pattern in patterns:
@@ -316,8 +318,11 @@ class PostMonitor:
 
             post_page = self.context.new_page()
 
+            p_url = self.build_p_url(shortcode)
+            print(f"[OPENING] {p_url}")
+            
             post_page.goto(
-                post_url,
+                p_url,
                 wait_until="domcontentloaded"
             )
 
