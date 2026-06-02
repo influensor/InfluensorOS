@@ -11,7 +11,8 @@ from .storage_new import load_saved_posts, save_posts
 # CONFIG
 # =====================================================
 
-USER_DATA_DIR = (r"C:\insta_blackaquaindia.in")
+USER_DATA_DIR = (r"C:\insta_a4agharkar.in")
+#USER_DATA_DIR = (r"C:\insta_blackaquaindia.in")
 
 class PostMonitor:
 
