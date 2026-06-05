@@ -1,13 +1,13 @@
 {
-  "customer_id": "drnishasdentalcare",
-  "username": "drnishasdentalcare",
+  "customer_id": "techboxervlogs",
+  "username": "techboxervlogs",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-05-17",
-	"expiry_date": "2026-06-17",
+	"start_date": "2026-06-05",
+	"expiry_date": "2026-07-05",
 	"posts_per_day": 1
   },
 
