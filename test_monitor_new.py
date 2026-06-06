@@ -15,6 +15,7 @@ usernames = [
     "diyasingh_dynameets",
     "dr_divyaprakashgavel",
     "eternalbright.in",
+    "faizaansofficial",
     "farzeencouture",
     "gauravkotharii",
     "hrishitaachopra",
