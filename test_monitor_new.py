@@ -13,6 +13,9 @@ usernames = [
     "bholenath_jatt1811",
     "brijeshpatelfotographi",
     "choreographer_akash",
+    "dannydaanishofficial",
+    "digibuiltsolutions",
+    "the_movie_craft",
     "diyasingh_dynameets",
     "dr_divyaprakashgavel",
     "eternalbright.in",
@@ -32,6 +35,8 @@ usernames = [
     "syed_swaleh",
     "tanmaynagpal_",
     "techboxervlogs",
+    "the_movie_craft",
+    "vickygetfit",
     "wander_bites_duo",
  ]
 
