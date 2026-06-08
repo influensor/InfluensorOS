@@ -15,9 +15,9 @@ from .storage_new import load_saved_posts, save_posts
 #USER_DATA_DIR = (r"C:\insta_blackaquaindia.in")
 #USER_DATA_DIR = (r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 1")
 PROFILES = [
-    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Default",
-    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 1",
-    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 2",
+    r"C:\Users\003\AppData\Local\Google\Chrome\User Data\Default",
+#    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 1",
+#    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 2",
 ]
 
 USER_DATA_DIR = random.choice(PROFILES)

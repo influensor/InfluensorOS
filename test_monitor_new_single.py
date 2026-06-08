@@ -40,18 +40,14 @@ usernames = [
     "wander_bites_duo",
  ]
 
-INDEX_FILE1 = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
-INDEX_FILE2 = r"C:\Users\003\Documents\GitHub\InfluensorOS\current_user.txt"
+#INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
+INDEX_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\current_user.txt"
 
 # =========================================
 # LOAD LAST INDEX
 # =========================================
-
-if os.path.exists(INDEX_FILE1):
-    with open(INDEX_FILE1, "r") as f:
-        current_index = int(f.read().strip())
-elif os.path.exists(INDEX_FILE2):
-    with open(INDEX_FILE2, "r") as f:
+if os.path.exists(INDEX_FILE):
+    with open(INDEX_FILE, "r") as f:
         current_index = int(f.read().strip())
 else:
     current_index = 0
