@@ -12,11 +12,8 @@ from .storage_new import load_saved_posts, save_posts
 # CONFIG
 # =====================================================
 
-#USER_DATA_DIR = (r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 1")
 PROFILES = [
-    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Default",
-    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 1",
-    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 2",
+    r"C:\Users\003\AppData\Local\Google\Chrome\User Data\Default",
 ]
 USER_DATA_DIR = random.choice(PROFILES)
 POST_COUNT_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\data\post_counts.json"
