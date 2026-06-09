@@ -2,6 +2,7 @@ import os
 import re
 import time
 import random
+import json
 
 from playwright.sync_api import sync_playwright
 from .storage_new import load_saved_posts, save_posts
@@ -11,16 +12,14 @@ from .storage_new import load_saved_posts, save_posts
 # CONFIG
 # =====================================================
 
-#USER_DATA_DIR = (r"C:\insta_a4agharkar.in")
-#USER_DATA_DIR = (r"C:\insta_blackaquaindia.in")
 #USER_DATA_DIR = (r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 1")
 PROFILES = [
-    r"C:\Users\003\AppData\Local\Google\Chrome\User Data\Default",
-#    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 1",
-#    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 2",
+    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Default",
+    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 1",
+    r"C:\Users\yagha\AppData\Local\Google\Chrome\User Data\Profile 2",
 ]
-
 USER_DATA_DIR = random.choice(PROFILES)
+POST_COUNT_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\data\post_counts.json"
 
 
 class PostMonitor:
@@ -33,9 +32,96 @@ class PostMonitor:
                 headless=headless
             )
         )
-
         self.page = self.context.new_page()
 
+
+    # =====================================================
+    # POST COUNT STORAGE
+    # =====================================================
+
+    def load_post_counts(self):
+
+        if not os.path.exists(
+            POST_COUNT_FILE
+        ):
+            return {}
+
+        try:
+
+            with open(
+                POST_COUNT_FILE,
+                "r",
+                encoding="utf-8"
+            ) as f:
+
+                return json.load(f)
+
+        except:
+
+            return {}
+
+
+    def save_post_counts(
+        self,
+        counts
+    ):
+
+        with open(
+            POST_COUNT_FILE,
+            "w",
+            encoding="utf-8"
+        ) as f:
+
+            json.dump(
+                counts,
+                f,
+                indent=2
+            )
+
+
+    # =====================================================
+    # GET PROFILE POST COUNT
+    # =====================================================
+
+    def get_post_count(
+        self,
+        username
+    ):
+
+        try:
+
+            self.page.goto(
+                f"https://www.instagram.com/{username}/",
+                wait_until="domcontentloaded"
+            )
+
+            self.page.wait_for_timeout(
+                3000
+            )
+
+            html = self.page.content()
+
+            match = re.search(
+                r'(\d+(?:,\d+)*)\s+Posts',
+                html,
+                re.IGNORECASE
+            )
+
+            if match:
+
+                return int(
+                    match.group(1)
+                    .replace(",", "")
+                )
+
+        except Exception as e:
+
+            print(
+                f"[COUNT ERROR] "
+                f"{username}: {e}"
+            )
+
+        return None
     # =====================================================
     # CLOSE
     # =====================================================
@@ -543,41 +629,112 @@ class PostMonitor:
         usernames,
         limit=100
     ):
-
+    
         results = {}
-
+    
+        counts = self.load_post_counts()
+    
+        changed_users = []
+    
+        # =========================================
+        # FAST PROFILE CHECK
+        # =========================================
+    
         for username in usernames:
-
+    
             try:
-
+    
+                current_count = (
+                    self.get_post_count(
+                        username
+                    )
+                )
+    
+                if current_count is None:
+                    continue
+    
+                old_count = counts.get(
+                    username,
+                    0
+                )
+    
+                print(
+                    f"[COUNT] "
+                    f"{username}: "
+                    f"{old_count} -> "
+                    f"{current_count}"
+                )
+    
+                if current_count > old_count:
+    
+                    changed_users.append(
+                        username
+                    )
+    
+                    counts[
+                        username
+                    ] = current_count
+    
+            except Exception as e:
+    
+                print(
+                    f"[COUNT ERROR] "
+                    f"{username}: {e}"
+                )
+    
+        self.save_post_counts(
+            counts
+        )
+    
+        print(
+            f"\nUsers With New Posts: "
+            f"{len(changed_users)}"
+        )
+    
+        # =========================================
+        # EXISTING LOGIC
+        # =========================================
+    
+        for username in changed_users:
+    
+            try:
+    
                 print(
                     f"\n[CHECKING] "
                     f"{username}"
                 )
-
+    
                 posts = self.check_user(
                     username,
                     limit
                 )
-
-                results[username] = posts
-
+    
+                results[
+                    username
+                ] = posts
+    
                 print(
                     f"[DONE] "
                     f"{username} → "
                     f"{len(posts)} new posts"
                 )
-
+    
             except Exception as e:
+    
                 print(
                     f"[ERROR] processing "
                     f"{username}: {e}"
                 )
-
-                results[username] = []
-
+    
+                results[
+                    username
+                ] = []
+    
             time.sleep(
-                random.uniform(2, 5)
+                random.uniform(
+                    1,
+                    5
+                )
             )
-
+    
         return results
