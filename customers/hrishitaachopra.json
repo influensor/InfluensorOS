@@ -21,5 +21,10 @@
 	"interested": true,
     "add_to_story": false,
     "randomize_action_sequence": true
+  },
+
+  "notifications": {
+    "enabled": true,
+    "mobile_numbers": ["919999471562"]
   }
 }
