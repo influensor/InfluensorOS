@@ -36,6 +36,7 @@ usernames = [
     "the_movie_craft",
     "vickygetfit",
     "wander_bites_duo",
+    "wild.heartstories"
  ]
 
 monitor = PostMonitor(headless=True)
