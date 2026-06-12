@@ -5,7 +5,7 @@ from engine.post_monitor.monitor_new import PostMonitor
 usernames = [
     "_immanzar_",
     "aesthetic.viren",
-    "aiadventureworld"
+    "aiadventureworld",
     "angelsmakeover.2005",
     "anshusworld",
     "aradhanasometimes",

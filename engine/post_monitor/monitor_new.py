@@ -17,7 +17,9 @@ PROFILES = [
 #    r"C:\Users\003\AppData\Local\Google\Chrome\User Data\Profile 2",
 ]
 USER_DATA_DIR = random.choice(PROFILES)
+
 POST_COUNT_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\data\post_counts.json"
+#POST_COUNT_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\data\post_counts.json"
 
 
 class PostMonitor:
