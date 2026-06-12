@@ -5,6 +5,7 @@ from engine.post_monitor.monitor_new import PostMonitor
 usernames = [
     "_immanzar_",
     "aesthetic.viren",
+    "aiadventureworld"
     "angelsmakeover.2005",
     "anshusworld",
     "aradhanasometimes",
@@ -36,7 +37,6 @@ usernames = [
     "the_movie_craft",
     "vickygetfit",
     "wander_bites_duo",
-    "wild.heartstories"
  ]
 
 monitor = PostMonitor(headless=True)

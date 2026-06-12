@@ -13,8 +13,8 @@ from .storage_new import load_saved_posts, save_posts
 # =====================================================
 
 PROFILES = [
-#    r"C:\Users\003\AppData\Local\Google\Chrome\User Data\Default",
-    r"C:\Users\003\AppData\Local\Google\Chrome\User Data\Profile 2",
+    r"C:\Users\003\AppData\Local\Google\Chrome\User Data\Default",
+#    r"C:\Users\003\AppData\Local\Google\Chrome\User Data\Profile 2",
 ]
 USER_DATA_DIR = random.choice(PROFILES)
 POST_COUNT_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\data\post_counts.json"
@@ -228,47 +228,51 @@ class PostMonitor:
         self,
         html
     ):
-
+    
         try:
-
-            patterns = [
-                r'"caption":\{.*?"text":"((?:\\.|[^"])*)"',
-                r'"caption":\{[^}]*"text":"((?:\\.|[^"])*)"'
-                #r'"caption":\{.*?"text":"(.*?)"',
-                #r'"caption":\{[^}]*"text":"(.*?)"',
-                #r'"edge_media_to_caption":\{"edges":\[\{"node":\{"text":"(.*?)"\}\}\]',
-            ]
-
-            for pattern in patterns:
-
-                match = re.search(
-                    pattern,
-                    html,
-                    re.DOTALL
+    
+            match = re.search(
+                r'<meta property="og:description" content="([^"]*)"',
+                html,
+                re.DOTALL
+            )
+    
+            if not match:
+                return ""
+    
+            content = match.group(1)
+    
+            content = (
+                content
+                .replace("&quot;", '"')
+                .replace("&#x2026;", "...")
+                .replace("&#039;", "'")
+            )
+    
+            # ----------------------------------
+            # Extract text inside quotes
+            # ----------------------------------
+    
+            quote_match = re.search(
+                r':\s*"(.+?)"\.?\s*$',
+                content,
+                re.DOTALL
+            )
+    
+            if quote_match:
+    
+                caption = quote_match.group(1)
+    
+                return self.clean_text(
+                    caption
                 )
-
-                if not match:
-                    continue
-
-                text = self.clean_text(
-                    match.group(1)
-                )
-
-                text = text.split(
-                    '","'
-                )[0]
-
-                if len(text) < 5:
-                    continue
-
-                return text
-
+    
         except Exception as e:
-
+    
             print(
                 f"[caption error] {e}"
             )
-
+    
         return ""
 
     # =====================================================
