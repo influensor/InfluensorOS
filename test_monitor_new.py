@@ -39,7 +39,7 @@ usernames = [
     "wander_bites_duo",
  ]
 
-monitor = PostMonitor(headless=True)
+monitor = PostMonitor(headless=False)
 results = monitor.check_multiple(usernames, limit=12)
 monitor.close()
 for username, posts in results.items():

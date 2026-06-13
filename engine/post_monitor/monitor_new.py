@@ -14,104 +14,100 @@ from .storage_new import load_saved_posts, save_posts
 # =====================================================
 
 PROFILES = [
-#    r"C:\Users\003\AppData\Local\Google\Chrome\User Data\Default",
-    r"C:\Users\003\AppData\Local\Google\Chrome\User Data\Profile 2",
+    r"C:\instagram_a4agharkar.in",
+    r"C:\instagram_blackaquaindia.in",
+    r"C:\instagram_mimy_ai.in",
+    r"C:\instagram_shophudabeauty.in",
+    r"C:\instagram_nashikonwheels",
 ]
 USER_DATA_DIR = random.choice(PROFILES)
 
 POST_COUNT_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\data\post_counts.json"
 #POST_COUNT_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\data\post_counts.json"
 
+VIEWPORTS = [
+    # HD
+    {"width": 1366, "height": 768},
+    {"width": 1360, "height": 768},
+    {"width": 1280, "height": 720},
+    # Common Laptop
+    {"width": 1536, "height": 864},
+    {"width": 1440, "height": 900},
+    {"width": 1600, "height": 900},
+    # Full HD
+    {"width": 1920, "height": 1080},
+    {"width": 1900, "height": 1040},
+    {"width": 1910, "height": 1070},
+    # Higher Resolution
+    {"width": 1680, "height": 1050},
+    {"width": 1728, "height": 1117},
+    {"width": 1792, "height": 1120},
+    # MacBook Air
+    {"width": 1440, "height": 823},
+    # MacBook Pro
+    {"width": 1512, "height": 982},
+    {"width": 1728, "height": 1117},
+    {"width": 1800, "height": 1169},
+    # QHD
+    {"width": 2560, "height": 1440},
+    {"width": 2560, "height": 1600},
+    # Ultrawide
+    {"width": 2560, "height": 1080},
+    {"width": 3440, "height": 1440},
+]
+
+
+USER_AGENTS = [
+    # Chrome Windows
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+    # Chrome Mac
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    # Edge Windows
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0",
+    # Firefox Windows
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) Gecko/20100101 Firefox/138.0",
+    # Firefox Mac
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.5; rv:139.0) Gecko/20100101 Firefox/139.0",
+    # Safari
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_6_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+    # Linux Chrome
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
+    # Linux Edge
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0",
+]
+
 
 class PostMonitor:
     def __init__(self, headless=True):
-
         self.playwright = sync_playwright().start()
-
-        self.browser = (
-            self.playwright.chromium.launch(
-                headless=headless
-            )
-        )
-
         self.context = (
-            self.browser.new_context(
-                viewport=random.choice([
-                    # HD
-                    {"width": 1366, "height": 768},
-                    {"width": 1360, "height": 768},
-                    {"width": 1280, "height": 720},
-
-                    # Full HD
-                    {"width": 1920, "height": 1080},
-                    {"width": 1900, "height": 1040},
-                    {"width": 1910, "height": 1070},
-
-                    # Common Laptop
-                    {"width": 1536, "height": 864},
-                    {"width": 1440, "height": 900},
-                    {"width": 1600, "height": 900},
-
-                    # Higher Resolution
-                    {"width": 1680, "height": 1050},
-                    {"width": 1728, "height": 1117},
-                    {"width": 1792, "height": 1120},
-
-                    # QHD
-                    {"width": 2560, "height": 1440},
-                    {"width": 2560, "height": 1600},
-
-                    # MacBook Air
-                    {"width": 1440, "height": 823},
-
-                    # MacBook Pro
-                    {"width": 1512, "height": 982},
-                    {"width": 1728, "height": 1117},
-                    {"width": 1800, "height": 1169},
-
-                    # Ultrawide
-                    {"width": 2560, "height": 1080},
-                    {"width": 3440, "height": 1440},
+            self.playwright.chromium
+            .launch_persistent_context(
+                USER_DATA_DIR,
+                channel="chrome",
+                headless=headless,
+                viewport=random.choice(VIEWPORTS),
+                user_agent=random.choice(USER_AGENTS),
+                locale=random.choice([
+                    "en-IN",
+                    "en-US",
+                    "en-GB"
                 ]),
-                user_agent=random.choice([
-                    # Chrome Windows
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-
-                    # Chrome Mac
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-
-                    # Microsoft Edge
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0",
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0",
-
-                    # Firefox Windows
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0",
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) Gecko/20100101 Firefox/138.0",
-
-                    # Firefox Mac
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.5; rv:139.0) Gecko/20100101 Firefox/139.0",
-
-                    # Safari Mac
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
-
-                    # Safari MacBook
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_6_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
-
-                    # Chrome Linux
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
-
-                    # Edge Linux
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0",
-                ]),
-                locale=random.choice(["en-IN", "en-US", "en-GB"])
+                args=[
+                    "--disable-blink-features=AutomationControlled"
+                ]
             )
         )
-
-        self.page = self.context.new_page()
-
+        self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
+        print(f"[PROFILE] {USER_DATA_DIR}")
+        print(f"[LOCALE] {self.page.evaluate('navigator.language')}")
+        
     # =====================================================
     # POST COUNT STORAGE
     # =====================================================
@@ -173,7 +169,7 @@ class PostMonitor:
             )
 
             self.page.wait_for_timeout(
-                10000
+                5000
             )
 
             html = self.page.content()

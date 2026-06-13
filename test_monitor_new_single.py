@@ -5,7 +5,7 @@ import subprocess
 from engine.post_monitor.monitor_new import PostMonitor
 
 usernames = [
-    "aiadventureworld",
+    "anshusworld",
  ]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
@@ -27,7 +27,7 @@ username = usernames[current_index]
 
 print(f"Processing: {username}")
 
-monitor = PostMonitor(headless=True)
+monitor = PostMonitor(headless=False)
 results = monitor.check_multiple([username], limit=12)
 monitor.close()
 
