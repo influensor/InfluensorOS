@@ -201,7 +201,6 @@ class PostMonitor:
 
     def close(self):
         self.context.close()
-        self.browser.close()
         self.playwright.stop()
 
     # =====================================================

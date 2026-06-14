@@ -31,6 +31,7 @@ usernames = [
     "makeupbyaashnaguglani",
     "muskankorea",
     "shivanisharma_officia",
+    "swarnapraveen1",
     "syed_swaleh",
     "tanmaynagpal_",
     "techboxervlogs",
