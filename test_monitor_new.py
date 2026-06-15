@@ -16,7 +16,7 @@ usernames = [
     "choreographer_akash",
     "dannydaanishofficial",
     "digibuiltsolutions",
-    "diyasingh_dynameets",
+    "djdynameets",
     "dr_divyaprakashgavel",
     "eternalbright.in",
     "faizaansofficial",

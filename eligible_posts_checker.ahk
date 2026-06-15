@@ -1,0 +1,1 @@
+﻿Run, cmd.exe /k "python eligible_posts_checker.py"
