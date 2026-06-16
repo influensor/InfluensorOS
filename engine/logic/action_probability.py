@@ -8,10 +8,10 @@ DEMO_PROBABILITY = {
     "like": 100,
     "comment": 60,
     "gif_comment": 5,
-    "repost": 60,
-    "share": 100,
-    "save": 60,
-    "interested": 100,
+    "repost": 30,
+    "share": 60,
+    "save": 40,
+    "interested": 70,
     "add_to_story": 60,
 }
 
@@ -19,10 +19,10 @@ PAID_PROBABILITY = {
     "like": 100,
     "comment": 40,
     "gif_comment": 5,
-    "repost": 40,
-    "share": 100,
+    "repost": 30,
+    "share": 60,
     "save": 40,
-    "interested": 100,
+    "interested": 70,
     "add_to_story": 0,
 }
 
