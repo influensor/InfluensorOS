@@ -97,7 +97,6 @@ class PostMonitor:
                 locale=random.choice([
                     "en-IN",
                     "en-US",
-                    "en-GB"
                 ]),
                 args=[
                     "--disable-blink-features=AutomationControlled"
