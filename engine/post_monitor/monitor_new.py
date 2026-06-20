@@ -15,9 +15,9 @@ from .storage_new import load_saved_posts, save_posts
 
 PROFILES = [
     r"C:\instagram_a4agharkar.in",
-    r"C:\instagram_blackaquaindia.in",
+#    r"C:\instagram_blackaquaindia.in",
 #    r"C:\instagram_mimy_ai.in",
-#    r"C:\instagram_shophudabeauty.in",
+    r"C:\instagram_shophudabeauty.in",
     r"C:\instagram_nashikonwheels",
 ]
 USER_DATA_DIR = random.choice(PROFILES)
@@ -742,26 +742,16 @@ class PostMonitor:
                 )
     
                 if current_count > old_count:
-    
-                    changed_users.append(
-                        username
-                    )
-    
-                    counts[
-                        username
-                    ] = current_count
-    
+                    changed_users.append((username,current_count))
+
             except Exception as e:
     
                 print(
                     f"[COUNT ERROR] "
                     f"{username}: {e}"
                 )
-    
-        self.save_post_counts(
-            counts
-        )
-    
+
+
         print(
             f"\nUsers With New Posts: "
             f"{len(changed_users)}"
@@ -771,7 +761,7 @@ class PostMonitor:
         # EXISTING LOGIC
         # =========================================
     
-        for username in changed_users:
+        for username, current_count in changed_users:
     
             try:
     
@@ -788,7 +778,18 @@ class PostMonitor:
                 results[
                     username
                 ] = posts
-    
+                
+                if len(posts) == 0:
+                    print(
+                        f"[SKIP COUNT UPDATE] "
+                        f"{username} returned 0 posts"
+                    )
+                    results[username] = []
+                    continue
+
+                counts[username] = current_count
+                self.save_post_counts(counts)
+
                 print(
                     f"[DONE] "
                     f"{username} → "

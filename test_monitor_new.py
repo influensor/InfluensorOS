@@ -29,7 +29,6 @@ usernames = [
     "makeupbyaashnaguglani",
     "muskankorea",
     "swarnapraveen1",
-    "tanmaynagpal_",
     "techboxervlogs",
     "the_movie_craft",
     "vickygetfit",
