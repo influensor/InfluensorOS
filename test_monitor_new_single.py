@@ -5,7 +5,36 @@ import subprocess
 from engine.post_monitor.monitor_new import PostMonitor
 
 usernames = [
+    "aesthetic.viren",
+    "aiadventureworld",
+    "angelsmakeover.2005",
+    "anshusworld",
+    "aradhanasometimes",
+    "arvindyadav",
+    "ashok__chaudhary___",
+    "bholenath_jatt1811",
+    "bite.me.up",
+    "brijeshpatelfotographi",
+    "choreographer_akash",
+    "dannydaanishofficial",
+    "digibuiltsolutions",
+    "djdynameets",
+    "dr_divyaprakashgavel",
+    "eternalbright.in",
+    "faizaansofficial",
+    "farzeencouture",
+    "hrishitaachopra",
+    "hussainraniwala_",
+    "ifbbprojyotigupta",
+    "lipika_maheshwari",
+    "ls_beautysalon_and_makeover",
     "makeupbyaashnaguglani",
+    "muskankorea",
+    "swarnapraveen1",
+    "techboxervlogs",
+    "the_movie_craft",
+    "vickygetfit",
+    "wander_bites_duo",
  ]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
@@ -27,7 +56,7 @@ username = usernames[current_index]
 
 print(f"Processing: {username}")
 
-monitor = PostMonitor(headless=False)
+monitor = PostMonitor(headless=True)
 results = monitor.check_multiple([username], limit=12)
 monitor.close()
 
@@ -47,7 +76,7 @@ next_index = (current_index + 1) % len(usernames)
 with open(INDEX_FILE, "w") as f:
     f.write(str(next_index))
 
-time.sleep(random.uniform(1, 30))
+time.sleep(random.uniform(1, 1))
 
 # =========================================
 # AI COMMENT GENERATION

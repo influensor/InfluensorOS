@@ -19,10 +19,10 @@ PAID_PROBABILITY = {
     "like": 100,
     "comment": 40,
     "gif_comment": 5,
-    "repost": 30,
-    "share": 60,
+    "repost": 20,
+    "share": 50,
     "save": 40,
-    "interested": 70,
+    "interested": 60,
     "add_to_story": 0,
 }
 

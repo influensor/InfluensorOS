@@ -15,8 +15,8 @@ from .storage_new import load_saved_posts, save_posts
 
 PROFILES = [
     r"C:\instagram_a4agharkar.in",
-#    r"C:\instagram_blackaquaindia.in",
-#    r"C:\instagram_mimy_ai.in",
+    r"C:\instagram_blackaquaindia.in",
+    r"C:\instagram_mimy_ai.in",
     r"C:\instagram_shophudabeauty.in",
     r"C:\instagram_nashikonwheels",
 ]
