@@ -1,13 +1,13 @@
 {
-  "customer_id": "wander_bites_duo",
-  "username": "wander_bites_duo",
+  "customer_id": "tanmaynagpal_",
+  "username": "tanmaynagpal_",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-05-22",
-	"expiry_date": "2026-06-22",
+	"start_date": "2026-06-23",
+	"expiry_date": "2026-07-23",
 	"posts_per_day": 1
   },
 
@@ -25,6 +25,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["918527050374"]
+    "mobile_numbers": ["919810604093"]
   }
 }
