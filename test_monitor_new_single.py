@@ -5,12 +5,40 @@ import subprocess
 from engine.post_monitor.monitor_new import PostMonitor
 
 usernames = [
+    "aiadventureworld",
     "angelsmakeover.2005",
+    "anshusworld",
+    "aradhanasometimes",
+    "arvindyadav",
+    "ashok__chaudhary___",
+    "bholenath_jatt1811",
+    "bite.me.up",
+    "choreographer_akash",
+    "dannydaanishofficial",
+    "digibuiltsolutions",
+    "djdynameets",
+    "dr_divyaprakashgavel",
+    "eternalbright.in",
+    "faizaansofficial",
+    "farzeencouture",
+    "hrishitaachopra",
     "lipika_maheshwari",
+    "ls_beautysalon_and_makeover",
+    "makeupbyaashnaguglani",
+    "muskankorea",
+    "swarnapraveen1",
+    "syed_swaleh",
+    "tanmaynagpal_",
+    "techboxervlogs",
+    "techbyrawat",
+    "the_movie_craft",
+    "veekshadiaries",
+    "vickygetfit",
+    "wander_bites_duo",
  ]
 
-INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
-#INDEX_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\current_user.txt"
+#INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
+INDEX_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\current_user.txt"
 
 # =========================================
 # LOAD LAST INDEX
