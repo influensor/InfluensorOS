@@ -22,7 +22,6 @@ usernames = [
     "faizaansofficial",
     "farzeencouture",
     "hrishitaachopra",
-    "kabhabysophiya",
     "lipika_maheshwari",
     "ls_beautysalon_and_makeover",
     "makeupbyaashnaguglani",

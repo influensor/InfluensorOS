@@ -21,7 +21,6 @@ usernames = [
     "farzeencouture",
     "hrishitaachopra",
     "hussainraniwala_",
-    "kabhabysophiya",
     "lipika_maheshwari",
     "ls_beautysalon_and_makeover",
     "makeupbyaashnaguglani",
