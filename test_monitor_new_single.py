@@ -13,6 +13,7 @@ usernames = [
     "ashok__chaudhary___",
     "bholenath_jatt1811",
     "bite.me.up",
+    "choreographer_akash",
     "dannydaanishofficial",
     "digibuiltsolutions",
     "djdynameets",
@@ -22,6 +23,7 @@ usernames = [
     "farzeencouture",
     "hrishitaachopra",
     "hussainraniwala_",
+    "kabhabysophiya",
     "lipika_maheshwari",
     "ls_beautysalon_and_makeover",
     "makeupbyaashnaguglani",
@@ -29,7 +31,9 @@ usernames = [
     "swarnapraveen1",
     "tanmaynagpal_",
     "techboxervlogs",
+    "techbyrawat",
     "the_movie_craft",
+    "veekshadiaries",
     "vickygetfit",
     "wander_bites_duo",
  ]
@@ -53,7 +57,7 @@ username = usernames[current_index]
 
 print(f"Processing: {username}")
 
-monitor = PostMonitor(headless=True)
+monitor = PostMonitor(headless=False)
 results = monitor.check_multiple([username], limit=12)
 monitor.close()
 
