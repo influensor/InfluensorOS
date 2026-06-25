@@ -33,7 +33,6 @@ usernames = [
     "the_movie_craft",
     "veekshadiaries",
     "vickygetfit",
-    "wander_bites_duo",
  ]
 
 monitor = PostMonitor(headless=False)

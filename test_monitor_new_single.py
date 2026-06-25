@@ -34,7 +34,6 @@ usernames = [
     "the_movie_craft",
     "veekshadiaries",
     "vickygetfit",
-    "wander_bites_duo",
  ]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
