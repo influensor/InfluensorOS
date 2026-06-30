@@ -1,13 +1,13 @@
 {
-  "customer_id": "novaraa_internationals__",
-  "username": "novaraa_internationals__",
+  "customer_id": "friendsandcompany_official",
+  "username": "friendsandcompany_official",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-06-12",
-	"expiry_date": "2026-07-12",
+	"start_date": "2026-06-30",
+	"expiry_date": "2026-07-30",
 	"posts_per_day": 1
   },
 
@@ -25,6 +25,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["916304954336"]
+    "mobile_numbers": ["917977416404"]
   }
 }
