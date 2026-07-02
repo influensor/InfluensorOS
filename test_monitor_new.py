@@ -25,6 +25,7 @@ usernames = [
     "ls_beautysalon_and_makeover",
     "makeupbyaashnaguglani",
     "muskankorea",
+    "novaraa_internationals__",
     "swarnapraveen1",
     "syed_swaleh",
     "tanmaynagpal_",
