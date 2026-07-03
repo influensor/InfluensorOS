@@ -451,37 +451,27 @@ ALLOWED_SYMBOLS = [
 ]
 
 
+import unicodedata
 def clean_symbols(comment):
-
-    comment = re.sub(
-        r"[!@#$%^&*()_+=\[\]{};\"<>\\/|`~.-]",
-        "",
-        comment
-    )
-
     cleaned = ""
-
     for char in comment:
-
+        category = unicodedata.category(char)
+        # Keep letters, numbers,
+        # punctuation, spaces,
+        # emojis and combining marks
         if (
-            char.isalnum()
-            or char.isspace()
+            char.isspace()
             or char in ALLOWED_SYMBOLS
+            or category.startswith("L")   # Letters
+            or category.startswith("N")   # Numbers
+            or category.startswith("M")   # Combining marks (Marathi matras)
+            or ord(char) > 10000          # Emojis
         ):
             cleaned += char
-
-        else:
-
-            # preserve emojis
-            if ord(char) > 10000:
-                cleaned += char
-
     cleaned = " ".join(
         cleaned.split()
     )
-
     return cleaned.strip()
-
 
 # =====================================================
 # CLEAN COMMENTS
