@@ -20,6 +20,7 @@ usernames = [
     "faizaansofficial",
     "friendsandcompany_official",
     "ifbbprojyotigupta",
+    "lipika_maheshwari",
     "ls_beautysalon_and_makeover",
     "muskankorea",
     "novaraa_internationals__",
