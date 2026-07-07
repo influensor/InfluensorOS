@@ -6,6 +6,7 @@ usernames = [
     "aanmolsharma__",
     "aesthetic.viren",
     "aiadventureworld",
+    "anshusworld",
     "arvindyadav",
     "ashok__chaudhary___",
     "bholenath_jatt1811",
@@ -22,8 +23,8 @@ usernames = [
     "ifbbprojyotigupta",
     "lipika_maheshwari",
     "ls_beautysalon_and_makeover",
-    "muskankorea",
     "novaraa_internationals__",
+    "pragyas353",
     "swarnapraveen1",
     "syed_swaleh",
     "tanmaynagpal_",
@@ -32,6 +33,7 @@ usernames = [
     "the_movie_craft",
     "veekshadiaries",
     "vickygetfit",
+    "wander_bites_duo",
  ]
 
 monitor = PostMonitor(headless=False)
