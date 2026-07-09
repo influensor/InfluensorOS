@@ -1,6 +1,6 @@
 {
-  "customer_id": "vickygetfit",
-  "username": "vickygetfit",
+  "customer_id": "boonne.fashions",
+  "username": "boonne.fashions",
 
   "type": "paid",
 
@@ -17,6 +17,7 @@
 	"gif_comment": true,
 	"repost": true,
     "save": true,
+    "share": true,
 	"interested": true,
     "add_to_story": false,
     "randomize_action_sequence": true
@@ -24,6 +25,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["919899650561"]
+    "mobile_numbers": ["917606992317"]
   }
 }
