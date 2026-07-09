@@ -27,7 +27,6 @@ usernames = [
     "swarnapraveen1",
     "syed_swaleh",
     "tanmaynagpal_",
-    "techboxervlogs",
     "techbyrawat",
     "the_movie_craft",
     "veekshadiaries",
