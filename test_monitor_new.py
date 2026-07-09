@@ -8,7 +8,6 @@ usernames = [
     "aiadventureworld",
     "anshusworld",
     "arvindyadav",
-    "ashok__chaudhary___",
     "bholenath_jatt1811",
     "bite.me.up",
     "bridesbyaashna",
