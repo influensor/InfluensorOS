@@ -229,10 +229,10 @@ def get_latest_posts(
 # =====================================================
 
 if __name__ == "__main__":
-    username = "faizaansofficial"
+    username = "hairtrendssalonsindia"
     posts = get_latest_posts(
         username,
-        limit=16
+        limit=500
     )
     save_posts(
         username,

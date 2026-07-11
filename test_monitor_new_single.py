@@ -20,6 +20,7 @@ usernames = [
     "eternalbright.in",
     "faizaansofficial",
     "friendsandcompany_official",
+    "hairtrendssalonsindia",
     "ifbbprojyotigupta",
     "lipika_maheshwari",
     "ls_beautysalon_and_makeover",
