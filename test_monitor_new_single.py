@@ -26,6 +26,7 @@ usernames = [
     "ls_beautysalon_and_makeover",
     "novaraa_internationals__",
     "pragyas353",
+    "prateekbabarfitness",
     "swarnapraveen1",
     "syed_swaleh",
     "tanmaynagpal_",
