@@ -1,8 +1,7 @@
 {
   "enabled": true,
   "authorized_devices": [
-    "9234f7db",
-	"ZA222TB6ZX",
+    "ZA222TB6ZX",
     "ZA222TJDVH",
     "ZA222TN36Y",
     "ZA222TNV83",
@@ -20,5 +19,6 @@
     "ZA222TQFRW",
     "ZA222TQPSZ",
     "ZA222TR7GL"
+	"ZA222TPWQ3",
   ]
 }
