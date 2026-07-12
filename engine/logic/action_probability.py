@@ -8,7 +8,7 @@ DEMO_PROBABILITY = {
     "like": 100,
     "comment": 60,
     "gif_comment": 5,
-    "repost": 30,
+    "repost": 20,
     "share": 60,
     "save": 40,
     "interested": 70,
