@@ -12,7 +12,6 @@ usernames = [
     "bholenath_jatt1811",
     "bite.me.up",
     "boonne.fashions",
-    "bridesbyaashna",
     "choreographer_akash",
     "djdynameets",
     "dr_divyaprakashgavel",
