@@ -5,35 +5,7 @@ import subprocess
 from engine.post_monitor.monitor_new import PostMonitor
 
 usernames = [
-    "aanmolsharma__",
-    "aesthetic.viren",
-    "anshusworld",
-    "arvindyadav",
-    "bholenath_jatt1811",
-    "bite.me.up",
-    "boonne.fashions",
-    "bridesbyaashna",
-    "choreographer_akash",
-    "djdynameets",
-    "dr_divyaprakashgavel",
-    "eternalbright.in",
-    "faizaansofficial",
-    "friendsandcompany_official",
-    "hairtrendssalonsindia",
     "ifbbprojyotigupta",
-    "lipika_maheshwari",
-    "ls_beautysalon_and_makeover",
-    "novaraa_internationals__",
-    "pragyas353",
-    "prateekbabarfitness",
-    "swarnapraveen1",
-    "syed_swaleh",
-    "tanmaynagpal_",
-    "techbyrawat",
-    "vanitas_payal_beauty999",
-    "veekshadiaries",
-    "vickygetfit",
-    "wander_bites_duo",
  ]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
