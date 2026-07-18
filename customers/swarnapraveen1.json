@@ -1,13 +1,13 @@
 {
-  "customer_id": "bholenath_jatt1811",
-  "username": "bholenath_jatt1811",
+  "customer_id": "swarnapraveen1",
+  "username": "swarnapraveen1",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-07-17",
-	"expiry_date": "2026-08-17",
+	"start_date": "2026-07-18",
+	"expiry_date": "2026-07-18",
 	"posts_per_day": 1
   },
 
@@ -25,6 +25,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["918285072061"]
+    "mobile_numbers": ["916304954336"]
   }
 }

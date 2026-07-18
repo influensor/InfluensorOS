@@ -26,6 +26,7 @@ usernames = [
     "novaraa_internationals__",
     "pragyas353",
     "prateekbabarfitness",
+    "swarnapraveen1",
     "syed_swaleh",
     "tanmaynagpal_",
     "techbyrawat",
