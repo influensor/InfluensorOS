@@ -1,18 +1,40 @@
 import time
 import random
+import subprocess
 from engine.post_monitor.monitor import PostMonitor
 usernames = [
-    "_immanzar_",
-    "angelsmakeover.2005",
-    "diyasingh_dynameets",
+    "aanmolsharma__",
+    "aesthetic.viren",
+    "anshusworld",
+    "arvindyadav",
+    "bholenath_jatt1811",
+    "bite.me.up",
+    "boonne.fashions",
+    "bridesbyaashna",
+    "choreographer_akash",
+    "djdynameets",
+    "dr_divyaprakashgavel",
     "eternalbright.in",
-    "gauravkotharii",
+    "faizaansofficial",
+    "friendsandcompany_official",
+    "hairtrendssalonsindia",
+    "ifbbprojyotigupta",
+    "lipika_maheshwari",
     "ls_beautysalon_and_makeover",
-    "makeupbyaashnaguglani",
-    "thedevpurush",
-]
+    "novaraa_internationals__",
+    "pragyas353",
+    "prateekbabarfitness",
+    "swarnapraveen1",
+    "syed_swaleh",
+    "tanmaynagpal_",
+    "techbyrawat",
+    "vanitas_payal_beauty999",
+    "veekshadiaries",
+    "vickygetfit",
+    "wander_bites_duo",
+ ]
 
-monitor = PostMonitor(headless=True)
+monitor = PostMonitor(headless=False)
 results = monitor.check_multiple(usernames, limit=12)
 monitor.close()
 for username, posts in results.items():
@@ -23,4 +45,13 @@ for username, posts in results.items():
     else:
         print(f"No new posts for {username}")
 
-time.sleep(random.uniform(10, 60))
+time.sleep(random.uniform(1, 30))
+
+# =========================================
+# AI COMMENT GENERATION
+# =========================================
+try:
+    print("\n[AI] Starting ""comment generation...")
+    subprocess.run(["python","ai_comments.py"])
+except Exception as e:
+    print(f"[AI] generator failed: {e}")
