@@ -6,7 +6,6 @@ usernames = [
     "aanmolsharma__",
     "aesthetic.viren",
     "anshusworld",
-    "arvindyadav",
     "bholenath_jatt1811",
     "bite.me.up",
     "boonne.fashions",
@@ -34,7 +33,7 @@ usernames = [
     "wander_bites_duo",
  ]
 
-monitor = PostMonitor(headless=False)
+monitor = PostMonitor(headless=True)
 results = monitor.check_multiple(usernames, limit=12)
 monitor.close()
 for username, posts in results.items():

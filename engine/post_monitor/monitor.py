@@ -365,7 +365,7 @@ class PostMonitor:
             wait_until="domcontentloaded"
         )
 
-        self.page.wait_for_timeout(30000)
+        self.page.wait_for_timeout(60000)
 
         collected_posts = []
 

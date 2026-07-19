@@ -8,7 +8,6 @@ usernames = [
     "aanmolsharma__",
     "aesthetic.viren",
     "anshusworld",
-    "arvindyadav",
     "bholenath_jatt1811",
     "bite.me.up",
     "boonne.fashions",
@@ -55,7 +54,7 @@ username = usernames[current_index]
 
 print(f"Processing: {username}")
 
-monitor = PostMonitor(headless=False)
+monitor = PostMonitor(headless=True)
 results = monitor.check_multiple([username], limit=12)
 monitor.close()
 

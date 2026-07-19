@@ -362,6 +362,14 @@ Rules:
 - Do not continue comments after emoji
 - After one emoji STOP the line
 - Output ONLY comments
+
+CRITICAL:
+- Never append labels, tags, codes or metadata.
+- Never append category names.
+- Never append language codes.
+- Never append abbreviations like ERM, SPR, AFA, HAC, RVS, L1, L2, L3, L4, L5, ENIN or similar.
+- Every line must contain ONLY the comment text.
+- After the emoji, immediately end the line.
 """
 
     return generate_with_rotation(
