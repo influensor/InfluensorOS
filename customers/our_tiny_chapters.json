@@ -1,0 +1,30 @@
+{
+  "customer_id": "our_tiny_chapters",
+  "username": "our_tiny_chapters",
+
+  "type": "paid",
+
+  "plan": {
+    "type": "multi_post_per_day",
+    "start_date": "2026-07-21",
+    "expiry_date": "2026-08-21",
+    "posts_per_day": 10
+  },
+
+  "settings": {
+    "like": true,
+    "comment": true,
+    "gif_comment": true,
+    "repost": true,
+    "save": true,
+    "share": true,
+    "interested": true,
+    "add_to_story": false,
+    "randomize_action_sequence": true
+  },
+
+  "notifications": {
+    "enabled": true,
+    "mobile_numbers": ["917045600559"]
+  }
+}
