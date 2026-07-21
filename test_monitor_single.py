@@ -9,7 +9,6 @@ usernames = [
     "aesthetic.viren",
     "anshusworld",
     "bholenath_jatt1811",
-    "bite.me.up",
     "boonne.fashions",
     "bridesbyaashna",
     "choreographer_akash",
