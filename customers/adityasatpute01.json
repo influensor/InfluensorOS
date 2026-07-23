@@ -13,7 +13,7 @@
 
   "settings": {
     "like": true,
-    "comment": true,
+    "comment": false,
 	"gif_comment": true,
 	"repost": true,
     "save": true,
