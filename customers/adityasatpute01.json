@@ -1,13 +1,13 @@
 {
-  "customer_id": "dr.aiinpractice",
-  "username": "dr.aiinpractice",
+  "customer_id": "adityasatpute01",
+  "username": "adityasatpute01",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-07-03",
-	"expiry_date": "2026-08-03",
+	"start_date": "2026-07-23",
+	"expiry_date": "2026-08-23",
 	"posts_per_day": 1
   },
 
@@ -25,6 +25,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["917006565518"]
+    "mobile_numbers": ["917083468491"]
   }
 }
