@@ -15,10 +15,10 @@ from .storage_new import load_saved_posts, save_posts
 
 PROFILES = [
     r"C:\instagram_a4agharkar.in",
-#    r"C:\instagram_abhijit.agharkar",
-#    r"C:\instagram_blackaquaindia.in",
-#    r"C:\instagram_mimy_ai",
-#    r"C:\instagram_nashikonwheels",
+    r"C:\instagram_abhijit.agharkar",
+    r"C:\instagram_blackaquaindia.in",
+    r"C:\instagram_mimy_ai",
+    r"C:\instagram_nashikonwheels",
     r"C:\instagram_shophudabeauty.in",
 ]
 USER_DATA_DIR = random.choice(PROFILES)
