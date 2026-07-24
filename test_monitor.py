@@ -13,7 +13,6 @@ usernames = [
     "bridesbyaashna",
     "choreographer_akash",
     "djdynameets",
-    "dr_divyaprakashgavel",
     "eternalbright.in",
     "faizaansofficial",
     "friendsandcompany_official",
@@ -32,7 +31,6 @@ usernames = [
     "tanmaynagpal_",
     "techbyrawat",
     "vanitas_payal_beauty999",
-    "veekshadiaries",
     "vickygetfit",
     "wander_bites_duo",
  ]
