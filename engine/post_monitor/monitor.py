@@ -20,6 +20,7 @@ PROFILES = [
 #    r"C:\instagram_mimy_ai",
 #    r"C:\instagram_nashikonwheels",
     r"C:\instagram_shophudabeauty.in",
+    r"C:\instagram_shivdigitalofficial",
 ]
 USER_DATA_DIR = random.choice(PROFILES)
 
@@ -501,7 +502,7 @@ class PostMonitor:
             )
 
             post_page.wait_for_timeout(
-                random.randint(5000, 10000)
+                random.randint(5000, 60000)
             )
 
             html = post_page.content()
