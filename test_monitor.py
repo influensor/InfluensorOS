@@ -27,7 +27,6 @@ usernames = [
     "pragyas353",
     "prateekbabarfitness",
     "swarnapraveen1",
-    "syed_swaleh",
     "tanmaynagpal_",
     "techbyrawat",
     "vanitas_payal_beauty999",
