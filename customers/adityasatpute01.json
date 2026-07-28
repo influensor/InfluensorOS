@@ -14,8 +14,8 @@
   "settings": {
     "like": true,
     "comment": false,
-	"gif_comment": true,
-	"repost": true,
+	"gif_comment": false,
+	"repost": false,
     "save": true,
     "share": true,
 	"interested": true,
