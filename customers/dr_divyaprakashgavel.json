@@ -1,13 +1,13 @@
 {
-  "customer_id": "friendsandcompany_official",
-  "username": "friendsandcompany_official",
+  "customer_id": "dr_divyaprakashgavel",
+  "username": "dr_divyaprakashgavel",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-07-30",
-	"expiry_date": "2026-08-30",
+	"start_date": "2026-07-31",
+	"expiry_date": "2026-08-31",
 	"posts_per_day": 1
   },
 
@@ -25,6 +25,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["917977416404"]
+    "mobile_numbers": ["916260760020"]
   }
 }
