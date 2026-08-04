@@ -22,6 +22,7 @@ usernames = [
     "ls_beautysalon_and_makeover",
     "muskankorea",
     "nasuschauhan",
+    "njadawala",
     "our_tiny_chapters",
     "pragyas353",
     "prateekbabarfitness",
