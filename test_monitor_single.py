@@ -5,7 +5,8 @@ import subprocess
 from engine.post_monitor.monitor import PostMonitor
 
 usernames = [
-    "lipika_maheshwari",
+    "aesthetic.viren",
+    "ifbbprojyotigupta",
  ]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
