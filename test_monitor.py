@@ -19,7 +19,6 @@ usernames = [
     "friendsandcompany_official",
     "hairtrendssalonsindia",
     "ifbbprojyotigupta",
-    "lipika_maheshwari",
     "harmann.kapoor",
     "ls_beautysalon_and_makeover",
     "muskankorea",
