@@ -5,62 +5,51 @@ import random
 from engine.ui.device import get_device
 from engine.logger import info, warn, error
 from engine.ui.swipe import swipe_up
+from engine.config import STATE_DEVICES_DIR
 
 
 # =========================================================
 # CONFIG
 # =========================================================
 
-CUSTOM_SHARE_FILENAME = "share_custom_users.txt"
+CUSTOM_SHARE_FILE = "share_custom_users.txt"
 
 
 # =========================================================
-# SELECTORS
+# SELECTOR CANDIDATES
 # =========================================================
 
 SHARE_BUTTON_SELECTORS = [
-    {
-        "resourceId":
-        "com.instagram.android:id/row_feed_button_share"
-    },
-    {
-        "descriptionContains": "Share"
-    },
-    {
-        "text": "Share"
-    },
+    {"resourceId": "com.instagram.android:id/row_feed_button_share"},
+    {"descriptionContains": "Share"},
+    {"text": "Share"},
 ]
 
-
-# ---------------------------------------------------------
-# Share sheet search selectors
-# ---------------------------------------------------------
 
 SEARCH_SELECTORS = [
+    {"resourceId": "com.instagram.android:id/direct_share_search"},
+    {"resourceId": "com.instagram.android:id/search_edit_text"},
+    {"resourceId": "com.instagram.android:id/direct_share_sheet_search"},
+    {"text": "Search"},
+    {"descriptionContains": "Search"},
+]
+
+
+USER_ROW_SELECTORS = [
     {
         "resourceId":
-        "com.instagram.android:id/direct_share_search"
-    },
-    {
-        "resourceId":
-        "com.instagram.android:id/search_edit_text"
-    },
-    {
-        "resourceId":
-        "com.instagram.android:id/direct_share_sheet_search"
-    },
-    {
-        "text": "Search"
-    },
-    {
-        "descriptionContains": "Search"
+        "com.instagram.android:id/row_user_info_layout"
     },
 ]
 
 
-# ---------------------------------------------------------
-# Send button
-# ---------------------------------------------------------
+USER_NAME_SELECTORS = [
+    {
+        "resourceId":
+        "com.instagram.android:id/row_user_primary_name"
+    },
+]
+
 
 SEND_BUTTON_SELECTORS = [
     {
@@ -77,40 +66,72 @@ SEND_BUTTON_SELECTORS = [
 
 
 # =========================================================
+# UNIVERSAL FIND FUNCTION
+# =========================================================
+
+def _find_ui(
+    d,
+    selectors,
+    timeout=0.1,
+    multiple=False
+):
+
+    for sel in selectors:
+
+        try:
+
+            ui = d(**sel)
+
+            if multiple:
+
+                if len(ui) > 0:
+                    return list(ui)
+
+            else:
+
+                if ui.exists(
+                    timeout=timeout
+                ):
+                    return ui
+
+        except Exception:
+
+            continue
+
+    return [] if multiple else None
+
+
+# =========================================================
 # CUSTOM SHARE FILE
 # =========================================================
 
-def _get_users_file(device_id):
-
-    """
-    Returns:
-
-    runtime/state/devices/<device_id>/custom_share_users.txt
-    """
+def _get_custom_share_file(
+    device_id
+):
 
     return os.path.join(
-        "runtime",
-        "state",
-        "devices",
+        STATE_DEVICES_DIR,
         device_id,
-        CUSTOM_SHARE_FILENAME
+        CUSTOM_SHARE_FILE
     )
 
 
 # =========================================================
-# LOAD USERS
+# LOAD CUSTOM USERS
 # =========================================================
 
-def _load_users(device_id):
+def _load_custom_users(
+    device_id
+):
 
-    path = _get_users_file(
+    path = _get_custom_share_file(
         device_id
     )
 
     if not os.path.exists(path):
 
         warn(
-            f"Custom share file not found: {path}",
+            f"⚠ Custom Share File Not Found: {path}",
             device_id
         )
 
@@ -133,20 +154,24 @@ def _load_users(device_id):
                 if not username:
                     continue
 
-                # Remove @ if present
-                username = username.lstrip("@").strip()
+                username = (
+                    username
+                    .lstrip("@")
+                    .strip()
+                )
 
-                if not username:
-                    continue
+                if username:
 
-                users.append(username)
+                    users.append(
+                        username
+                    )
 
-        return users
+            return users
 
     except Exception as e:
 
-        error(
-            f"Failed loading custom share users: {e}",
+        warn(
+            f"Custom Share File Read Error: {e}",
             device_id
         )
 
@@ -154,80 +179,30 @@ def _load_users(device_id):
 
 
 # =========================================================
-# SAVE USERS
+# GET FIRST CUSTOM USER
 # =========================================================
 
-def _save_users(
-    device_id,
-    users
+def _get_custom_user(
+    device_id
 ):
 
-    path = _get_users_file(
-        device_id
-    )
-
-    try:
-
-        folder = os.path.dirname(
-            path
-        )
-
-        os.makedirs(
-            folder,
-            exist_ok=True
-        )
-
-        with open(
-            path,
-            "w",
-            encoding="utf-8"
-        ) as f:
-
-            for username in users:
-
-                f.write(
-                    username + "\n"
-                )
-
-        return True
-
-    except Exception as e:
-
-        error(
-            f"Failed saving custom share users: {e}",
-            device_id
-        )
-
-        return False
-
-
-# =========================================================
-# GET ONE USER
-# =========================================================
-
-def _get_next_user(device_id):
-
-    users = _load_users(
+    users = _load_custom_users(
         device_id
     )
 
     if not users:
 
         info(
-            "No custom share users available",
+            "No Custom Share Users Available",
             device_id
         )
 
         return None
 
-    # -----------------------------------------------------
-    # Take ONLY first user
-    # -----------------------------------------------------
-
     username = users[0]
 
     info(
-        f"Custom share target: @{username}",
+        f"▶ Custom Share Target: @{username}",
         device_id
     )
 
@@ -235,23 +210,27 @@ def _get_next_user(device_id):
 
 
 # =========================================================
-# REMOVE SUCCESSFUL USER
+# REMOVE CUSTOM USER
 # =========================================================
 
-def _remove_user(
+def _remove_custom_user(
     device_id,
     username
 ):
 
-    users = _load_users(
+    path = _get_custom_share_file(
+        device_id
+    )
+
+    users = _load_custom_users(
         device_id
     )
 
     if not users:
+
         return False
 
-    updated_users = []
-
+    updated = []
     removed = False
 
     for user in users:
@@ -264,7 +243,7 @@ def _remove_user(
             removed = True
             continue
 
-        updated_users.append(
+        updated.append(
             user
         )
 
@@ -272,54 +251,36 @@ def _remove_user(
 
         return False
 
-    return _save_users(
-        device_id,
-        updated_users
-    )
+    try:
 
+        with open(
+            path,
+            "w",
+            encoding="utf-8"
+        ) as f:
 
-# =========================================================
-# UNIVERSAL FIND
-# =========================================================
+            for user in updated:
 
-def _find_ui(
-    d,
-    selectors,
-    timeout=0.1,
-    multiple=False
-):
+                f.write(
+                    user + "\n"
+                )
 
-    for selector in selectors:
+        info(
+            f"✓ Removed @{username} "
+            f"from custom share queue",
+            device_id
+        )
 
-        try:
+        return True
 
-            ui = d(
-                **selector
-            )
+    except Exception as e:
 
-            if multiple:
+        warn(
+            f"Custom Share File Update Error: {e}",
+            device_id
+        )
 
-                if len(ui) > 0:
-
-                    return list(ui)
-
-            else:
-
-                if ui.exists(
-                    timeout=timeout
-                ):
-
-                    return ui
-
-        except Exception:
-
-            continue
-
-    if multiple:
-
-        return []
-
-    return None
+        return False
 
 
 # =========================================================
@@ -331,16 +292,16 @@ def _open_share_sheet(
     device_id
 ):
 
-    share_button = _find_ui(
+    share_btn = _find_ui(
         d,
         SHARE_BUTTON_SELECTORS,
         timeout=2
     )
 
-    if not share_button:
+    if not share_btn:
 
         warn(
-            "Custom Share: Share button not found",
+            "⚠ Share Button Not Found",
             device_id
         )
 
@@ -348,18 +309,13 @@ def _open_share_sheet(
 
     try:
 
-        share_button.click()
+        share_btn.click()
 
         time.sleep(
             random.uniform(
-                0.3,
-                0.7
+                0.1,
+                0.5
             )
-        )
-
-        info(
-            "Custom Share: Share sheet opened",
-            device_id
         )
 
         return True
@@ -367,7 +323,7 @@ def _open_share_sheet(
     except Exception as e:
 
         warn(
-            f"Custom Share: Share click error: {e}",
+            f"Share Click Error: {e}",
             device_id
         )
 
@@ -388,19 +344,12 @@ def _expand_share_sheet(
             device_id
         )
 
-        time.sleep(
-            random.uniform(
-                0.2,
-                0.5
-            )
-        )
-
         return True
 
     except Exception as e:
 
         warn(
-            f"Custom Share: Expand failed: {e}",
+            f"Share Sheet Expand Error: {e}",
             device_id
         )
 
@@ -408,12 +357,13 @@ def _expand_share_sheet(
 
 
 # =========================================================
-# FIND SEARCH BOX
+# SEARCH USER
 # =========================================================
 
-def _find_search_box(
+def _search_user(
     d,
-    device_id
+    device_id,
+    username
 ):
 
     search = _find_ui(
@@ -422,32 +372,10 @@ def _find_search_box(
         timeout=2
     )
 
-    if search:
-
-        return search
-
-    return None
-
-
-# =========================================================
-# SEARCH USERNAME
-# =========================================================
-
-def _search_username(
-    d,
-    device_id,
-    username
-):
-
-    search = _find_search_box(
-        d,
-        device_id
-    )
-
     if not search:
 
         warn(
-            "Custom Share: Search box not found",
+            "⚠ Share Search Box Not Found",
             device_id
         )
 
@@ -465,7 +393,7 @@ def _search_username(
         )
 
         # -------------------------------------------------
-        # Clear existing text
+        # Clear previous text
         # -------------------------------------------------
 
         try:
@@ -484,15 +412,19 @@ def _search_username(
             username
         )
 
+        # -------------------------------------------------
+        # Wait for Instagram results
+        # -------------------------------------------------
+
         time.sleep(
             random.uniform(
-                1.0,
-                2.0
+                2.0,
+                3.0
             )
         )
 
         info(
-            f"Custom Share: Searching @{username}",
+            f"Searching Custom User: @{username}",
             device_id
         )
 
@@ -501,7 +433,7 @@ def _search_username(
     except Exception as e:
 
         warn(
-            f"Custom Share: Username search failed: {e}",
+            f"Username Search Error: {e}",
             device_id
         )
 
@@ -509,136 +441,204 @@ def _search_username(
 
 
 # =========================================================
-# FIND USER RESULT
+# GET USERNAME FROM USER ROW
 # =========================================================
 
-def _find_user_result(
+def _get_row_username(
+    row
+):
+
+    try:
+
+        name = row.child(
+            resourceId=
+            "com.instagram.android:id/row_user_primary_name"
+        )
+
+        if name.exists:
+
+            try:
+
+                username = (
+                    name.get_text()
+                    or ""
+                ).strip()
+
+                if username:
+
+                    return username
+
+            except Exception:
+
+                pass
+
+            try:
+
+                username = (
+                    name.info.get(
+                        "text",
+                        ""
+                    )
+                    or ""
+                ).strip()
+
+                if username:
+
+                    return username
+
+            except Exception:
+
+                pass
+
+    except Exception:
+
+        pass
+
+    return ""
+
+
+# =========================================================
+# FIND EXACT USER
+# =========================================================
+
+def _find_exact_user(
     d,
     username,
     device_id
 ):
 
-    clean_username = (
+    target = (
         username
         .lstrip("@")
         .strip()
+        .lower()
     )
 
-    # -----------------------------------------------------
-    # Exact text
-    # -----------------------------------------------------
-
-    exact_selectors = [
-
-        {
-            "text": clean_username
-        },
-
-        {
-            "text": f"@{clean_username}"
-        },
-
-    ]
-
-    for selector in exact_selectors:
-
-        try:
-
-            result = d(
-                **selector
-            )
-
-            if result.exists(
-                timeout=1
-            ):
-
-                return result
-
-        except Exception:
-
-            pass
-
-    # -----------------------------------------------------
-    # XPath exact text / content description
-    # -----------------------------------------------------
-
     try:
 
-        result = d.xpath(
-            f"//*[@text='{clean_username}' "
-            f"or @content-desc='{clean_username}']"
+        rows = _find_ui(
+            d,
+            USER_ROW_SELECTORS,
+            multiple=True
         )
 
-        if result.exists:
+        if not rows:
 
-            return result
+            return None
 
-    except Exception:
+        # -------------------------------------------------
+        # Check Instagram rows in displayed order
+        # -------------------------------------------------
 
-        pass
-
-    # -----------------------------------------------------
-    # Case-insensitive fallback
-    #
-    # uiautomator2 XPath does not provide a universal
-    # case-insensitive contains, so inspect visible nodes.
-    # -----------------------------------------------------
-
-    try:
-
-        nodes = d.xpath(
-            "//*[@text or @content-desc]"
-        )
-
-        for node in nodes.all():
+        for row in rows:
 
             try:
 
-                text = (
-                    node.attrib.get(
-                        "text",
-                        ""
+                row_username = (
+                    _get_row_username(
+                        row
                     )
-                    or ""
                 )
 
-                content_desc = (
-                    node.attrib.get(
-                        "content-desc",
-                        ""
-                    )
-                    or ""
-                )
+                if not row_username:
 
-                text = text.strip().lstrip("@").lower()
-                content_desc = (
-                    content_desc
-                    .strip()
+                    continue
+
+                clean_username = (
+                    row_username
                     .lstrip("@")
+                    .strip()
                     .lower()
                 )
 
-                target = (
-                    clean_username
-                    .lower()
-                )
+                if clean_username == target:
 
-                if (
-                    text == target
-                    or content_desc == target
-                ):
+                    info(
+                        f"✓ Exact User Found: "
+                        f"@{username}",
+                        device_id
+                    )
 
-                    return node
+                    return row
 
             except Exception:
 
                 continue
 
-    except Exception:
+    except Exception as e:
 
-        pass
+        warn(
+            f"Exact User Match Error: {e}",
+            device_id
+        )
 
     return None
+
+
+# =========================================================
+# FIND FIRST AVAILABLE USER
+# =========================================================
+
+def _find_first_user(
+    d,
+    device_id
+):
+
+    try:
+
+        users = _find_ui(
+            d,
+            USER_ROW_SELECTORS,
+            multiple=True
+        )
+
+        if not users:
+
+            warn(
+                "⚠ Share Sheet Returned No Users",
+                device_id
+            )
+
+            return None
+
+        # -------------------------------------------------
+        # IMPORTANT:
+        #
+        # The first row is the first available
+        # actual Share user.
+        # -------------------------------------------------
+
+        user = users[0]
+
+        username = _get_row_username(
+            user
+        )
+
+        if username:
+
+            info(
+                f"First Available Share User: "
+                f"{username}",
+                device_id
+            )
+
+        else:
+
+            info(
+                "First Available Share User Found",
+                device_id
+            )
+
+        return user
+
+    except Exception as e:
+
+        warn(
+            f"First Available User Error: {e}",
+            device_id
+        )
+
+        return None
 
 
 # =========================================================
@@ -651,20 +651,60 @@ def _select_user(
     username
 ):
 
-    user = _find_user_result(
-        d,
-        username,
-        device_id
-    )
+    # =====================================================
+    # TRY EXACT USER FIRST
+    # =====================================================
 
-    if not user:
+    try:
 
-        warn(
-            f"Custom Share: @{username} not found",
+        user = _find_exact_user(
+            d,
+            username,
             device_id
         )
 
-        return False
+    except Exception as e:
+
+        warn(
+            f"Exact User Selection Exception: {e}",
+            device_id
+        )
+
+        user = None
+
+    # =====================================================
+    # FALLBACK TO FIRST USER
+    # =====================================================
+
+    if not user:
+
+        info(
+            f"Exact User Not Found → "
+            f"Checking First Available User",
+            device_id
+        )
+
+        user = _find_first_user(
+            d,
+            device_id
+        )
+
+        # -------------------------------------------------
+        # NO USERS AVAILABLE
+        # -------------------------------------------------
+
+        if not user:
+
+            warn(
+                "⚠ No Users Available In Share Sheet",
+                device_id
+            )
+
+            return "NO_USERS"
+
+    # =====================================================
+    # CLICK USER ROW
+    # =====================================================
 
     try:
 
@@ -672,26 +712,26 @@ def _select_user(
 
         time.sleep(
             random.uniform(
-                0.3,
-                0.6
+                0.2,
+                0.5
             )
         )
 
         info(
-            f"Custom Share: Selected @{username}",
+            "✓ Share User Selected",
             device_id
         )
 
-        return True
+        return "SELECTED"
 
     except Exception as e:
 
         warn(
-            f"Custom Share: User selection failed: {e}",
+            f"User Click Error: {e}",
             device_id
         )
 
-        return False
+        return "ERROR"
 
 
 # =========================================================
@@ -703,16 +743,16 @@ def _click_send(
     device_id
 ):
 
-    send_button = _find_ui(
+    send_btn = _find_ui(
         d,
         SEND_BUTTON_SELECTORS,
         timeout=3
     )
 
-    if not send_button:
+    if not send_btn:
 
         warn(
-            "Custom Share: Send button not found",
+            "⚠ Send Button Not Found",
             device_id
         )
 
@@ -720,18 +760,15 @@ def _click_send(
 
     try:
 
-        send_button.click()
-
-        time.sleep(
-            random.uniform(
-                0.8,
-                1.5
-            )
-        )
+        send_btn.click()
 
         info(
-            "Custom Share: Sent successfully",
+            "🚀 Custom Share Sent Successfully",
             device_id
+        )
+
+        time.sleep(
+            1
         )
 
         return True
@@ -739,7 +776,7 @@ def _click_send(
     except Exception as e:
 
         warn(
-            f"Custom Share: Send click error: {e}",
+            f"Send Click Error: {e}",
             device_id
         )
 
@@ -747,44 +784,61 @@ def _click_send(
 
 
 # =========================================================
+# HANDLE RETRY
+# =========================================================
+
+def _handle_retry(
+    device_id
+):
+
+    warn(
+        "Retrying Custom Share...",
+        device_id
+    )
+
+    time.sleep(
+        1
+    )
+
+
+# =========================================================
 # MAIN CUSTOM SHARE
 # =========================================================
 
-def custom_share(
+def share_custom(
     device_id,
     retries=2
 ):
 
     """
-    Custom Share Flow:
+    CUSTOM SHARE FLOW
 
-        1. Read first username from device TXT
-        2. Open Share
-        3. Expand Share sheet
-        4. Search username
-        5. Select ONE username
-        6. Send
-        7. Remove username only after success
-
-    Returns:
-
-        True  -> Share successful
-        False -> Share failed / no username
+    1. Get first username from TXT.
+    2. Open Share.
+    3. Expand Share sheet.
+    4. Search username.
+    5. Try exact username.
+    6. If exact username unavailable:
+         select first available user.
+    7. If NO users are available:
+         remove username from TXT.
+    8. If user is selected:
+         click Send.
+    9. If Send succeeds:
+         remove username from TXT.
+    10. If UI/Send fails:
+         keep username for retry.
     """
-
-    # -----------------------------------------------------
-    # Device
-    # -----------------------------------------------------
 
     d = get_device(
         device_id
     )
 
-    # -----------------------------------------------------
-    # Get ONE username
-    # -----------------------------------------------------
+    # =====================================================
+    # GET FIRST QUEUED USER
+    # =====================================================
 
-    username = _get_next_user(
+    username = _get_custom_user(
         device_id
     )
 
@@ -792,9 +846,9 @@ def custom_share(
 
         return False
 
-    # -----------------------------------------------------
-    # Retry
-    # -----------------------------------------------------
+    # =====================================================
+    # RETRIES
+    # =====================================================
 
     for attempt in range(
         1,
@@ -817,10 +871,6 @@ def custom_share(
             device_id
         ):
 
-            time.sleep(
-                0.5
-            )
-
             continue
 
         # =================================================
@@ -835,30 +885,83 @@ def custom_share(
         # SEARCH
         # =================================================
 
-        if not _search_username(
+        if not _search_user(
             d,
             device_id,
             username
         ):
 
-            time.sleep(
-                0.5
+            _handle_retry(
+                device_id
             )
 
             continue
 
         # =================================================
-        # SELECT EXACTLY ONE
+        # SELECT USER
         # =================================================
 
-        if not _select_user(
+        selection = _select_user(
             d,
             device_id,
             username
-        ):
+        )
 
-            time.sleep(
-                0.5
+        # =================================================
+        # NO USERS AVAILABLE
+        # =================================================
+
+        if selection == "NO_USERS":
+
+            info(
+                f"Removing @{username} "
+                f"because Share returned no users",
+                device_id
+            )
+
+            removed = _remove_custom_user(
+                device_id,
+                username
+            )
+
+            if removed:
+
+                info(
+                    f"✓ @{username} removed "
+                    f"from custom share queue",
+                    device_id
+                )
+
+            else:
+
+                warn(
+                    f"⚠ Could not remove @{username} "
+                    f"from custom share queue",
+                    device_id
+                )
+
+            return False
+
+        # =================================================
+        # SELECTION ERROR
+        # =================================================
+
+        if selection == "ERROR":
+
+            _handle_retry(
+                device_id
+            )
+
+            continue
+
+        # =================================================
+        # UNKNOWN RESULT
+        # =================================================
+
+        if selection != "SELECTED":
+
+            _handle_retry(
+                device_id
             )
 
             continue
@@ -872,12 +975,11 @@ def custom_share(
             device_id
         ):
 
-            # -------------------------------------------------
-            # IMPORTANT:
-            # Remove user ONLY after successful Send.
-            # -------------------------------------------------
+            # ---------------------------------------------
+            # Remove ONLY after successful Send
+            # ---------------------------------------------
 
-            removed = _remove_user(
+            removed = _remove_custom_user(
                 device_id,
                 username
             )
@@ -885,17 +987,17 @@ def custom_share(
             if removed:
 
                 info(
-                    f"Custom Share completed → "
-                    f"@{username} "
-                    f"(removed from queue)",
+                    f"✓ @{username} completed "
+                    f"and removed from queue",
                     device_id
                 )
 
             else:
 
                 warn(
-                    f"Custom Share sent to @{username}, "
-                    f"but could not remove user from file",
+                    f"⚠ Share succeeded but "
+                    f"could not remove @{username} "
+                    f"from queue",
                     device_id
                 )
 
@@ -905,11 +1007,8 @@ def custom_share(
         # SEND FAILED
         # =================================================
 
-        time.sleep(
-            random.uniform(
-                0.5,
-                1.0
-            )
+        _handle_retry(
+            device_id
         )
 
     # =====================================================
@@ -917,11 +1016,13 @@ def custom_share(
     # =====================================================
 
     error(
-        f"❌ Custom Share failed → @{username}",
+        f"❌ Custom Share Failed After Retries "
+        f"→ @{username}",
         device_id
     )
 
-    # User remains in TXT because the share
-    # was not confirmed successful.
+    # IMPORTANT:
+    # Username remains in TXT because the operation
+    # did not reach successful Send.
 
     return False

@@ -12,6 +12,7 @@ from engine.ui.comment import post_comment
 from engine.ui.gif import post_gif_comment
 from engine.ui.repost import repost_post
 from engine.ui.share import share_post
+from engine.ui.share_custom import share_custom
 from engine.ui.save import save_post
 from engine.ui.interested import mark_post_interested
 from engine.ui.switch_account import switch_account
@@ -22,10 +23,10 @@ from engine.ui.switch_account import switch_account
 # =========================
 
 #ACTIONS = ["open_instagram", "profile", "follow", "story", "message", "post", "like", "comment", "gif_comment", "repost", "share", "save", "interested", "switch"]
-ACTIONS = ["open_instagram"]
+ACTIONS = ["post", "share_custom", "switch"]
 
 TEST_USERNAME = "direaltina"
-TEST_POST_URL = {"url": "https://www.instagram.com/reel/DbwjgJENQlZ/","shortcode": "DbwjgJENQlZ"}
+TEST_POST_URL = {"url": "https://www.instagram.com/reel/Dbtk4W3JlFZ/","shortcode": "Dbtk4W3JlFZ"}
 
 # =========================
 # 📄 LOCAL DEBUG LOGGER
@@ -205,6 +206,17 @@ def debug_device(device_id):
             run_step(
                 "Share",
                 lambda: share_post(device_id),
+                device_id
+            )
+            time.sleep(1)
+
+        # -------------------------
+        # Share Custom
+        # -------------------------
+        if "share_custom" in ACTIONS:
+            run_step(
+                "Share Custom",
+                lambda: share_custom(device_id),
                 device_id
             )
             time.sleep(1)
