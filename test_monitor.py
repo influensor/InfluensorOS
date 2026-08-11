@@ -6,7 +6,6 @@ usernames = [
     "aanmolsharma__",
     "adityasatpute01",
     "aesthetic.viren",
-    "anshusworld",
     "bholenath_jatt1811",
     "bite.me.up",
     "boonne.fashions",
@@ -25,7 +24,6 @@ usernames = [
     "nasuschauhan",
     "njadawala",
     "our_tiny_chapters",
-    "pragyas353",
     "prateekbabarfitness",
     "shivanisharmafoundation",
     "swarnapraveen1",
@@ -33,7 +31,6 @@ usernames = [
     "techbyrawat",
     "vanitas_payal_beauty999",
     "vickygetfit",
-    "wander_bites_duo",
  ]
 
 monitor = PostMonitor(headless=True)
