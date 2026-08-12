@@ -13,8 +13,8 @@
 
   "settings": {
     "like": true,
-    "comment": true,
-	"gif_comment": true,
+    "comment": false,
+	"gif_comment": false,
 	"repost": true,
     "save": true,
 	"interested": true,
