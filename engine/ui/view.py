@@ -1,8 +1,9 @@
 import time
 import random
 from engine.ui.device import get_device
-
 from engine.logger import info, warn, error
+from engine.ui.swipe import swipe_up
+from engine.ui.swipe import swipe_down
 
 
 # =========================
@@ -22,19 +23,15 @@ def view_post(device_id, min_seconds=1, max_seconds=60, retries=1):
 
         try:
             start = time.time()
-
             while time.time() - start < duration:
                 # Human-like idle pause
-                time.sleep(random.uniform(1.0, 2.5))
-
-                # Optional micro-scroll (very subtle)
-                if random.random() < 0.2:
-                    try:
-                        d.swipe_ext("up", scale=10)
-                        time.sleep(random.uniform(1.0, 3.0))
-                        d.swipe_ext("down", scale=10)
-                    except Exception:
-                        pass
+                time.sleep(random.uniform(1, 3))
+                try:
+                    swipe_up(device_id)
+                    time.sleep(random.uniform(2, 2))
+                    swipe_down(device_id)
+                except Exception:
+                    pass
 
             info(f"✅ View completed ({duration}s)", device_id)
             return True

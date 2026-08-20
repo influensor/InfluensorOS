@@ -6,6 +6,7 @@ from engine.ui.instagram import (open_instagram,ui_open_profile_by_username,open
 from engine.ui.follow import follow_user
 from engine.ui.story_view_like import story_view_like
 from engine.ui.message import send_promotional_message
+from engine.ui.view import view_post
 from engine.ui.like import like_post
 from engine.logic.comment_loader import load_random_comment
 from engine.ui.comment import post_comment
@@ -23,7 +24,7 @@ from engine.ui.switch_account import switch_account
 # =========================
 
 #ACTIONS = ["open_instagram", "profile", "follow", "story", "message", "post", "like", "comment", "gif_comment", "repost", "share", "save", "interested", "switch"]
-ACTIONS = ["post", "share_custom", "switch"]
+ACTIONS = ["post", "view"]
 
 TEST_USERNAME = "direaltina"
 TEST_POST_URL = {"url": "https://www.instagram.com/reel/Dbtk4W3JlFZ/","shortcode": "Dbtk4W3JlFZ"}
@@ -149,6 +150,18 @@ def debug_device(device_id):
             ):
                 return
             time.sleep(2)
+
+        # -------------------------
+        # View
+        # -------------------------
+        if "view" in ACTIONS:
+            if not run_step(
+                "View",
+                lambda: view_post(device_id),
+                device_id
+            ):
+                return
+            time.sleep(1)
 
         # -------------------------
         # Like

@@ -449,7 +449,7 @@ def device_worker(device_id):
         # Already liked
         # -------------------------
         if already_liked:
-            view_post(device_id,1,random.randint(1, 60))
+            view_post(device_id,1,random.randint(10, 60))
 
         # -------------------------
         # Execute actions
