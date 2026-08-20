@@ -1,13 +1,13 @@
 {
-  "customer_id": "bite.me.up",
-  "username": "bite.me.up",
+  "customer_id": "bridesbyaashna",
+  "username": "bridesbyaashna",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-08-25",
-	"expiry_date": "2026-09-25",
+	"start_date": "2026-08-20",
+	"expiry_date": "2026-09-20",
 	"posts_per_day": 1
   },
 
