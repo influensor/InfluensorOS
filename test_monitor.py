@@ -26,6 +26,7 @@ usernames = [
     "njadawala",
     "nuclear_organics",
     "our_tiny_chapters",
+    "ria_fashionblogger",
     "sana_glamgoddess",
     "shivanisharmafoundation",
     "smilesbydrravneetkaur",
