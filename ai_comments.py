@@ -653,7 +653,7 @@ def process_user_file(path):
     # PROCESS TOP 10 POSTS ONLY
     # =========================================
 
-    for post in posts[:12]:
+    for post in posts[:100]:
 
         # -------------------------------------
         # ONLY 1 POST PER USER PER RUN

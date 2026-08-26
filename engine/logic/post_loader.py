@@ -189,18 +189,8 @@ def load_posts(
     # =============================================
 
     for post in posts:
-
-        completed = _is_completed(
-            delivery_posts,
-            post
-        )
-
-        print(
-
-            f"[POST CHECK] "
-            f"{post['shortcode']} "
-            f"completed={completed}"
-        )
+        completed = _is_completed(delivery_posts,post)
+        #print(f"[POST CHECK] " f"{post['shortcode']} " f"completed={completed}")
 
         # -----------------------------------------
         # SKIP COMPLETED
@@ -209,21 +199,12 @@ def load_posts(
         if completed:
             continue
 
-        print(
-
-            f"[POST SELECTED] "
-            f"{post['shortcode']}"
-        )
-
+        print(f"[POST SELECTED] " f"{post['shortcode']}")
         return [post]
 
     # =============================================
     # ALL POSTS COMPLETED
     # =============================================
 
-    print(
-        "[POST LOADER] "
-        "All posts completed"
-    )
-
+    #print("[POST LOADER] ""All posts completed")
     return []
