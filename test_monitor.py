@@ -22,7 +22,6 @@ usernames = [
     "harmann.kapoor",
     "ls_beautysalon_and_makeover",
     "lipika_maheshwari",
-    "muskankorea",
     "njadawala",
     "nuclear_organics",
     "our_tiny_chapters",
