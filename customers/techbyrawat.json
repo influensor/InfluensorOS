@@ -6,8 +6,8 @@
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-06-23",
-	"expiry_date": "2026-08-25",
+	"start_date": "2026-08-25",
+	"expiry_date": "2026-09-25",
 	"posts_per_day": 1
   },
 
