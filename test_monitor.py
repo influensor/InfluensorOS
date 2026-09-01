@@ -12,7 +12,6 @@ usernames = [
     "bridesbyaashna",
     "choreographer_akash",
     "djdynameets",
-    "dr_divyaprakashgavel",
     "eternalbright.in",
     "faizaansofficial",
     "friendsandcompany_official",
