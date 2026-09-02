@@ -26,8 +26,10 @@ usernames = [
     "sana_glamgoddess",
     "shivanisharmafoundation",
     "smilesbydrravneetkaur",
+    "strangersindia.store",
     "swarnapraveen1",
     "techbyrawat",
+    "torqos.ev",
     "vanitas_payal_beauty999",
     "vickygetfit",
     "wander_bites_duo"
