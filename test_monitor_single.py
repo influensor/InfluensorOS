@@ -26,7 +26,7 @@ username = usernames[current_index]
 print(f"Processing: {username}")
 
 monitor = PostMonitor(headless=True)
-results = monitor.check_multiple([username], limit=45)
+results = monitor.check_multiple([username], limit=50)
 monitor.close()
 
 for username, posts in results.items():
