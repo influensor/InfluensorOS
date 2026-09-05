@@ -31,6 +31,7 @@ usernames = [
     "torqos.ev",
     "vanitas_payal_beauty999",
     "vickygetfit",
+    "vinayakoli",
     "wander_bites_duo",
     "wearstrangers"
  ]
