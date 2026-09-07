@@ -182,8 +182,8 @@ def device_worker(device_id):
     customer = None
     post = None
 
-    while True:
-
+    #while True: #Post Cycle Issue - Temporary Fix September 2026
+    for _ in range(30):
         #open_instagram(device_id)
 
         # -------------------------
