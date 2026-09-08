@@ -15,6 +15,7 @@ usernames = [
     "faizaansofficial",
     "friendsandcompany_official",
     "hairtrendssalonsindia",
+    "ifbbprojyotigupta",
     "ls_beautysalon_and_makeover",
     "lipika_maheshwari",
     "nuclear_organics",
