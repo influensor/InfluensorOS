@@ -5,7 +5,6 @@ from engine.post_monitor.monitor import PostMonitor
 usernames = [
     "akashviraniphotography",
     "anshusworld",
-    "aesthetic.viren",
     "bholenath_jatt1811",
     "bite.me.up",
     "boonne.fashions",
@@ -16,7 +15,6 @@ usernames = [
     "faizaansofficial",
     "friendsandcompany_official",
     "hairtrendssalonsindia",
-    "ifbbprojyotigupta",
     "ls_beautysalon_and_makeover",
     "lipika_maheshwari",
     "nuclear_organics",
