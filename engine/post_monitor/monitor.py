@@ -742,7 +742,7 @@ class PostMonitor:
                     f"{current_count}"
                 )
     
-                if current_count > old_count:
+                if current_count != old_count:
                     changed_users.append((username,current_count))
 
             except Exception as e:
@@ -780,7 +780,7 @@ class PostMonitor:
                     username
                 ] = posts
                 
-                if len(posts) == 0:
+                if posts is None:
                     print(
                         f"[SKIP COUNT UPDATE] "
                         f"{username} returned 0 posts"
