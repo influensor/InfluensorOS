@@ -26,6 +26,7 @@ usernames = [
     "shivanisharmafoundation",
     "smilesbydrravneetkaur",
     "swarnapraveen1",
+    "tanmaynagpal_",
     "techbyrawat",
     "torqos.ev",
     "vanitas_payal_beauty999",
