@@ -4,7 +4,7 @@ import random
 import subprocess
 from engine.post_monitor.monitor import PostMonitor
 
-usernames = ["tanmaynagpal_",]
+usernames = ["smilesbydrravneetkaur",]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
 INDEX_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\current_user.txt"
