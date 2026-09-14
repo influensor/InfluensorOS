@@ -382,11 +382,8 @@ CRITICAL:
 # =====================================================
 
 def split_broken_lines(lines):
-
     fixed = []
-
     for line in lines:
-
         lower = line.lower()
 
         # ---------------------------------
@@ -394,38 +391,22 @@ def split_broken_lines(lines):
         # ---------------------------------
 
         if "oops" in lower:
-
-            parts = re.split(
-                r"oops.*?",
-                line,
-                flags=re.IGNORECASE
-            )
-
+            parts = re.split(r"oops.*?",line,flags=re.IGNORECASE)
             for part in parts:
-
                 part = part.strip()
-
                 if len(part) > 2:
                     fixed.append(part)
-
             continue
 
         # ---------------------------------
         # SPLIT MULTIPLE COMMENTS
         # ---------------------------------
 
-        pieces = re.split(
-            r"(?<=[😀-🙏])\s+(?=[A-Za-z])",
-            line
-        )
-
+        pieces = re.split(r"(?<=[😀-🙏])\s+(?=[A-Za-z])",line)
         for piece in pieces:
-
             piece = piece.strip()
-
             if len(piece) > 2:
                 fixed.append(piece)
-
     return fixed
 
 
@@ -434,18 +415,12 @@ def split_broken_lines(lines):
 # =====================================================
 
 def remove_mentions(comments):
-
     cleaned = []
-
     for comment in comments:
-
         if "@" in comment:
             continue
-
         cleaned.append(comment)
-
     return cleaned
-
 
 # =====================================================
 # CLEAN SYMBOLS
@@ -457,7 +432,6 @@ ALLOWED_SYMBOLS = [
     ":",
     "'"
 ]
-
 
 import unicodedata
 def clean_symbols(comment):
@@ -476,9 +450,7 @@ def clean_symbols(comment):
             or ord(char) > 10000          # Emojis
         ):
             cleaned += char
-    cleaned = " ".join(
-        cleaned.split()
-    )
+    cleaned = " ".join(cleaned.split())
     return cleaned.strip()
 
 # =====================================================
@@ -486,167 +458,96 @@ def clean_symbols(comment):
 # =====================================================
 
 def clean_comments(lines):
-
     cleaned = []
-
-    blocked_words = [
-        "descriptive",
-        "engagement",
-        "reaction",
-        "comments",
-        "category",
-        "oops",
-        "example",
-        "invalid",
-        "valid",
-        "rules",
-        "instruction",
-        "english",
-        "hinglish",
-        "hindi",
-    ]
+    blocked_words = ["descriptive","engagement","reaction","comments","category","oops","example","invalid","valid","rules","instruction","english","hinglish","hindi",]
 
     for line in lines:
-
         line = line.strip()
-
         if not line:
             continue
-
         lower = line.lower()
-
-        if any(
-            word in lower
-            for word in blocked_words
-        ):
+        if any(word in lower for word in blocked_words):
             continue
-
         if line.startswith("#"):
             continue
-
         cleaned.append(line)
-
     return cleaned
 
+
+# =====================================================
+# REMOVE NUMBERING ONLY IF ENTIRE BATCH IS NUMBERED
+# =====================================================
+
+def remove_batch_numbering(comments):
+    if not comments:
+        return comments
+
+    number_pattern = re.compile(r"^\s*\d+\s+")
+    numbered_count = sum(1 for comment in comments if number_pattern.match(comment))
+
+    # Only remove numbers when EVERY comment
+    # starts with a number.
+    if numbered_count == len(comments):
+        print(f"🔢 Detected numbering in all " f"{len(comments)} comments — removing numbers")
+
+        cleaned = []
+        for comment in comments:
+            comment = number_pattern.sub("",comment,count=1).strip()
+            cleaned.append(comment)
+        return cleaned
+
+    print(f"🔢 Mixed/normal output detected " f"({numbered_count}/{len(comments)} numbered) " f"— keeping numbers")
+    return comments
 
 # =====================================================
 # REMOVE SIMILAR
 # =====================================================
 
-def remove_similar(
-    comments,
-    threshold=0.85
-):
-
+def remove_similar(comments,threshold=0.85):
     unique = []
-
     for comment in comments:
-
-        if not any(
-
-            difflib.SequenceMatcher(
-                None,
-                comment,
-                u
-            ).ratio() > threshold
-
-            for u in unique
-        ):
+        if not any(difflib.SequenceMatcher(None,comment,u).ratio() > threshold for u in unique):
             unique.append(comment)
-
     return unique
-
 
 # =====================================================
 # ENSURE EXACT COUNT
 # =====================================================
 
 def enforce_count(comments):
-
     comments = comments[:TOTAL_COMMENTS]
-
     return comments
-
 
 # =====================================================
 # SAVE COMMENTS
 # =====================================================
 
-def save_comments(
-    username,
-    shortcode,
-    comments
-):
-
-    user_dir = os.path.join(
-        AI_COMMENTS_DIR,
-        username
-    )
-
-    os.makedirs(
-        user_dir,
-        exist_ok=True
-    )
-
-    path = os.path.join(
-        user_dir,
-        f"{shortcode}.txt"
-    )
-
-    with open(
-        path,
-        "w",
-        encoding="utf-8"
-    ) as f:
-
+def save_comments(username,shortcode,comments):
+    user_dir = os.path.join(AI_COMMENTS_DIR,username)
+    os.makedirs(user_dir,exist_ok=True)
+    path = os.path.join(user_dir,f"{shortcode}.txt")
+    with open(path,"w",encoding="utf-8") as f:
         for line in comments:
-
             f.write(line + "\n")
-
 
 # =====================================================
 # SAVE POSTS JSON IMMEDIATELY
 # =====================================================
 
-def save_posts_json(
-    path,
-    posts
-):
-
-    with open(
-        path,
-        "w",
-        encoding="utf-8"
-    ) as f:
-
-        json.dump(
-            posts,
-            f,
-            indent=2,
-            ensure_ascii=False
-        )
-
+def save_posts_json(path,posts):
+    with open(path,"w",encoding="utf-8") as f:
+        json.dump(posts,f,indent=2,ensure_ascii=False)
 
 # =====================================================
 # PROCESS USER FILE
 # =====================================================
 
 def process_user_file(path):
-
-    username = os.path.basename(
-        path
-    ).replace(".json", "")
-
+    username = os.path.basename(path).replace(".json", "")
     print(f"\n[USER] {username}")
-
-    with open(
-        path,
-        "r",
-        encoding="utf-8"
-    ) as f:
-
+    with open(path,"r",encoding="utf-8") as f:
         posts = json.load(f)
-
+    
     generated_count = 0
 
     # =========================================
@@ -654,37 +555,26 @@ def process_user_file(path):
     # =========================================
 
     for post in posts[:100]:
-
         # -------------------------------------
         # ONLY 1 POST PER USER PER RUN
         # -------------------------------------
-
+        
         if generated_count >= 1:
             break
-
+        
         # -------------------------------------
         # SKIP COMPLETED
         # -------------------------------------
-
-        if post.get(
-            "ai_comments_generated"
-        ) is True:
+        
+        if post.get("ai_comments_generated") is True:
             continue
 
-        caption = post.get(
-            "caption",
-            ""
-        ).strip()
-
+        caption = post.get("caption","").strip()
         if not caption:
             continue
 
         shortcode = post["shortcode"]
-
-        print(
-            f"[GENERATING] "
-            f"{shortcode}"
-        )
+        print(f"[GENERATING] " f"{shortcode}")
 
         try:
 
@@ -692,114 +582,51 @@ def process_user_file(path):
             # NICHE
             # =================================
 
-            print(
-                "🔍 Detecting niche..."
-            )
-
-            niche = detect_niche(
-                caption
-            )
-
+            print("🔍 Detecting niche...")
+            niche = detect_niche(caption)
             print(niche)
 
             # =================================
             # CATEGORIES
             # =================================
 
-            print(
-                "📊 Detecting categories..."
-            )
-
-            categories = detect_categories(
-                caption,
-                niche
-            )
-
+            print("📊 Detecting categories...")
+            categories = detect_categories(caption,niche)
             print(categories)
 
             # =================================
             # GENERATE COMMENTS
             # =================================
 
-            print(
-                "🤖 Generating comments..."
-            )
-
-            raw = create_comments(
-                caption,
-                niche,
-                categories
-            )
-
-            lines = [
-                line.strip()
-                for line in raw.split("\n")
-                if line.strip()
-            ]
-
-            lines = split_broken_lines(
-                lines
-            )
-
-            lines = remove_mentions(
-                lines
-            )
-
-            lines = [
-                clean_symbols(line)
-                for line in lines
-            ]
-
-            lines = clean_comments(
-                lines
-            )
-
-            lines = remove_similar(
-                lines
-            )
-
+            print("🤖 Generating comments...")
+            raw = create_comments(caption,niche,categories)
+            lines = [line.strip() for line in raw.split("\n") if line.strip()]
+            lines = split_broken_lines(lines)
+            lines = remove_mentions(lines)
+            lines = [clean_symbols(line) for line in lines]
+            lines = clean_comments(lines)
+            lines = remove_batch_numbering(lines)
+            lines = remove_similar(lines)
             random.shuffle(lines)
-
-            lines = enforce_count(
-                lines
-            )
+            lines = enforce_count(lines)
 
             # =================================
             # SAVE COMMENTS
             # =================================
 
-            save_comments(
-                username,
-                shortcode,
-                lines
-            )
+            save_comments(username,shortcode,lines)
 
             # =================================
             # UPDATE STATUS IMMEDIATELY
             # =================================
 
-            post[
-                "ai_comments_generated"
-            ] = True
-
+            post["ai_comments_generated"] = True
             generated_count += 1
-
-            save_posts_json(
-                path,
-                posts
-            )
-
-            print(
-                f"✅ Saved "
-                f"{len(lines)} comments"
-            )
+            save_posts_json(path,posts)
+            print(f"✅ Saved " f"{len(lines)} comments")
 
         except Exception as e:
-
-            print(
-                f"[ERROR] "
-                f"{shortcode}: {e}"
-            )
+            print(f"[ERROR] " f"{shortcode}: {e}")
 
 
 # =====================================================
