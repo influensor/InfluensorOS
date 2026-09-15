@@ -9,6 +9,7 @@ usernames = [
     "boonne.fashions",
     "bridesbyaashna",
     "choreographer_akash",
+    "djdynameets",
     "eternalbright.in",
     "faizaansofficial",
     "friendsandcompany_official",
