@@ -3,18 +3,15 @@ import random
 import subprocess
 from engine.post_monitor.monitor import PostMonitor
 usernames = [
-    "akashviraniphotography",
-    "anshusworld",
+    "aesthetic.viren",
     "bholenath_jatt1811",
     "bite.me.up",
     "boonne.fashions",
     "bridesbyaashna",
     "choreographer_akash",
-    "djdynameets",
     "eternalbright.in",
     "faizaansofficial",
     "friendsandcompany_official",
-    "hairtrendssalonsindia",
     "ifbbprojyotigupta",
     "ls_beautysalon_and_makeover",
     "nightwalkerstheband",
