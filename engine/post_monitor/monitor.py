@@ -17,11 +17,11 @@ PROFILES = [
 #    r"C:\instagram_a4agharkar.in",
 #    r"C:\instagram_abhijit.agharkar",
 #    r"C:\instagram_blackaquaindia.in",
-#    r"C:\instagram_chhayaagharkar",
+    r"C:\instagram_chhayaagharkar",
     r"C:\instagram_dhananjay.agharkar",
 #    r"C:\instagram_mimy_ai",
 #    r"C:\instagram_nashikonwheels",
-#    r"C:\instagram_shivdigitalofficial",
+    r"C:\instagram_shivdigitalofficial",
 ]
 USER_DATA_DIR = random.choice(PROFILES)
 
