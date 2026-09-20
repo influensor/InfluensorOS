@@ -4,7 +4,6 @@ import subprocess
 from engine.post_monitor.monitor import PostMonitor
 usernames = [
     "aesthetic.viren",
-    "bholenath_jatt1811",
     "bite.me.up",
     "boonne.fashions",
     "bridesbyaashna",

@@ -4,8 +4,8 @@ import random
 import subprocess
 from engine.post_monitor.monitor import PostMonitor
 
-#usernames = ["smilesbydrravneetkaur"]
-usernames = ["choreographer_akash"]
+usernames = ["smilesbydrravneetkaur"]
+#usernames = ["choreographer_akash"]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
 INDEX_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\current_user.txt"
@@ -27,7 +27,7 @@ username = usernames[current_index]
 print(f"Processing: {username}")
 
 monitor = PostMonitor(headless=True)
-results = monitor.check_multiple([username], limit=12)
+results = monitor.check_multiple([username], limit=84)
 monitor.close()
 
 for username, posts in results.items():
