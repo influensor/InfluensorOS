@@ -369,7 +369,7 @@ def device_worker(device_id):
     # =========================
     # ACCOUNT SWITCH LIMIT
     # =========================
-    max_account_switches = random.randint(20, 20)
+    max_account_switches = random.randint(30, 30)
 
     account_switch_count = 0
 
@@ -449,7 +449,7 @@ def device_worker(device_id):
         # Already liked
         # -------------------------
         if already_liked:
-            view_post(device_id,1,random.randint(10, 60))
+            view_post(device_id,1,random.randint(10, 90))
 
         # -------------------------
         # Execute actions
