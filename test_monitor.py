@@ -46,7 +46,7 @@ for username, posts in results.items():
     else:
         print(f"No new posts for {username}")
 
-time.sleep(random.uniform(1, 30))
+time.sleep(random.uniform(1, 10))
 
 # =========================================
 # AI COMMENT GENERATION
