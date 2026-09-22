@@ -1,13 +1,13 @@
 {
-  "customer_id": "choreographer_akash",
-  "username": "choreographer_akash",
+  "customer_id": "neophile24",
+  "username": "neophile24",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-09-25",
-	"expiry_date": "2026-10-25",
+	"start_date": "2026-09-20",
+	"expiry_date": "2026-10-20",
 	"posts_per_day": 1
   },
 
@@ -25,6 +25,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["919762536297"]
+    "mobile_numbers": ["919779980563"]
   }
 }
