@@ -13,6 +13,7 @@ usernames = [
     "eternalbright.in",
     "faizaansofficial",
     "friendsandcompany_official",
+    "ftpix.in",
     "ifbbprojyotigupta",
     "ls_beautysalon_and_makeover",
     "nightwalkerstheband",
