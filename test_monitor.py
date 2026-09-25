@@ -15,6 +15,7 @@ usernames = [
     "friendsandcompany_official",
     "ftpix.in",
     "gauravkotharii",
+    "hairtrendssalonsindia",
     "ifbbprojyotigupta",
     "ls_beautysalon_and_makeover",
     "nightwalkerstheband",
