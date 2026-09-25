@@ -369,7 +369,7 @@ def device_worker(device_id):
     # =========================
     # ACCOUNT SWITCH LIMIT
     # =========================
-    max_account_switches = random.randint(30, 30)
+    max_account_switches = random.randint(10, 30)
 
     account_switch_count = 0
 
