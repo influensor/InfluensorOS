@@ -26,7 +26,6 @@ usernames = [
     "ria_fashionblogger",
     "rjproductions_official",
     "shivanisharmafoundation",
-    "smilesbydrravneetkaur",
     "swarnapraveen1",
     "tanmaynagpal_",
     "techbyrawat",
