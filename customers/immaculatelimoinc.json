@@ -1,13 +1,13 @@
 {
-  "customer_id": "trishachatterjee09",
-  "username": "trishachatterjee09",
+  "customer_id": "immaculatelimoinc",
+  "username": "immaculatelimoinc",
 
   "type": "paid",
 
   "plan": {
-    "type": "single_post_per_day",
-	"start_date": "2026-09-19",
-	"expiry_date": "2026-10-19",
+    "type": "multi_post_per_day",
+	"start_date": "2026-09-30",
+	"expiry_date": "2026-10-30",
 	"posts_per_day": 1
   },
 
@@ -25,6 +25,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["918285072061"]
+    "mobile_numbers": ["919872787996"]
   }
 }
