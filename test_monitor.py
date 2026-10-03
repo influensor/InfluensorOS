@@ -20,7 +20,6 @@ usernames = [
     "laa_belle_salon",
     "lipika_maheshwari",
     "nightwalkerstheband",
-    "onymedindia",
     "our_tiny_chapters",
     "ria_fashionblogger",
     "rjproductions_official",
