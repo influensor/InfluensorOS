@@ -33,7 +33,6 @@ usernames = [
     "trishachatterjee09",
     "vanitas_payal_beauty999",
     "vickygetfit",
-    "vinayakoli",
     "wander_bites_duo",
     "wearstrangers",
     "worldspassport"
