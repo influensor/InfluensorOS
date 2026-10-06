@@ -15,16 +15,9 @@ DEMO_PROBABILITY = {
     "add_to_story": 60,
 }
 
-PAID_PROBABILITY = {
-    "like": 100,
-    "comment": 40,
-    "gif_comment": 5,
-    "repost": 20,
-    "share": 50,
-    "save": 40,
-    "interested": 60,
-    "add_to_story": 0,
-}
+PAID_PROBABILITY = {"like": 100,"comment": 40,"gif_comment": 5,"repost": 20,"share": 50,"save": 40,"interested": 60,"add_to_story": 0,}
+
+#PAID_PROBABILITY = {"like": 100,"comment": 100,"gif_comment": 5,"repost": 100,"share": 100,"save": 100,"interested": 100,"add_to_story": 0,}
 
 
 # -------------------------
