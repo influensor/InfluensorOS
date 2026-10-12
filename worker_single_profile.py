@@ -1,22 +1,14 @@
-"""Independent InfluensorOS worker with cross-device target-profile locking.
-
-This file intentionally reuses the existing InfluensorOS engine modules and does
-not modify worker.py or any existing project file.
-
-Concurrency note: the SQLite lock database coordinates workers running on the
-same computer and sharing the same local state directory. If devices are split
-across different computers, replace this local lock store with a shared database.
-"""
+"""Standalone InfluensorOS worker with configurable device concurrency and account-switch limits.
+Does not modify worker.py or other engine files. Scheduling state is in memory."""
 
 import os
 import random
-import sqlite3
 import threading
 import time
-import uuid
-from contextlib import contextmanager
 
 from engine.logger import info, warn, error
+from engine.config import DELIVERY_DIR
+from engine.utils.file_utils import safe_json_load
 
 # Existing engine logic (read-only reuse)
 from engine.logic.post_loader import load_posts
@@ -110,173 +102,126 @@ SUPPORTED_ACTIONS = {"like", "comment", "save", "share","repost", "interested"}
 # Tunables
 # ----------------------------
 ACCOUNT_COOLDOWN = 3
-CYCLE_COOLDOWN = 5
+CYCLE_COOLDOWN = 180
 IDLE_RETRY_SECONDS = 5
+
 MAX_ACCOUNT_SWITCHES_MIN = 5
-MAX_ACCOUNT_SWITCHES_MAX = 5
-PROFILE_LOCK_LEASE_SECONDS = 300
-PROFILE_LOCK_HEARTBEAT_SECONDS = 30
+MAX_ACCOUNT_SWITCHES_MAX = 10
+
+# Number of top-most eligible (not-yet-delivered) posts to select for EACH
+# TARGET_PROFILE on EACH device during this script run. The quota is random.
+MIN_POSTS_PER_ACCOUNT_PER_DEVICE = 1
+MAX_POSTS_PER_ACCOUNT_PER_DEVICE = 3
+MAX_SIMULTANEOUS_DEVICES = 2
+
+# YES: do not let two active devices process the same source account at once.
+# NO: source-account overlap across devices is allowed.
+UNIQUE_ACCOUNT_PER_DEVICE = True
+
+_ACTIVE_SOURCE_ACCOUNTS = set()
+_ACTIVE_SOURCE_ACCOUNTS_LOCK = threading.Lock()
+
+# In-memory TARGET_PROFILE post quota state; resets when this script restarts.
+# Each (device, target profile) gets a random quota and the top-most eligible
+# undelivered posts up to that quota.
+_TARGET_PROFILE_POST_QUOTAS = {}  # (device_id, customer_id) -> {limit, posts, completed}
+_TARGET_PROFILE_QUOTA_LOCK = threading.Lock()
 
 
-# ----------------------------
-# Shared target-profile lock
-# ----------------------------
-def _lock_database_path():
-    """Keep the lock DB alongside the existing device-state directory."""
-    from engine.config import STATE_DEVICES_DIR
-
-    state_root = os.path.dirname(os.path.abspath(STATE_DEVICES_DIR))
-    os.makedirs(state_root, exist_ok=True)
-    return os.path.join(state_root, "influensor_profile_locks.sqlite3")
+def _target_profile_key(device_id, customer):
+    return (str(device_id), str(customer.get("customer_id")))
 
 
-def _connect_lock_db():
-    conn = sqlite3.connect(_lock_database_path(), timeout=30)
-    conn.execute("PRAGMA busy_timeout = 30000")
-    conn.execute(
-        """CREATE TABLE IF NOT EXISTS profile_locks (
-            profile_key TEXT PRIMARY KEY,
-            owner_token TEXT NOT NULL,
-            device_id TEXT NOT NULL,
-            lease_until REAL NOT NULL,
-            updated_at REAL NOT NULL
-        )"""
+def _get_target_profile_post_batch(device_id, customer):
+    """Choose a random quota of top-most eligible, not-yet-delivered posts once."""
+    key = _target_profile_key(device_id, customer)
+    with _TARGET_PROFILE_QUOTA_LOCK:
+        record = _TARGET_PROFILE_POST_QUOTAS.get(key)
+        if record is not None:
+            return record
+
+    # The shared load_posts() helper returns only ONE incomplete post. Here we
+    # intentionally load the whole target-post list so we can select the top N
+    # incomplete posts in the file's existing newest-to-oldest order.
+    posts_path = os.path.join("data", "posts", f"{customer['customer_id']}.json")
+    all_posts = safe_json_load(posts_path, [])
+    if not isinstance(all_posts, list):
+        all_posts = []
+
+    delivery_path = os.path.join(
+        DELIVERY_DIR, str(device_id), f"{customer['customer_id']}.json"
     )
-    conn.commit()
-    return conn
+    delivery = safe_json_load(delivery_path, {"posts": {}})
+    delivery_posts = delivery.get("posts", {}) if isinstance(delivery, dict) else {}
+    if not isinstance(delivery_posts, dict):
+        delivery_posts = {}
 
-
-def _profile_key(customer):
-    # Target/customer profile, not the rotating source Instagram account.
-    username = str(customer.get("username") or "").strip().lstrip("@").lower()
-    customer_id = str(customer.get("customer_id") or "").strip()
-    return f"username:{username}" if username else f"customer_id:{customer_id}"
-
-
-class ProfileLease:
-    """A renewable lease preventing two local devices processing one profile."""
-
-    def __init__(self, customer, device_id):
-        self.profile_key = _profile_key(customer)
-        self.device_id = str(device_id)
-        self.owner_token = f"{self.device_id}:{os.getpid()}:{uuid.uuid4().hex}"
-        self._stop = threading.Event()
-        self._heartbeat_thread = None
-        self.acquired = False
-
-    def acquire(self):
-        now = time.time()
-        conn = _connect_lock_db()
-        try:
-            conn.execute("BEGIN IMMEDIATE")
-            row = conn.execute(
-                "SELECT owner_token, lease_until FROM profile_locks WHERE profile_key=?",
-                (self.profile_key,),
-            ).fetchone()
-
-            if row and row[0] != self.owner_token and row[1] > now:
-                conn.rollback()
-                return False
-
-            conn.execute(
-                """INSERT INTO profile_locks
-                   (profile_key, owner_token, device_id, lease_until, updated_at)
-                   VALUES (?, ?, ?, ?, ?)
-                   ON CONFLICT(profile_key) DO UPDATE SET
-                     owner_token=excluded.owner_token,
-                     device_id=excluded.device_id,
-                     lease_until=excluded.lease_until,
-                     updated_at=excluded.updated_at""",
-                (
-                    self.profile_key,
-                    self.owner_token,
-                    self.device_id,
-                    now + PROFILE_LOCK_LEASE_SECONDS,
-                    now,
-                ),
-            )
-            conn.commit()
-            self.acquired = True
-        except Exception:
-            conn.rollback()
-            raise
-        finally:
-            conn.close()
-
-        self._heartbeat_thread = threading.Thread(
-            target=self._heartbeat_loop,
-            name=f"profile-lock-{self.device_id}",
-            daemon=True,
+    available = []
+    for post in all_posts:
+        if not isinstance(post, dict) or not post.get("url") or not post.get("shortcode"):
+            continue
+        delivery_record = delivery_posts.get(post["url"], {})
+        completed = (
+            bool(delivery_record.get("completed", False))
+            if isinstance(delivery_record, dict)
+            else False
         )
-        self._heartbeat_thread.start()
+        if not completed:
+            available.append(post)
+    low = max(1, int(MIN_POSTS_PER_ACCOUNT_PER_DEVICE))
+    high = max(low, int(MAX_POSTS_PER_ACCOUNT_PER_DEVICE))
+    quota = random.randint(low, high)
+    selected = available[:quota]
+    record = {
+        "limit": len(selected),
+        "requested_limit": quota,
+        "posts": selected,
+        "completed": set(),
+    }
+    with _TARGET_PROFILE_QUOTA_LOCK:
+        # Another thread should not own this same device/profile, but preserve
+        # the first assignment if initialization races.
+        existing = _TARGET_PROFILE_POST_QUOTAS.setdefault(key, record)
+        record = existing
+
+    info(
+        f"Target profile @{customer.get('username')} on device {device_id}: "
+        f"selected {record['limit']} top eligible post(s) "
+        f"(random quota={record['requested_limit']})",
+        device_id,
+    )
+    return record
+
+
+def _record_target_profile_post_completed(device_id, customer, post):
+    key = _target_profile_key(device_id, customer)
+    url = str(post.get("url") or "")
+    with _TARGET_PROFILE_QUOTA_LOCK:
+        record = _TARGET_PROFILE_POST_QUOTAS.get(key)
+        if record is None:
+            return True, 0, 0
+        record["completed"].add(url)
+        done = len(record["completed"])
+        limit = record["limit"]
+        return done >= limit, done, limit
+
+
+# ----------------------------
+# Target-profile selection (no profile locks)
+# ----------------------------
+class ProfileLease:
+    """Compatibility shim: profile locking is intentionally disabled."""
+    def __init__(self, customer, device_id):
+        self.customer = customer
+        self.device_id = str(device_id)
+    def acquire(self):
         return True
-
-    def _heartbeat_loop(self):
-        while not self._stop.wait(PROFILE_LOCK_HEARTBEAT_SECONDS):
-            conn = None
-            try:
-                conn = _connect_lock_db()
-                now = time.time()
-                cur = conn.execute(
-                    """UPDATE profile_locks
-                       SET lease_until=?, updated_at=?
-                       WHERE profile_key=? AND owner_token=?""",
-                    (
-                        now + PROFILE_LOCK_LEASE_SECONDS,
-                        now,
-                        self.profile_key,
-                        self.owner_token,
-                    ),
-                )
-                conn.commit()
-                if cur.rowcount != 1:
-                    # Ownership was lost; stop renewing. Caller should not assume
-                    # the lease is still valid after this point.
-                    self._stop.set()
-                    return
-            except Exception as exc:
-                # A transient DB error is logged; lease expiry is the fail-safe.
-                warn(f"Profile-lock heartbeat failed: {exc}", self.device_id)
-            finally:
-                if conn is not None:
-                    conn.close()
-
     def release(self):
-        self._stop.set()
-        if self._heartbeat_thread and self._heartbeat_thread.is_alive():
-            self._heartbeat_thread.join(timeout=2)
-        if not self.acquired:
-            return
-        conn = _connect_lock_db()
-        try:
-            conn.execute(
-                "DELETE FROM profile_locks WHERE profile_key=? AND owner_token=?",
-                (self.profile_key, self.owner_token),
-            )
-            conn.commit()
-        finally:
-            conn.close()
-        self.acquired = False
-
-    def __enter__(self):
-        if not self.acquire():
-            raise RuntimeError("Target profile is already locked")
-        return self
-
-    def __exit__(self, exc_type, exc, tb):
-        self.release()
+        return None
 
 
-@contextmanager
 def _profile_lease(customer, device_id):
-    lease = ProfileLease(customer, device_id)
-    if not lease.acquire():
-        yield None
-        return
-    try:
-        yield lease
-    finally:
-        lease.release()
+    return ProfileLease(customer, device_id)
 
 
 # ----------------------------
@@ -398,82 +343,44 @@ def _customer_by_id(customers, customer_id):
 
 
 def _pick_customer_with_available_lock(device_id, customers, checkpoint):
-    """Pick/resume one customer without ever processing a locked profile."""
-    eligible_ids = [c["customer_id"] for c in customers]
-
-    # Resume an in-progress customer first. Do not overwrite its checkpoint if
-    # another device currently owns that target profile's lock.
+    """Select/resume a target profile without acquiring a profile lock."""
     if checkpoint.get("customer_id"):
         resumed = _customer_by_id(customers, checkpoint["customer_id"])
         if resumed:
-            lease = ProfileLease(resumed, device_id)
-            if lease.acquire():
-                return resumed, lease, True
-            info(
-                f"Resume waits: @{resumed.get('username')} is locked by another device",
-                device_id,
-            )
-            return None, None, False
-
+            return resumed, ProfileLease(resumed, device_id), True
         clear_checkpoint(device_id)
         checkpoint = {}
 
-    if not eligible_ids:
+    if not customers:
         return None, None, False
-
+    eligible_ids = [c["customer_id"] for c in customers]
     first_id = get_next_customer(device_id, eligible_ids)
-    cycle = load_cycle(device_id) or {}
-    order = list(cycle.get("cycle_order") or [])
-
-    # Prefer the cycle manager's shuffled order; rotate from its next candidate.
-    if first_id in order:
-        start = order.index(first_id)
-        ordered_ids = order[start:] + order[:start]
-    else:
-        ordered_ids = [first_id] + [cid for cid in eligible_ids if cid != first_id]
-
-    # Ignore removed/ineligible ids and try every candidate once.
-    valid_ids = set(str(cid) for cid in eligible_ids)
-    seen = set()
+    ordered_ids = [first_id] + [cid for cid in eligible_ids if str(cid) != str(first_id)]
     for customer_id in ordered_ids:
-        if str(customer_id) not in valid_ids or str(customer_id) in seen:
-            continue
-        seen.add(str(customer_id))
         customer = _customer_by_id(customers, customer_id)
-        if not customer:
-            continue
-
-        lease = ProfileLease(customer, device_id)
-        if lease.acquire():
-            return customer, lease, False
-
+        if customer:
+            return customer, ProfileLease(customer, device_id), False
     return None, None, False
 
 
 def _load_customer_post(device_id, customer, checkpoint, resumed):
-    # Match worker.py: once a post is selected, keep using that exact post for
-    # the entire account-switch pass, even if delivery tracking reaches completed
-    # before the switch limit. Delivery status must not change the active post
-    # mid-pass. The checkpoint is cleared only after the account-switch loop ends.
+    # Resume the exact in-progress post first; its target-profile quota is
+    # counted only after this post reaches completion.
     if resumed:
         post = checkpoint.get("post")
-        if (
-            isinstance(post, dict)
-            and post.get("url")
-            and post.get("shortcode")
-        ):
+        if isinstance(post, dict) and post.get("url") and post.get("shortcode"):
             info(
-                f"Resuming same post {post['shortcode']} for @{customer.get('username')} "
-                "(delivery status does not change the active post during this pass)",
+                f"Resuming same post {post['shortcode']} for @{customer.get('username')}",
                 device_id,
             )
             return post
 
-    posts = load_posts(customer, device_id)
-    if not posts:
-        return None
-    post = posts[0]
-    return post if isinstance(post, dict) else None
+    record = _get_target_profile_post_batch(device_id, customer)
+    completed_urls = record["completed"]
+    for post in record["posts"]:
+        if str(post.get("url")) not in completed_urls:
+            return post
+    return None
 
 
 def _save_worker_checkpoint(device_id, customer, post, account_index, active_account):
@@ -516,6 +423,9 @@ def _process_customer(device_id, customer, post, checkpoint, resumed):
         warn("Could not open Instagram; retaining checkpoint for retry", device_id)
         return False
 
+    # IMPORTANT: keep this exact post active until the configured account-switch
+    # count has been executed. Do not exit early because delivery tracking says
+    # the post is complete; only a missing account from switch_account can end it.
     while switches_this_post < max_account_switches:
         # An account restored from a checkpoint is processed before switching.
         if not active_account:
@@ -525,6 +435,16 @@ def _process_customer(device_id, customer, post, checkpoint, resumed):
                 break
             active_account = next_account
             switches_this_post += 1
+            account_key = str(active_account).strip().lstrip("@").lower()
+            if UNIQUE_ACCOUNT_PER_DEVICE:
+                with _ACTIVE_SOURCE_ACCOUNTS_LOCK:
+                    if account_key in _ACTIVE_SOURCE_ACCOUNTS:
+                        warn(f"Source account {active_account} is already active on another device; counting this switch and trying another account", device_id)
+                        active_account = None
+                        account_index += 1
+                        _save_worker_checkpoint(device_id, customer, post, account_index, active_account)
+                        continue
+                    _ACTIVE_SOURCE_ACCOUNTS.add(account_key)
             _save_worker_checkpoint(
                 device_id, customer, post, account_index, active_account
             )
@@ -621,12 +541,22 @@ def _process_customer(device_id, customer, post, checkpoint, resumed):
             _save_worker_checkpoint(
                 device_id, customer, post, account_index, active_account
             )
+            if UNIQUE_ACCOUNT_PER_DEVICE:
+                account_key = str(active_account or "").strip().lstrip("@").lower()
+                if account_key:
+                    with _ACTIVE_SOURCE_ACCOUNTS_LOCK:
+                        _ACTIVE_SOURCE_ACCOUNTS.discard(account_key)
             raise
         finally:
             # Account switching happens only after the current account's work
             # and delivery-tracking decision have finished.
             pass
 
+        if UNIQUE_ACCOUNT_PER_DEVICE:
+            account_key = str(active_account or "").strip().lstrip("@").lower()
+            if account_key:
+                with _ACTIVE_SOURCE_ACCOUNTS_LOCK:
+                    _ACTIVE_SOURCE_ACCOUNTS.discard(account_key)
         active_account = None
         account_index += 1
         _save_worker_checkpoint(
@@ -642,15 +572,27 @@ def _process_customer(device_id, customer, post, checkpoint, resumed):
         mark_demo_post_done(customer, device_id)
 
     if post_completed:
-        # Only advance to another post after this exact post has reached its
-        # expected account-delivery count.
-        mark_customer_completed(device_id, customer["customer_id"])
-        clear_checkpoint(device_id)
-        info(
-            f"Post completed; next loop may select another post: "
-            f"{customer['customer_id']} / {post.get('shortcode')}",
-            device_id,
+        # Count completed POSTS against the TARGET_PROFILE quota (not source
+        # account quotas). Continue this target profile until its selected
+        # top-post batch is complete.
+        quota_done, quota_completed, quota_limit = _record_target_profile_post_completed(
+            device_id, customer, post
         )
+        clear_checkpoint(device_id)
+        if quota_done:
+            mark_customer_completed(device_id, customer["customer_id"])
+            info(
+                f"Target profile @{customer.get('username')} finished its selected "
+                f"post quota ({quota_completed}/{quota_limit}); moving to another target profile",
+                device_id,
+            )
+        else:
+            info(
+                f"Target profile @{customer.get('username')} completed post "
+                f"{post.get('shortcode')} ({quota_completed}/{quota_limit}); "
+                "more selected posts remain for this target profile",
+                device_id,
+            )
     else:
         # Account-switch cap ended this pass before the post was complete.
         # Keep the same customer + post in the checkpoint so the next outer
@@ -666,6 +608,20 @@ def _process_customer(device_id, customer, post, checkpoint, resumed):
 
     time.sleep(CYCLE_COOLDOWN)
     return post_completed
+
+
+def _device_job_complete(device_id, customers):
+    """Return True once this device has completed its random post batch for every target profile."""
+    all_done = True
+    for customer in customers:
+        record = _get_target_profile_post_batch(device_id, customer)
+        with _TARGET_PROFILE_QUOTA_LOCK:
+            done = len(record["completed"])
+            limit = int(record["limit"])
+        # A profile with zero eligible posts is complete for this device's job.
+        if done < limit:
+            all_done = False
+    return all_done
 
 
 def device_worker(device_id, max_cycles=None):
@@ -687,9 +643,15 @@ def device_worker(device_id, max_cycles=None):
 
         customers = _eligible_customers(device_id)
         if not customers:
-            warn("No eligible customers; retrying", device_id)
-            time.sleep(IDLE_RETRY_SECONDS)
-            continue
+            warn("No eligible customers; this device has no target profiles to process", device_id)
+            return
+
+        # Initialize a fresh random post batch for every TARGET_PROFILE on this
+        # device. Once every batch is complete, this device's job ends so the
+        # coordinator can launch the next available device.
+        if _device_job_complete(device_id, customers):
+            info("All TARGET_PROFILES completed on this device; releasing slot for the next device", device_id)
+            return
 
         checkpoint = load_checkpoint(device_id) or {}
         customer, lease, resumed = _pick_customer_with_available_lock(
@@ -706,7 +668,8 @@ def device_worker(device_id, max_cycles=None):
             post = _load_customer_post(device_id, customer, checkpoint, resumed)
             if not post:
                 info(
-                    f"No incomplete posts for @{customer.get('username')}; marking customer visited",
+                    f"No remaining selected undelivered posts for target profile "
+                    f"@{customer.get('username')}; marking profile visited",
                     device_id,
                 )
                 mark_customer_completed(device_id, customer["customer_id"])
@@ -734,20 +697,51 @@ def device_worker(device_id, max_cycles=None):
 
 
 def run_workers(device_ids, max_cycles_per_device=None):
-    """Start one worker thread per connected/authorized device."""
-    threads = []
-    for device_id in device_ids:
-        thread = threading.Thread(
-            target=device_worker,
-            args=(device_id, max_cycles_per_device),
-            name=f"influensor-worker-{device_id}",
-            daemon=True,
-        )
-        thread.start()
-        threads.append(thread)
+    """Run up to MAX_SIMULTANEOUS_DEVICES at once; start the next device when a slot frees."""
+    from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 
-    for thread in threads:
-        thread.join()
+    devices = list(dict.fromkeys(str(d) for d in device_ids))
+    if not devices:
+        warn("No authorized devices supplied")
+        return
+
+    concurrency = max(1, min(int(MAX_SIMULTANEOUS_DEVICES), len(devices)))
+    info(
+        f"Starting target-profile job queue: devices={len(devices)}, "
+        f"max_simultaneous_devices={concurrency}, "
+        f"unique_account_per_device={UNIQUE_ACCOUNT_PER_DEVICE}, "
+        f"account_switch_limit={MAX_ACCOUNT_SWITCHES_MIN}-{MAX_ACCOUNT_SWITCHES_MAX}, "
+        f"target_posts_per_profile_per_device={MIN_POSTS_PER_ACCOUNT_PER_DEVICE}-{MAX_POSTS_PER_ACCOUNT_PER_DEVICE}"
+    )
+
+    # A device runs the same configured TARGET_PROFILES with fresh per-device
+    # random post quotas. As soon as it completes all profiles, the next device
+    # in the queue is started; no more than `concurrency` run simultaneously.
+    next_index = 0
+    active = {}
+    with ThreadPoolExecutor(max_workers=concurrency, thread_name_prefix="influensor-device") as pool:
+        while next_index < len(devices) and len(active) < concurrency:
+            device_id = devices[next_index]
+            next_index += 1
+            active[pool.submit(device_worker, device_id, max_cycles_per_device)] = device_id
+
+        while active:
+            done, _ = wait(active, return_when=FIRST_COMPLETED)
+            for future in done:
+                device_id = active.pop(future)
+                try:
+                    future.result()
+                    info(f"Device {device_id} finished its target-profile job", device_id)
+                except Exception as exc:
+                    error(f"Device worker crashed: {exc}", device_id)
+
+                if next_index < len(devices):
+                    next_device = devices[next_index]
+                    next_index += 1
+                    info(f"Assigning next device {next_device} to the same job with fresh random target-post quotas", next_device)
+                    active[pool.submit(device_worker, next_device, max_cycles_per_device)] = next_device
+
+    info("All connected devices have completed their target-profile job queue")
 
 
 if __name__ == "__main__":
