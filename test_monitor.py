@@ -16,7 +16,7 @@ usernames = [
     "gauravkotharii",
     "hairtrendssalonsindia",
     "immaculatelimoinc",
-    "journeytechie",
+    "journey.techie",
     "laa_belle_salon",
     "lipika_maheshwari",
     "nightwalkerstheband",
