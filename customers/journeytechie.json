@@ -5,10 +5,10 @@
   "type": "paid",
 
   "plan": {
-    "type": "single_post_per_day",
+    "type": "multi_post_per_day",
 	"start_date": "2026-10-09",
 	"expiry_date": "2026-11-09",
-	"posts_per_day": 1
+	"posts_per_day": 10
   },
 
   "settings": {

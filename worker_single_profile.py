@@ -81,6 +81,7 @@ TARGET_PROFILES = [
          "customer_id": "women_communityy_",
          "type": "paid",
          "plan_type": "multi_post_per_day",
+         "start_date": "2026-10-12",
          "actions": ["like", "comment", "save", "share","repost", "interested"],
          "randomize_action_sequence": True,
      },
@@ -90,6 +91,17 @@ TARGET_PROFILES = [
          "customer_id": "berlycanek",
          "type": "paid",
          "plan_type": "multi_post_per_day",
+         "start_date": "2026-10-12",
+         "actions": ["like", "comment", "save", "share","repost", "interested"],
+         "randomize_action_sequence": True,
+     },
+     {
+         "enabled": True,
+         "username": "inescosmeticsme",
+         "customer_id": "inescosmeticsme",
+         "type": "paid",
+         "plan_type": "multi_post_per_day",
+         "start_date": "2026-10-12",
          "actions": ["like", "comment", "save", "share","repost", "interested"],
          "randomize_action_sequence": True,
      }
@@ -102,7 +114,7 @@ SUPPORTED_ACTIONS = {"like", "comment", "save", "share","repost", "interested"}
 # Tunables
 # ----------------------------
 ACCOUNT_COOLDOWN = 3
-CYCLE_COOLDOWN = 180
+CYCLE_COOLDOWN = 60
 IDLE_RETRY_SECONDS = 5
 
 MAX_ACCOUNT_SWITCHES_MIN = 5
@@ -111,8 +123,8 @@ MAX_ACCOUNT_SWITCHES_MAX = 10
 # Number of top-most eligible (not-yet-delivered) posts to select for EACH
 # TARGET_PROFILE on EACH device during this script run. The quota is random.
 MIN_POSTS_PER_ACCOUNT_PER_DEVICE = 1
-MAX_POSTS_PER_ACCOUNT_PER_DEVICE = 3
-MAX_SIMULTANEOUS_DEVICES = 2
+MAX_POSTS_PER_ACCOUNT_PER_DEVICE = 5
+MAX_SIMULTANEOUS_DEVICES = 3
 
 # YES: do not let two active devices process the same source account at once.
 # NO: source-account overlap across devices is allowed.

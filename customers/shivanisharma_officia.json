@@ -1,13 +1,13 @@
 {
-  "customer_id": "friendsandcompany_official",
-  "username": "friendsandcompany_official",
+  "customer_id": "shivanisharma_officia",
+  "username": "shivanisharma_officia",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-08-30",
-	"expiry_date": "2026-09-30",
+	"start_date": "2026-10-12",
+	"expiry_date": "2026-11-12",
 	"posts_per_day": 1
   },
 
@@ -25,6 +25,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["917977416404"]
+    "mobile_numbers": ["917606992317"]
   }
 }

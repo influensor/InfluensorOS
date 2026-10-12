@@ -7,6 +7,7 @@ from engine.post_monitor.monitor import PostMonitor
 #usernames = ["torqos.ev"]
 #usernames = ["immaculatelimoinc"]
 #usernames = ["worldspassport"]
+#usernames = ["journeytechie"]
 usernames = ["women_communityy_", "berlycanek"]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
