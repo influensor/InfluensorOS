@@ -10,7 +10,7 @@ usernames = [
     "choreographer_akash",
     "djdynameets",
     "eternalbright.in",
-    "faizaansofficial",
+    "faizaan_events",
     "friendsandcompany_official",
     "ftpix.in",
     "gauravkotharii",
