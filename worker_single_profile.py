@@ -114,11 +114,11 @@ SUPPORTED_ACTIONS = {"like", "comment", "save", "share","repost", "interested"}
 # Tunables
 # ----------------------------
 ACCOUNT_COOLDOWN = 3
-CYCLE_COOLDOWN = 60
+CYCLE_COOLDOWN = 30
 IDLE_RETRY_SECONDS = 5
 
 MAX_ACCOUNT_SWITCHES_MIN = 5
-MAX_ACCOUNT_SWITCHES_MAX = 10
+MAX_ACCOUNT_SWITCHES_MAX = 6
 
 # Number of top-most eligible (not-yet-delivered) posts to select for EACH
 # TARGET_PROFILE on EACH device during this script run. The quota is random.
