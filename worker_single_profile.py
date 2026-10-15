@@ -84,26 +84,6 @@ TARGET_PROFILES = [
          "start_date": "2026-10-12",
          "actions": ["like", "comment", "save", "share","repost", "interested"],
          "randomize_action_sequence": True,
-     },
-     {
-         "enabled": True,
-         "username": "berlycanek",
-         "customer_id": "berlycanek",
-         "type": "paid",
-         "plan_type": "multi_post_per_day",
-         "start_date": "2026-10-12",
-         "actions": ["like", "comment", "save", "share","repost", "interested"],
-         "randomize_action_sequence": True,
-     },
-     {
-         "enabled": True,
-         "username": "inescosmeticsme",
-         "customer_id": "inescosmeticsme",
-         "type": "paid",
-         "plan_type": "multi_post_per_day",
-         "start_date": "2026-10-12",
-         "actions": ["like", "comment", "save", "share","repost", "interested"],
-         "randomize_action_sequence": True,
      }
 ]
 
@@ -124,7 +104,7 @@ MAX_ACCOUNT_SWITCHES_MAX = 6
 # TARGET_PROFILE on EACH device during this script run. The quota is random.
 MIN_POSTS_PER_ACCOUNT_PER_DEVICE = 1
 MAX_POSTS_PER_ACCOUNT_PER_DEVICE = 5
-MAX_SIMULTANEOUS_DEVICES = 3
+MAX_SIMULTANEOUS_DEVICES = 2
 
 # YES: do not let two active devices process the same source account at once.
 # NO: source-account overlap across devices is allowed.
