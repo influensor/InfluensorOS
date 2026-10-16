@@ -15,6 +15,7 @@ usernames = [
     "ftpix.in",
     "gauravkotharii",
     "hairtrendssalonsindia",
+    "houseofstylebyricha",
     "immaculatelimoinc",
     "journey.techie",
     "laa_belle_salon",
