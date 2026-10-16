@@ -8,7 +8,7 @@ from engine.post_monitor.monitor import PostMonitor
 #usernames = ["immaculatelimoinc"]
 #usernames = ["worldspassport"]
 #usernames = ["journeytechie"]
-usernames = ["women_communityy_", "berlycanek"]
+usernames = ["women_communityy_"]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
 INDEX_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\current_user.txt"
