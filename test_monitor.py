@@ -19,7 +19,6 @@ usernames = [
     "immaculatelimoinc",
     "journey.techie",
     "laa_belle_salon",
-    "lipika_maheshwari",
     "our_tiny_chapters",
     "ria_fashionblogger",
     "shivanisharma_officia",
