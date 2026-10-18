@@ -102,7 +102,7 @@ MAX_ACCOUNT_SWITCHES_MAX = 6
 
 # Number of top-most eligible (not-yet-delivered) posts to select for EACH
 # TARGET_PROFILE on EACH device during this script run. The quota is random.
-MIN_POSTS_PER_ACCOUNT_PER_DEVICE = 1
+MIN_POSTS_PER_ACCOUNT_PER_DEVICE = 2
 MAX_POSTS_PER_ACCOUNT_PER_DEVICE = 5
 MAX_SIMULTANEOUS_DEVICES = 2
 
