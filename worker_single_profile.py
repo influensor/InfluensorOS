@@ -94,7 +94,7 @@ SUPPORTED_ACTIONS = {"like", "comment", "save", "share","repost", "interested"}
 # Tunables
 # ----------------------------
 ACCOUNT_COOLDOWN = 3
-CYCLE_COOLDOWN = 30
+CYCLE_COOLDOWN = 300
 IDLE_RETRY_SECONDS = 5
 
 MAX_ACCOUNT_SWITCHES_MIN = 5
