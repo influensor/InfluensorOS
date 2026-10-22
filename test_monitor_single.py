@@ -6,8 +6,8 @@ from engine.post_monitor.monitor import PostMonitor
 
 #usernames = ["torqos.ev"]
 #usernames = ["immaculatelimoinc"]
-#usernames = ["worldspassport"]
-usernames = ["journey.techie"]
+usernames = ["worldspassport"]
+#usernames = ["journey.techie"]
 #usernames = ["houseofstylebyricha"]
 #usernames = ["women_communityy_"]
 
@@ -31,7 +31,7 @@ username = usernames[current_index]
 print(f"Processing: {username}")
 
 monitor = PostMonitor(headless=True)
-results = monitor.check_multiple([username], limit=24)
+results = monitor.check_multiple([username], limit=36)
 monitor.close()
 
 for username, posts in results.items():
