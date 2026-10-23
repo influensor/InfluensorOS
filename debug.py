@@ -23,7 +23,7 @@ from engine.ui.switch_account import switch_account
 # 🔥 CONTROL PANEL
 # =========================
 
-#ACTIONS = ["open_instagram", "profile", "follow", "story", "message", "post", "like", "comment", "gif_comment", "repost", "share", "share_custom", "save", "interested", "switch"]
+#ACTIONS = ["open_instagram", "profile", "follow", "story", "message", "post", "view", "like", "comment", "gif_comment", "repost", "share", "share_custom", "save", "interested", "switch"]
 ACTIONS = ["open_instagram", "post", "repost"]
 
 TEST_USERNAME = "women_communityy_"
