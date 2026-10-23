@@ -25,10 +25,10 @@ def view_post(device_id, min_seconds=1, max_seconds=60, retries=1):
             start = time.time()
             while time.time() - start < duration:
                 # Human-like idle pause
-                time.sleep(random.uniform(1, 3))
+                time.sleep(random.uniform(3, 3))
                 try:
                     swipe_up(device_id)
-                    time.sleep(random.uniform(2, 2))
+                    time.sleep(random.uniform(1, 1))
                     swipe_down(device_id)
                 except Exception:
                     pass
