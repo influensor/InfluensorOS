@@ -40,6 +40,14 @@ POSTS_DIR = os.path.join(
     "posts"
 )
 
+# Customer JSON files are supported in either project-root/customers
+# or data/customers, preserving the existing customer JSON structure.
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+CUSTOMER_DIR_CANDIDATES = [
+    os.path.join(PROJECT_DIR, "customers"),
+    os.path.join(BASE_DIR, "customers"),
+]
+
 AI_COMMENTS_DIR = os.path.join(
     BASE_DIR,
     "ai_comments"
@@ -63,11 +71,12 @@ COMMENT_DISTRIBUTION = {
     "generic_short_reactions": 30
 }
 
-LANGUAGE_DISTRIBUTION = {
+# Default used when a customer JSON has no valid custom distribution.
+# Existing customer JSON files do not need to be changed.
+DEFAULT_LANGUAGE_DISTRIBUTION = {
     "English Indian": 75,
-    "Hinglish": 75
+    "Hinglish": 75,
 }
-
 
 # =====================================================
 # API ROTATION
@@ -80,6 +89,11 @@ def get_next_key():
 
     global current_key_index
 
+    if not API_KEYS:
+        raise RuntimeError(
+            "No Gemini API keys found. Set GEMINI_API_KEYS in your .env file."
+        )
+
     key = API_KEYS[current_key_index]
 
     current_key_index = (
@@ -90,6 +104,11 @@ def get_next_key():
 
 
 def generate_with_rotation(prompt):
+
+    if not API_KEYS:
+        raise RuntimeError(
+            "No Gemini API keys found. Set GEMINI_API_KEYS in your .env file."
+        )
 
     for _ in range(len(API_KEYS)):
 
@@ -153,6 +172,117 @@ def extract_json(raw):
 
 
 # =====================================================
+# CUSTOMER LANGUAGE DISTRIBUTION
+# =====================================================
+
+def find_customer_file(username):
+    """Find a customer JSON by filename or username/customer_id field."""
+    for directory in CUSTOMER_DIR_CANDIDATES:
+        if not os.path.isdir(directory):
+            continue
+
+        direct_path = os.path.join(directory, f"{username}.json")
+        if os.path.isfile(direct_path):
+            return direct_path
+
+        # Fallback: filename may differ from the username.
+        for filename in os.listdir(directory):
+            if not filename.lower().endswith(".json"):
+                continue
+            candidate = os.path.join(directory, filename)
+            try:
+                with open(candidate, "r", encoding="utf-8") as f:
+                    customer = json.load(f)
+                if (
+                    str(customer.get("username", "")).lower() == username.lower()
+                    or str(customer.get("customer_id", "")).lower() == username.lower()
+                ):
+                    return candidate
+            except Exception as e:
+                print(f"[CUSTOMER JSON WARNING] {filename}: {e}")
+
+    return None
+
+
+def allocate_language_counts(distribution, total_comments=TOTAL_COMMENTS):
+    """Convert percentages to whole-number counts totaling exactly total_comments."""
+    exact_counts = {
+        language: (weight / 100.0) * total_comments
+        for language, weight in distribution.items()
+    }
+    counts = {
+        language: int(value)
+        for language, value in exact_counts.items()
+    }
+    remainder = total_comments - sum(counts.values())
+
+    # Largest-remainder method ensures the final count is exact.
+    ranked = sorted(
+        exact_counts,
+        key=lambda language: exact_counts[language] - counts[language],
+        reverse=True,
+    )
+    for language in ranked[:remainder]:
+        counts[language] += 1
+
+    return {language: count for language, count in counts.items() if count > 0}
+
+
+def get_customer_language_distribution(username):
+    """Read arbitrary language labels and percentage weights from customer JSON.
+
+    Language labels are passed directly to Gemini. No language allowlist or
+    alias mapping is used. Missing/invalid settings use the legacy defaults.
+    """
+    customer_path = find_customer_file(username)
+    if not customer_path:
+        print(f"[LANGUAGE] No customer JSON found for {username}; using defaults.")
+        return dict(DEFAULT_LANGUAGE_DISTRIBUTION)
+
+    try:
+        with open(customer_path, "r", encoding="utf-8") as f:
+            customer = json.load(f)
+
+        settings = customer.get("settings", {})
+        custom = settings.get("comment_language_distribution")
+
+        if custom is None:
+            print(f"[LANGUAGE] No custom language distribution; using defaults for {username}.")
+            return dict(DEFAULT_LANGUAGE_DISTRIBUTION)
+
+        if not isinstance(custom, dict) or not custom:
+            raise ValueError("comment_language_distribution must be a non-empty JSON object")
+
+        percentages = {}
+        for raw_language, raw_weight in custom.items():
+            if not isinstance(raw_language, str) or not raw_language.strip():
+                raise ValueError("Language labels must be non-empty strings")
+            if isinstance(raw_weight, bool) or not isinstance(raw_weight, (int, float)):
+                raise ValueError(f"Weight for {raw_language} must be numeric")
+            if raw_weight < 0:
+                raise ValueError(f"Weight for {raw_language} cannot be negative")
+            # A zero-weight language is intentionally disabled; skip it.
+            if raw_weight == 0:
+                continue
+            percentages[raw_language.strip()] = float(raw_weight)
+
+        if not percentages:
+            raise ValueError("At least one language must have a weight greater than zero")
+
+        total_weight = sum(percentages.values())
+        if abs(total_weight - 100.0) > 0.01:
+            raise ValueError(f"Language weights must total 100%; got {total_weight:g}%")
+
+        # Convert percentages to exact whole-comment counts.
+        return allocate_language_counts(percentages, TOTAL_COMMENTS)
+
+    except Exception as e:
+        print(f"[LANGUAGE WARNING] Invalid distribution for {username}: {e}")
+        print("[LANGUAGE] Falling back to default English/Hinglish distribution.")
+        return dict(DEFAULT_LANGUAGE_DISTRIBUTION)
+
+
+# =====================================================
 # STEP 1 — NICHE DETECTOR
 # =====================================================
 
@@ -193,7 +323,7 @@ Return ONLY valid JSON:
 # STEP 2 — CATEGORY DESIGN
 # =====================================================
 
-def detect_categories(caption, niche):
+def detect_categories(caption, niche, total_comments=TOTAL_COMMENTS):
 
     prompt = f"""
 We are designing realistic Instagram engagement behavior.
@@ -209,7 +339,7 @@ Your task:
 - Decide realistic engagement categories
 - Categories should feel human and organic
 - Assign counts per category
-- Total comments must equal {TOTAL_COMMENTS}
+- Total comments must equal {total_comments}
 - Avoid categories related to tagging friends
 - Avoid @mention or @tag based engagement
 - Avoid referral or share-to-friend behavior
@@ -233,13 +363,14 @@ Return ONLY valid JSON:
 
     if data and "categories" in data:
         return validate_categories(
-            data["categories"]
+            data["categories"],
+            total_comments
         )
 
     return [
         {
             "name": "general_reactions",
-            "count": TOTAL_COMMENTS
+            "count": total_comments
         }
     ]
 
@@ -248,34 +379,44 @@ Return ONLY valid JSON:
 # VALIDATE CATEGORY TOTAL
 # =====================================================
 
-def validate_categories(categories):
+def validate_categories(categories, total_comments=TOTAL_COMMENTS):
+    """Normalize category counts and guarantee their sum matches total_comments."""
+    if not isinstance(categories, list) or not categories:
+        return [{"name": "general_reactions", "count": total_comments}]
 
-    total = sum(
-        cat["count"]
-        for cat in categories
+    valid_categories = []
+    for category in categories:
+        if not isinstance(category, dict) or not category.get("name"):
+            continue
+        try:
+            count = int(category.get("count", 0))
+        except (TypeError, ValueError):
+            continue
+        if count > 0:
+            valid_categories.append({"name": str(category["name"]), "count": count})
+
+    if not valid_categories:
+        return [{"name": "general_reactions", "count": total_comments}]
+
+    total = sum(category["count"] for category in valid_categories)
+    if total == total_comments:
+        return valid_categories
+
+    exact_counts = [category["count"] * total_comments / total for category in valid_categories]
+    rounded_counts = [int(value) for value in exact_counts]
+    remainder = total_comments - sum(rounded_counts)
+    order = sorted(
+        range(len(exact_counts)),
+        key=lambda index: exact_counts[index] - rounded_counts[index],
+        reverse=True,
     )
+    for index in order[:remainder]:
+        rounded_counts[index] += 1
 
-    if total == TOTAL_COMMENTS:
-        return categories
+    for category, count in zip(valid_categories, rounded_counts):
+        category["count"] = count
 
-    factor = TOTAL_COMMENTS / total
-
-    for cat in categories:
-
-        cat["count"] = max(
-            1,
-            round(cat["count"] * factor)
-        )
-
-    diff = TOTAL_COMMENTS - sum(
-        cat["count"]
-        for cat in categories
-    )
-
-    if diff != 0:
-        categories[0]["count"] += diff
-
-    return categories
+    return [category for category in valid_categories if category["count"] > 0]
 
 
 # =====================================================
@@ -285,7 +426,8 @@ def validate_categories(categories):
 def create_comments(
     caption,
     niche,
-    categories
+    categories,
+    language_distribution
 ):
 
     category_text = "\n".join([
@@ -311,8 +453,16 @@ def create_comments(
         f"{language}"
 
         for language, count
-        in LANGUAGE_DISTRIBUTION.items()
+        in language_distribution.items()
     ])
+
+    total_comments = sum(language_distribution.values())
+
+    language_detail_text = "\\n".join(
+        f"- {language}: Use the language and writing script explicitly described by this label. "
+        f"If the label names a script, follow that script exactly."
+        for language in language_distribution
+    )
 
     prompt = f"""
 Caption:
@@ -321,7 +471,7 @@ Caption:
 Niche Data:
 {json.dumps(niche)}
 
-Generate exactly {TOTAL_COMMENTS}
+Generate exactly {total_comments}
 Instagram comments.
 
 Category Distribution:
@@ -330,8 +480,14 @@ Category Distribution:
 Comment Length Distribution:
 {distribution_text}
 
-Language Distribution:
+Language Distribution (EXACT COUNTS — must be followed):
 {language_text}
+
+Language/script requirements:
+{language_detail_text}
+
+The count beside each language is the exact number required for that language.
+The total across all languages is {total_comments}. Do not rebalance or substitute languages.
 
 Rules:
 - Strictly create comments only in given languages
@@ -515,9 +671,8 @@ def remove_similar(comments,threshold=0.85):
 # ENSURE EXACT COUNT
 # =====================================================
 
-def enforce_count(comments):
-    comments = comments[:TOTAL_COMMENTS]
-    return comments
+def enforce_count(comments, total_comments=TOTAL_COMMENTS):
+    return comments[:total_comments]
 
 # =====================================================
 # SAVE COMMENTS
@@ -588,11 +743,19 @@ def process_user_file(path):
             print(niche)
 
             # =================================
+            # CUSTOMER LANGUAGE DISTRIBUTION
+            # =================================
+
+            language_distribution = get_customer_language_distribution(username)
+            total_comments = sum(language_distribution.values())
+            print(f"🌐 Language distribution ({total_comments} comments): {language_distribution}")
+
+            # =================================
             # CATEGORIES
             # =================================
 
             print("📊 Detecting categories...")
-            categories = detect_categories(caption,niche)
+            categories = detect_categories(caption, niche, total_comments)
             print(categories)
 
             # =================================
@@ -600,7 +763,7 @@ def process_user_file(path):
             # =================================
 
             print("🤖 Generating comments...")
-            raw = create_comments(caption,niche,categories)
+            raw = create_comments(caption, niche, categories, language_distribution)
             lines = [line.strip() for line in raw.split("\n") if line.strip()]
             lines = split_broken_lines(lines)
             lines = remove_mentions(lines)
@@ -609,11 +772,14 @@ def process_user_file(path):
             lines = remove_batch_numbering(lines)
             lines = remove_similar(lines)
             random.shuffle(lines)
-            lines = enforce_count(lines)
+            lines = enforce_count(lines, total_comments)
 
             # =================================
             # SAVE COMMENTS
             # =================================
+
+            if not lines:
+                raise RuntimeError("No valid comments remained after cleaning; post status was not updated.")
 
             save_comments(username,shortcode,lines)
 

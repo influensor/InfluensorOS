@@ -1,0 +1,30 @@
+{
+  "customer_id": "wearstrangers",
+  "username": "wearstrangers",
+
+  "type": "paid",
+
+  "plan": {
+    "type": "multi_post_per_day",
+    "start_date": "2026-10-02",
+    "expiry_date": "2027-12-02",
+    "posts_per_day": 10
+  },
+
+  "settings": {
+    "like": true,
+    "comment": true,
+    "gif_comment": true,
+    "repost": true,
+    "save": true,
+    "share": true,
+    "interested": true,
+    "add_to_story": false,
+    "randomize_action_sequence": true
+  },
+
+  "notifications": {
+    "enabled": true,
+    "mobile_numbers": ["917040992242"]
+  }
+}
