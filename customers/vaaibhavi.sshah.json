@@ -1,0 +1,56 @@
+{
+  "customer_id": "vaaibhavi.sshah",
+  "username": "vaaibhavi.sshah",
+
+  "type": "paid",
+
+  "plan": {
+    "type": "single_post_per_day",
+	"start_date": "2026-10-20",
+	"expiry_date": "2026-11-20",
+	"posts_per_day": 1
+  },
+
+  "settings": {
+    "like": true,
+    "comment": true,
+	"gif_comment": true,
+	"repost": true,
+    "save": true,
+    "share": true,
+	"interested": true,
+    "add_to_story": false,
+    "randomize_action_sequence": true,
+    "comment_language_distribution": {
+      "English": 35,
+	  "Hinglish (Hindi in English/Roman script)": 35,
+      "Hindi (Devanagari script)": 0,
+      "Hindi (English/Roman script)": 0,
+      "Bengali (Bengali script)": 0,
+      "Bengali (English/Roman script)": 0,
+      "Gujarati (Gujarati script)": 15,
+      "Gujarati (English/Roman script)": 15,
+      "Kannada (Kannada script)": 0,
+      "Kannada (English/Roman script)": 0,
+      "Malayalam (Malayalam script)": 0,
+      "Malayalam (English/Roman script)": 0,
+      "Marathi (Devanagari script)": 0,
+      "Marathi (English/Roman script)": 0,
+      "Odia (Odia script)": 0,
+      "Odia (English/Roman script)": 0,
+      "Punjabi (Gurmukhi script)": 0,
+      "Punjabi (English/Roman script)": 0,
+      "Tamil (Tamil script)": 0,
+      "Tamil (English/Roman script)": 0,
+      "Telugu (Telugu script)": 0,
+      "Telugu (English/Roman script)": 0,
+      "Urdu (Perso-Arabic script)": 0,
+      "Urdu (English/Roman script)": 0
+    }
+  },
+
+  "notifications": {
+    "enabled": true,
+    "mobile_numbers": ["919779980563"]
+  }
+}
