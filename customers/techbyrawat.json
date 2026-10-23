@@ -23,8 +23,8 @@
     "randomize_action_sequence": true,
     "comment_language_distribution": {
       "English": 50,
-	  "Hinglish (Hindi in English/Roman script)": 50,
-      "Hindi (Devanagari script)": 0,
+	  "Hinglish (Hindi in English/Roman script)": 40,
+      "Hindi (Devanagari script)": 10,
       "Hindi (English/Roman script)": 0,
       "Bengali (Bengali script)": 0,
       "Bengali (English/Roman script)": 0,
