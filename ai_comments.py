@@ -63,12 +63,15 @@ os.makedirs(
 # COMMENT DISTRIBUTION
 # =====================================================
 
+# Mutually exclusive length buckets; totals must equal TOTAL_COMMENTS.
+# These are local settings, so selecting them costs no Gemini tokens.
 COMMENT_DISTRIBUTION = {
-    "emoji_only_or_1word": 30,
-    "1_to_3_words": 30,
-    "1_to_5_words": 30,
-    "1_to_10_words": 30,
-    "generic_short_reactions": 30
+    "exactly_1_word": 20,
+    "exactly_2_words": 20,
+    "exactly_3_words": 50,
+    "4_to_5_words": 50,
+    "6_to_10_words": 5,
+    "11_or_more_words": 5,
 }
 
 # Default used when a customer JSON has no valid custom distribution.
@@ -204,6 +207,24 @@ def find_customer_file(username):
     return None
 
 
+
+def get_customer_business_profile(username):
+    """Load optional customer/business description without an API call."""
+    customer_path = find_customer_file(username)
+    if not customer_path:
+        return ""
+    try:
+        with open(customer_path, "r", encoding="utf-8") as f:
+            customer = json.load(f)
+        profile = customer.get("business_profile_description", "")
+        if not profile:
+            profile = customer.get("settings", {}).get("business_profile_description", "")
+        return profile.strip() if isinstance(profile, str) else ""
+    except Exception as e:
+        print(f"[PROFILE WARNING] Could not read business profile for {username}: {e}")
+        return ""
+
+
 def allocate_language_counts(distribution, total_comments=TOTAL_COMMENTS):
     """Convert percentages to whole-number counts totaling exactly total_comments."""
     exact_counts = {
@@ -283,96 +304,60 @@ def get_customer_language_distribution(username):
 
 
 # =====================================================
-# STEP 1 — NICHE DETECTOR
+# STEP 1 — POST ANALYSIS: NICHE THEN CATEGORIES
+# One compact Gemini call returns both, reducing API calls and token overhead.
 # =====================================================
 
-def detect_niche(caption):
+def analyze_post(caption, business_profile, total_comments=TOTAL_COMMENTS):
+    profile_context = business_profile.strip() if business_profile else "Not provided"
+    length_text = "\n".join(
+        f"- {count} comments: {label.replace('_', ' ')}"
+        for label, count in COMMENT_DISTRIBUTION.items()
+    )
 
     prompt = f"""
-Analyze this Instagram caption deeply.
+Analyze this Instagram post for realistic comment generation.
 
-Caption:
+Post caption:
 {caption}
 
-Return ONLY valid JSON:
+Customer/business profile (optional supporting context):
+{profile_context}
 
+First identify the post niche, topic, tone, energy, and intent. Use the profile only as context; prioritize what the actual post says. Do not invent facts.
+Then create a varied set of relevant engagement categories and assign counts totaling exactly {total_comments}.
+
+Planned comment length distribution (mutually exclusive buckets; counts must be followed):
+{length_text}
+
+Avoid tagging, @mentions, referral requests, or share-to-friend categories.
+Return ONLY valid JSON in this exact structure:
 {{
-  "topic": "...",
-  "tone": "...",
-  "energy_level": "low | medium | high",
-  "intent": "promotion | entertainment | branding | personal | community"
-}}
-"""
-
-    raw = generate_with_rotation(prompt)
-
-    data = extract_json(raw)
-
-    if data:
-        return data
-
-    return {
-        "topic": "general",
-        "tone": "neutral",
-        "energy_level": "medium",
-        "intent": "general"
-    }
-
-
-# =====================================================
-# STEP 2 — CATEGORY DESIGN
-# =====================================================
-
-def detect_categories(caption, niche, total_comments=TOTAL_COMMENTS):
-
-    prompt = f"""
-We are designing realistic Instagram engagement behavior.
-
-Caption:
-{caption}
-
-Niche Data:
-{json.dumps(niche)}
-
-Your task:
-- Analyze this post deeply
-- Decide realistic engagement categories
-- Categories should feel human and organic
-- Assign counts per category
-- Total comments must equal {total_comments}
-- Avoid categories related to tagging friends
-- Avoid @mention or @tag based engagement
-- Avoid referral or share-to-friend behavior
-- Categories should focus on genuine reactions and opinions
-
-Return ONLY valid JSON:
-
-{{
+  "niche": {{
+    "topic": "...",
+    "tone": "...",
+    "energy_level": "low | medium | high",
+    "intent": "promotion | entertainment | branding | personal | community"
+  }},
   "categories": [
-    {{
-      "name": "category_name",
-      "count": 20
-    }}
+    {{"name": "category_name", "count": 20}}
   ]
 }}
 """
 
-    raw = generate_with_rotation(prompt)
-
-    data = extract_json(raw)
-
-    if data and "categories" in data:
-        return validate_categories(
-            data["categories"],
-            total_comments
+    data = extract_json(generate_with_rotation(prompt))
+    if not data:
+        return (
+            {"topic": "general", "tone": "neutral", "energy_level": "medium", "intent": "general"},
+            [{"name": "genuine_reactions", "count": total_comments}],
         )
 
-    return [
-        {
-            "name": "general_reactions",
-            "count": total_comments
-        }
-    ]
+    niche = data.get("niche")
+    if not isinstance(niche, dict):
+        niche = {"topic": "general", "tone": "neutral", "energy_level": "medium", "intent": "general"}
+
+    categories = validate_categories(data.get("categories", []), total_comments)
+    return niche, categories
 
 
 # =====================================================
@@ -382,7 +367,7 @@ Return ONLY valid JSON:
 def validate_categories(categories, total_comments=TOTAL_COMMENTS):
     """Normalize category counts and guarantee their sum matches total_comments."""
     if not isinstance(categories, list) or not categories:
-        return [{"name": "general_reactions", "count": total_comments}]
+        return [{"name": "genuine_reactions", "count": total_comments}]
 
     valid_categories = []
     for category in categories:
@@ -396,12 +381,9 @@ def validate_categories(categories, total_comments=TOTAL_COMMENTS):
             valid_categories.append({"name": str(category["name"]), "count": count})
 
     if not valid_categories:
-        return [{"name": "general_reactions", "count": total_comments}]
+        return [{"name": "genuine_reactions", "count": total_comments}]
 
     total = sum(category["count"] for category in valid_categories)
-    if total == total_comments:
-        return valid_categories
-
     exact_counts = [category["count"] * total_comments / total for category in valid_categories]
     rounded_counts = [int(value) for value in exact_counts]
     remainder = total_comments - sum(rounded_counts)
@@ -415,7 +397,6 @@ def validate_categories(categories, total_comments=TOTAL_COMMENTS):
 
     for category, count in zip(valid_categories, rounded_counts):
         category["count"] = count
-
     return [category for category in valid_categories if category["count"] > 0]
 
 
@@ -427,7 +408,8 @@ def create_comments(
     caption,
     niche,
     categories,
-    language_distribution
+    language_distribution,
+    business_profile="",
 ):
 
     category_text = "\n".join([
@@ -458,7 +440,7 @@ def create_comments(
 
     total_comments = sum(language_distribution.values())
 
-    language_detail_text = "\\n".join(
+    language_detail_text = "\n".join(
         f"- {language}: Use the language and writing script explicitly described by this label. "
         f"If the label names a script, follow that script exactly."
         for language in language_distribution
@@ -467,6 +449,9 @@ def create_comments(
     prompt = f"""
 Caption:
 {caption}
+
+Customer/business profile (supporting context only):
+{business_profile or "Not provided"}
 
 Niche Data:
 {json.dumps(niche)}
@@ -477,9 +462,10 @@ Instagram comments.
 Category Distribution:
 {category_text}
 
-Comment Length Distribution:
+Comment Length Distribution (EXACT COUNTS; mutually exclusive buckets):
 {distribution_text}
 
+The comment-length bucket counts must be followed exactly. Do not treat the buckets as overlapping ranges.
 Language Distribution (EXACT COUNTS — must be followed):
 {language_text}
 
@@ -491,14 +477,30 @@ The total across all languages is {total_comments}. Do not rebalance or substitu
 
 Rules:
 - Strictly create comments only in given languages
-- Comments must feel organic
-- Mix casual typing styles
-- Some comments can feel incomplete
-- Some comments can use Indian slang
-- Avoid polished grammar
-- Exactly 1 emoji per comment
-- Emoji should match vibe
-- Avoid repeating emojis
+- Comments must feel like real people casually reacting to this specific post
+- Prioritize natural wording, genuine relevance, and varied human typing styles
+- Mix casual typing styles; some comments may be short or slightly incomplete
+- Some comments can use natural Indian slang when appropriate for the selected language
+- Avoid polished, promotional, robotic, exaggerated, or overly enthusiastic wording
+- You, the AI, must choose every emoji from the comment's meaning, post context, language, and tone; never use a fixed emoji mapping
+- For exactly 1-word, exactly 2-word, and exactly 3-word comments, include exactly one contextually appropriate emoji
+- Count words separately from emojis; an emoji does not count as a word
+- For 4-or-more-word comments, plain text is the default; emojis are optional and should appear only when they genuinely add emotion or meaning
+- When you use an emoji in a 4-or-more-word comment, place it naturally immediately after a meaningful word or phrase inside the comment when appropriate, not automatically at the end
+- Never force an emoji into a longer comment; most longer comments should remain plain
+- Use at most one emoji per comment
+- Treat the entire generated batch as one set when choosing emojis, not each comment in isolation
+- First identify the mood and intent of each comment (for example: admiration, curiosity, excitement, affection, surprise, humor, or interest), then choose an emoji that genuinely matches that specific comment and the post context
+- Maximize emoji diversity across the full batch: aim to use a different emoji for every short comment whenever a natural, suitable choice exists
+- Do not repeat the same emoji in adjacent comments, and avoid reusing an emoji anywhere else in the batch unless no other natural emoji fits
+- Do not use random or unrelated emojis merely to make them unique; relevance and natural human expression come first
+- Vary emoji placement and comment wording naturally; never create a mechanical emoji sequence or pattern
+- Examples of occasional meaningful placement in longer comments:
+  Kab milega mujhe aisa 🥞 window seat view
+  Edit dekh ke dil 💖 khush ho gaya
+- These examples show placement only; do not copy them or treat their emojis as fixed choices
+- Never let Python rules or a predefined mapping decide which emoji belongs to a comment
+- Avoid repeating the same phrases, structures, and emoji patterns
 - Match tone: {niche['tone']}
 - Match energy: {niche['energy_level']}
 - No Comments Numbers at all
@@ -516,8 +518,6 @@ Rules:
 - Never say "oops"
 - Never generate variants
 - Never rewrite comments
-- Do not continue comments after emoji
-- After one emoji STOP the line
 - Output ONLY comments
 
 CRITICAL:
@@ -526,7 +526,7 @@ CRITICAL:
 - Never append language codes.
 - Never append abbreviations like ERM, SPR, AFA, HAC, RVS, L1, L2, L3, L4, L5, ENIN or similar.
 - Every line must contain ONLY the comment text.
-- After the emoji, immediately end the line.
+- Follow the length-specific emoji rules above; never force emojis to the end of every comment.
 """
 
     return generate_with_rotation(
@@ -735,35 +735,33 @@ def process_user_file(path):
         try:
 
             # =================================
-            # NICHE
+            # STEP 1: LOAD CUSTOMER LANGUAGE SETTINGS (LOCAL, NO API TOKENS)
             # =================================
-
-            print("🔍 Detecting niche...")
-            niche = detect_niche(caption)
-            print(niche)
-
-            # =================================
-            # CUSTOMER LANGUAGE DISTRIBUTION
-            # =================================
-
             language_distribution = get_customer_language_distribution(username)
             total_comments = sum(language_distribution.values())
-            print(f"🌐 Language distribution ({total_comments} comments): {language_distribution}")
+            print(f"🌐 Active languages ({total_comments} comments): {language_distribution}")
 
             # =================================
-            # CATEGORIES
+            # STEP 2: LENGTH/STYLE DISTRIBUTION (LOCAL, NO API TOKENS)
             # =================================
-
-            print("📊 Detecting categories...")
-            categories = detect_categories(caption, niche, total_comments)
-            print(categories)
+            print(f"📝 Comment length/style distribution: {COMMENT_DISTRIBUTION}")
 
             # =================================
-            # GENERATE COMMENTS
+            # STEP 3 + 4: ANALYZE NICHE, THEN DESIGN CATEGORIES (ONE API CALL)
             # =================================
+            business_profile = get_customer_business_profile(username)
+            print("🔍 Analyzing niche and categories...")
+            niche, categories = analyze_post(caption, business_profile, total_comments)
+            print(f"Niche: {niche}")
+            print(f"Categories: {categories}")
 
+            # =================================
+            # STEP 5: GENERATE COMMENTS (ONE API CALL)
+            # =================================
             print("🤖 Generating comments...")
-            raw = create_comments(caption, niche, categories, language_distribution)
+            raw = create_comments(
+                caption, niche, categories, language_distribution, business_profile
+            )
             lines = [line.strip() for line in raw.split("\n") if line.strip()]
             lines = split_broken_lines(lines)
             lines = remove_mentions(lines)
