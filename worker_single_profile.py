@@ -102,13 +102,13 @@ MAX_ACCOUNT_SWITCHES_MAX = 6
 
 # Number of top-most eligible (not-yet-delivered) posts to select for EACH
 # TARGET_PROFILE on EACH device during this script run. The quota is random.
-MIN_POSTS_PER_ACCOUNT_PER_DEVICE = 1
+MIN_POSTS_PER_ACCOUNT_PER_DEVICE = 2
 MAX_POSTS_PER_ACCOUNT_PER_DEVICE = 5
-MAX_SIMULTANEOUS_DEVICES = 2
+MAX_SIMULTANEOUS_DEVICES = 3
 
 # YES: do not let two active devices process the same source account at once.
 # NO: source-account overlap across devices is allowed.
-UNIQUE_ACCOUNT_PER_DEVICE = True
+UNIQUE_ACCOUNT_PER_DEVICE = False
 
 _ACTIVE_SOURCE_ACCOUNTS = set()
 _ACTIVE_SOURCE_ACCOUNTS_LOCK = threading.Lock()
