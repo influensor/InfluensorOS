@@ -29,6 +29,7 @@ usernames = [
     "trishachatterjee09",
     "vanitas_payal_beauty999",
     "vickygetfit",
+    "wander_bites_duo",
     "wearstrangers",
     "worldspassport"
  ]
