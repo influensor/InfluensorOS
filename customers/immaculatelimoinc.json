@@ -22,8 +22,8 @@
     "add_to_story": false,
     "randomize_action_sequence": true,
     "comment_language_distribution": {
-      "English": 50,
-	  "Hinglish (Hindi in English/Roman script)": 50,
+      "English": 100,
+	  "Hinglish (Hindi in English/Roman script)": 0,
       "Hindi (Devanagari script)": 0,
       "Hindi (English/Roman script)": 0,
       "Bengali (Bengali script)": 0,
