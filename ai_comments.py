@@ -209,17 +209,35 @@ def find_customer_file(username):
 
 
 def get_customer_business_profile(username):
-    """Load optional customer/business description without an API call."""
+    """Load the optional top-level business_profile_description.
+
+    This field is optional. If the customer JSON is missing, the field does not
+    exist, or its value is empty/whitespace/non-string, return an empty string
+    so comment generation continues using the post caption alone.
+    """
     customer_path = find_customer_file(username)
     if not customer_path:
+        print(f"[PROFILE] No customer JSON found for {username}; using post context only.")
         return ""
+
     try:
         with open(customer_path, "r", encoding="utf-8") as f:
             customer = json.load(f)
+
+        if not isinstance(customer, dict):
+            print(f"[PROFILE] Customer JSON for {username} is not an object; using post context only.")
+            return ""
+
         profile = customer.get("business_profile_description", "")
-        if not profile:
-            profile = customer.get("settings", {}).get("business_profile_description", "")
-        return profile.strip() if isinstance(profile, str) else ""
+        if isinstance(profile, str):
+            profile = profile.strip()
+            if profile:
+                print(f"[PROFILE] Business description loaded for {username}.")
+                return profile
+
+        print(f"[PROFILE] No business description for {username}; using post context only.")
+        return ""
+
     except Exception as e:
         print(f"[PROFILE WARNING] Could not read business profile for {username}: {e}")
         return ""
@@ -324,7 +342,7 @@ Post caption:
 Customer/business profile (optional supporting context):
 {profile_context}
 
-First identify the post niche, topic, tone, energy, and intent. Use the profile only as context; prioritize what the actual post says. Do not invent facts.
+First identify the post niche, topic, tone, energy, and intent. If a business profile is provided, use it to understand the business, audience, products/services, and brand tone, then combine it with the actual post context. The post itself must remain the primary source of what the comments react to. If the profile says "Not provided", analyze the post caption alone. Do not invent facts.
 Then create a varied set of relevant engagement categories and assign counts totaling exactly {total_comments}.
 
 Planned comment length distribution (mutually exclusive buckets; counts must be followed):
@@ -450,8 +468,8 @@ def create_comments(
 Caption:
 {caption}
 
-Customer/business profile (supporting context only):
-{business_profile or "Not provided"}
+Customer/business profile (optional; use only if provided):
+{business_profile.strip() if isinstance(business_profile, str) and business_profile.strip() else "Not provided — generate comments from the post caption/context alone."}
 
 Niche Data:
 {json.dumps(niche)}
