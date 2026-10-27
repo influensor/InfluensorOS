@@ -5,7 +5,6 @@ import subprocess
 from engine.post_monitor.monitor import PostMonitor
 
 #usernames = ["torqos.ev"]
-#usernames = ["immaculatelimoinc"]
 #usernames = ["worldspassport"]
 #usernames = ["journey.techie"]
 #usernames = ["houseofstylebyricha"]
