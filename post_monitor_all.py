@@ -7,9 +7,7 @@ from playwright.sync_api import sync_playwright
 # CONFIG
 # =====================================================
 
-USER_DATA_DIR = (
-    r"C:\instagram_a4agharkar.in"
-)
+USER_DATA_DIR = (r"C:\instagram_chhayaagharkar")
 
 BASE_DIR = os.path.join(
     os.path.dirname(__file__),
@@ -229,10 +227,10 @@ def get_latest_posts(
 # =====================================================
 
 if __name__ == "__main__":
-    username = "our_tiny_chapters"
+    username = "pavankhillarepatil0055"
     posts = get_latest_posts(
         username,
-        limit=10
+        limit=60
     )
     save_posts(
         username,
