@@ -1,20 +1,21 @@
 {
-  "customer_id": "shivanisharmafoundation",
-  "username": "shivanisharmafoundation",
+  "customer_id": "lipika_maheshwari",
+  "username": "lipika_maheshwari",
+  "business_profile_description": "A vibrant digital creator and lifestyle model bridging Delhi and Mumbai, sharing authentic journeys in fitness, beauty, curls care, and travel. Specializing in relatable content around strength training, gym motivation, realistic wellness, skincare, and travel adventures. Passionate about inspiring body positivity, mindful living, and embracing confidence inside and out.",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-09-24",
-	"expiry_date": "2026-10-24",
+	"start_date": "2026-10-28",
+	"expiry_date": "2026-11-28",
 	"posts_per_day": 1
   },
 
   "settings": {
     "like": true,
     "comment": true,
-	"gif_comment": false,
+	"gif_comment": true,
 	"repost": true,
     "save": true,
     "share": true,
@@ -51,6 +52,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["917606992317"]
+    "mobile_numbers": ["917077755811"]
   }
 }
