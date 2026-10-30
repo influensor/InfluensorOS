@@ -26,8 +26,8 @@ from engine.ui.switch_account import switch_account
 #ACTIONS = ["open_instagram", "profile", "follow", "story", "message", "post", "view", "like", "comment", "gif_comment", "repost", "share", "share_custom", "save", "interested", "switch"]
 ACTIONS = ["post", "like"]
 
-TEST_USERNAME = "ndtvprofit"
-TEST_POST_URL = {"url": "https://www.instagram.com/reel/DfGacX1nX8A/","shortcode": "DfGacX1nX8A"}
+TEST_USERNAME = "vickygetfit"
+TEST_POST_URL = {"url": "https://www.instagram.com/reel/DfFYzHlBdtw/","shortcode": "DfFYzHlBdtw"}
 
 # =========================
 # 📄 LOCAL DEBUG LOGGER
