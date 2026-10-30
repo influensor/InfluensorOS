@@ -6,6 +6,7 @@ usernames = [
     "_thecosmicvoid",
     "aesthetic.viren",
     "ananya_raoo",
+    "ashokaawardofficial",
     "bite.me.up",
     "bridesbyaashna",
     "choreographer_akash",
