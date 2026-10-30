@@ -9,7 +9,7 @@ from engine.post_monitor.monitor import PostMonitor
 #usernames = ["journey.techie"]
 #usernames = ["houseofstylebyricha"]
 #usernames = ["pavankhillarepatil0055"]
-usernames = ["women_communityy_"]
+usernames = ["imagemakerclicks"]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
 INDEX_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\current_user.txt"
@@ -31,7 +31,7 @@ username = usernames[current_index]
 print(f"Processing: {username}")
 
 monitor = PostMonitor(headless=True)
-results = monitor.check_multiple([username], limit=36)
+results = monitor.check_multiple([username], limit=12)
 monitor.close()
 
 for username, posts in results.items():
