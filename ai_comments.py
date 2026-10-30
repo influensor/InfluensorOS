@@ -321,6 +321,53 @@ def get_customer_language_distribution(username):
         return dict(DEFAULT_LANGUAGE_DISTRIBUTION)
 
 
+def should_skip_customer_comments(username):
+    """Skip customers who explicitly do not want comments generated.
+
+    Checks the optional comment toggle at the top level or in settings.
+    Also skips when every configured language percentage is exactly zero.
+    Missing or empty language configuration does not disable comments.
+    """
+    customer_path = find_customer_file(username)
+    if not customer_path:
+        return False
+
+    try:
+        with open(customer_path, "r", encoding="utf-8") as f:
+            customer = json.load(f)
+
+        if not isinstance(customer, dict):
+            return False
+
+        settings = customer.get("settings", {})
+        if not isinstance(settings, dict):
+            settings = {}
+
+        if customer.get("comment") is False or settings.get("comment") is False:
+            print(f"[SKIP] Comments are disabled for {username} (comment: false).")
+            return True
+
+        distribution = settings.get("comment_language_distribution")
+        if (
+            isinstance(distribution, dict)
+            and distribution
+            and all(
+                isinstance(weight, (int, float))
+                and not isinstance(weight, bool)
+                and weight == 0
+                for weight in distribution.values()
+            )
+        ):
+            print(f"[SKIP] All language percentages are 0 for {username}.")
+            return True
+
+    except Exception as e:
+        print(f"[CUSTOMER SETTINGS WARNING] Could not check comment settings for {username}: {e}")
+
+    return False
+
+
+
 # =====================================================
 # STEP 1 — POST ANALYSIS: NICHE THEN CATEGORIES
 # One compact Gemini call returns both, reducing API calls and token overhead.
@@ -719,6 +766,9 @@ def save_posts_json(path,posts):
 def process_user_file(path):
     username = os.path.basename(path).replace(".json", "")
     print(f"\n[USER] {username}")
+
+    if should_skip_customer_comments(username):
+        return
     with open(path,"r",encoding="utf-8") as f:
         posts = json.load(f)
     
