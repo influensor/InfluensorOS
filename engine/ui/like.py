@@ -16,8 +16,18 @@ LIKE_BUTTON_IDS = [
 
 LIKE_COUNT_ID = "com.instagram.android:id/like_count"
 
-# Minimum number of red pixels needed to identify Instagram's filled heart.
+# Reel media container observed in the supplied Instagram XML.
+# Feed media IDs vary by Instagram version; only use a known media container.
+MEDIA_CONTAINER_IDS = [
+    "com.instagram.android:id/clips_single_image_media_content",
+    "com.instagram.android:id/clips_media_component",
+    "com.instagram.android:id/media_group",
+    "com.instagram.android:id/media_container",
+]
+
 RED_MIN_PIXELS = 25
+DOUBLE_TAP_INTERVAL = 0.12
+MEDIA_EDGE_MARGIN = 0.20
 
 
 def _parse_like_count(value):
@@ -89,17 +99,9 @@ def _find_like_button(device):
 
 
 def check_like_state_new(device, like_button=None):
-    """
-    NEW detector: inspect the heart's screenshot pixels.
-
-    Returns:
-        True  = filled red heart (liked)
-        False = white outline heart (unliked)
-        None  = unable to classify safely
-    """
+    """Visual detector: True=red filled heart, False=outline, None=unknown."""
     if like_button is None:
         like_button = _find_like_button(device)
-
     if like_button is None:
         return None
 
@@ -114,7 +116,6 @@ def check_like_state_new(device, like_button=None):
 
         screenshot = screenshot.convert("RGB")
         width, height = screenshot.size
-
         left = max(0, int(bounds["left"]) + 5)
         top = max(0, int(bounds["top"]) + 5)
         right = min(width, int(bounds["right"]) - 5)
@@ -127,35 +128,19 @@ def check_like_state_new(device, like_button=None):
         for red, green, blue in screenshot.crop(
             (left, top, right, bottom)
         ).getdata():
-            # Solid red/pink heart; the unliked heart is a white outline.
-            if (
-                red >= 170
-                and green <= 105
-                and blue <= 145
-                and (red - green) >= 75
-            ):
+            if red >= 170 and green <= 105 and blue <= 145 and red - green >= 75:
                 red_pixels += 1
                 if red_pixels >= RED_MIN_PIXELS:
                     return True
-
         return False
-
     except Exception:
         return None
 
 
 def check_like_state_old(device, like_button=None):
-    """
-    OLD detector: use uiautomator2's selected state, as in the original code.
-
-    Returns:
-        True  = selected (liked)
-        False = not selected (unliked)
-        None  = button/state unavailable
-    """
+    """Original accessibility detector using selected state."""
     if like_button is None:
         like_button = _find_like_button(device)
-
     if like_button is None:
         return None
 
@@ -169,54 +154,153 @@ def check_like_state_old(device, like_button=None):
 
 
 def is_post_liked(device, like_button=None, log_result=True):
-    """
-    Combine both detectors.
-
-    If EITHER detector returns True, the post is considered liked.
-    We only consider the post safely unliked when BOTH detectors explicitly
-    return False. Any unknown result without a True result is inconclusive.
-    """
+    """Either detector True=liked; both False=unliked; otherwise unknown."""
     if like_button is None:
         like_button = _find_like_button(device)
-
     if like_button is None:
         return None
 
-    new_state = check_like_state_new(device, like_button)
+    visual_state = check_like_state_new(device, like_button)
     old_state = check_like_state_old(device, like_button)
 
     if log_result:
         info(
-            f"🔎 Like detectors | NEW visual={new_state} | OLD selected={old_state}"
+            f"🔎 Like detectors | NEW visual={visual_state} | "
+            f"OLD selected={old_state}"
         )
 
-    # Either detector can protect an already-liked post.
-    if new_state is True or old_state is True:
+    if visual_state is True or old_state is True:
         return True
-
-    # Only click when both detectors positively report unliked.
-    if new_state is False and old_state is False:
+    if visual_state is False and old_state is False:
         return False
-
     return None
+
+
+def _parse_bounds(bounds_text):
+    """Convert XML bounds '[x1,y1][x2,y2]' to a bounds dictionary."""
+    match = re.fullmatch(
+        r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]",
+        bounds_text or "",
+    )
+    if not match:
+        return None
+
+    left, top, right, bottom = map(int, match.groups())
+    if right <= left or bottom <= top:
+        return None
+
+    return {
+        "left": left,
+        "top": top,
+        "right": right,
+        "bottom": bottom,
+    }
+
+
+def _find_media_tap_point(device):
+    """
+    Find a safe point inside the actual media container.
+
+    It deliberately does not use the Like button bounds or arbitrary screen
+    coordinates. If no recognized media container is present, return None.
+    """
+    try:
+        root = ET.fromstring(device.dump_hierarchy())
+        candidates = []
+
+        for node in root.iter("node"):
+            resource_id = node.attrib.get("resource-id", "")
+            if resource_id not in MEDIA_CONTAINER_IDS:
+                continue
+
+            bounds = _parse_bounds(node.attrib.get("bounds"))
+            if not bounds:
+                continue
+
+            width = bounds["right"] - bounds["left"]
+            height = bounds["bottom"] - bounds["top"]
+
+            # Ignore tiny or unusually narrow containers.
+            if width < 250 or height < 250:
+                continue
+
+            # Prefer the specific media-content node over its larger parent.
+            priority = MEDIA_CONTAINER_IDS.index(resource_id)
+            area = width * height
+            candidates.append((priority, -area, bounds, resource_id))
+
+        if not candidates:
+            return None
+
+        # Prefer the most specific recognized media container.
+        candidates.sort(key=lambda item: (item[0], item[1]))
+        _, _, bounds, resource_id = candidates[0]
+
+        width = bounds["right"] - bounds["left"]
+        height = bounds["bottom"] - bounds["top"]
+
+        # Use a point in the central media area, away from edges and controls.
+        x = bounds["left"] + width // 2
+        y = bounds["top"] + height // 2
+
+        # Confirm the point is not inside any separate clickable child control.
+        for node in root.iter("node"):
+            if node.attrib.get("clickable") != "true":
+                continue
+
+            child_bounds = _parse_bounds(node.attrib.get("bounds"))
+            if not child_bounds:
+                continue
+
+            # Ignore the media container itself and large clickable ancestors.
+            if (
+                child_bounds["left"] <= bounds["left"]
+                and child_bounds["top"] <= bounds["top"]
+                and child_bounds["right"] >= bounds["right"]
+                and child_bounds["bottom"] >= bounds["bottom"]
+            ):
+                continue
+
+            if (
+                child_bounds["left"] <= x <= child_bounds["right"]
+                and child_bounds["top"] <= y <= child_bounds["bottom"]
+            ):
+                warn(
+                    "⚠️ Media center overlaps another clickable UI element. "
+                    "Refusing to double-tap.",
+                    device,
+                )
+                return None
+
+        info(
+            f"🎯 Double-tap media point ({x}, {y}) "
+            f"from {resource_id}"
+        )
+        return x, y
+
+    except Exception as exc:
+        warn(f"⚠️ Could not locate safe media area: {exc}")
+        return None
+
+
+def _double_tap_media(device, x, y):
+    """Double-tap media coordinates, never the Like UI button."""
+    device.click(x, y)
+    time.sleep(DOUBLE_TAP_INTERVAL)
+    device.click(x, y)
 
 
 def like_post(device_id, retries=2, verify_timeout=8, poll_interval=0.5):
     """
     Safely like the currently opened Instagram post/reel.
 
-    Flow:
-      1. NEW visual detector checks the heart.
-      2. OLD selected-state detector checks the button.
-      3. If EITHER says liked, skip the click and return True.
-      4. Click exactly once only if BOTH say unliked.
-      5. Poll both detectors after clicking; EITHER returning True confirms
-         the liked state.
-      6. The like count is logged as supporting information, not used alone
-         to decide liked state.
+    1. Check liked state using visual + original accessibility detectors.
+    2. If either says liked, do nothing.
+    3. If both say unliked, double-tap the center of a recognized media area.
+    4. Verify using both detectors.
+    5. Never repeat the double-tap if verification times out.
 
-    `retries` is retained for compatibility with existing callers. The click
-    itself is never retried because a second click can unlike the post.
+    `retries` is retained for compatibility; it does not repeat the gesture.
     """
     try:
         device = u2.connect(device_id)
@@ -224,45 +308,39 @@ def like_post(device_id, retries=2, verify_timeout=8, poll_interval=0.5):
         error(f"❌ Could not connect to device: {exc}", device_id)
         return False
 
-    info("▶ Like Post - checking NEW and OLD like-state detectors", device_id)
+    info("▶ Like Post - checking current like state", device_id)
 
     like_button = _find_like_button(device)
     if like_button is None:
-        error("❌ Like button not found", device_id)
+        error("❌ Like button not found; cannot safely verify state.", device_id)
         return False
 
-    # Run both detectors before taking any action.
     initial_state = is_post_liked(device, like_button)
 
     if initial_state is True:
-        info("✅ Already liked | At least one detector returned TRUE. Skipping click.", device_id)
+        info("✅ Already liked. Skipping double-tap.", device_id)
         return True
 
     if initial_state is None:
-        warn(
-            "⚠️ Like state is inconclusive. At least one detector could not "
-            "read the state, and neither confirmed liked. Skipping click "
-            "to prevent accidental unlike.",
-            device_id,
-        )
+        warn("⚠️ Like state is inconclusive. Skipping gesture for safety.", device_id)
         return False
 
-    info("♡ Both detectors report UNLIKED. Safe to click once.", device_id)
+    tap_point = _find_media_tap_point(device)
+    if tap_point is None:
+        warn("⚠️ Safe media area not found. No double-tap performed.", device_id)
+        return False
 
     before_count = _read_like_count(device)
     if before_count is not None:
         info(f"❤️ Like count before action: {before_count}", device_id)
-    else:
-        warn("⚠️ Like count unavailable; state verification will use both detectors.", device_id)
 
-    # Exactly one click. Never blindly retry.
     try:
-        like_button.click()
+        _double_tap_media(device, *tap_point)
     except Exception as exc:
-        error(f"❌ Like button click failed: {exc}", device_id)
+        error(f"❌ Media double-tap failed: {exc}", device_id)
         return False
 
-    info("🖱️ Like clicked once. Verifying with both detectors...", device_id)
+    info("🖱️ Media double-tapped once. Verifying like state...", device_id)
 
     deadline = time.monotonic() + max(0, verify_timeout)
     last_count = before_count
@@ -284,23 +362,17 @@ def like_post(device_id, retries=2, verify_timeout=8, poll_interval=0.5):
         if current_count is not None:
             last_count = current_count
 
-        # Either NEW or OLD detector returning True means LIKED.
         if current_state is True:
             if before_count is not None and last_count is not None:
-                increase = last_count - before_count
                 info(
-                    f"✅ Like successful | At least one detector says LIKED | "
-                    f"Count: {before_count} → {last_count} ({increase:+d})",
+                    f"✅ Like successful | Count: {before_count} → "
+                    f"{last_count} ({last_count - before_count:+d})",
                     device_id,
                 )
             else:
-                info(
-                    "✅ Like successful | At least one detector says LIKED.",
-                    device_id,
-                )
+                info("✅ Like successful | Confirmed by visual/accessibility state.", device_id)
             return True
 
-    # Final state check. Never click a second time.
     final_button = _find_like_button(device)
     final_state = (
         is_post_liked(device, final_button, log_result=False)
@@ -309,19 +381,11 @@ def like_post(device_id, retries=2, verify_timeout=8, poll_interval=0.5):
     )
 
     if final_state is True:
-        info("✅ Reel is LIKED | Confirmed by at least one detector.", device_id)
+        info("✅ Reel is liked | Confirmed after verification timeout.", device_id)
         return True
 
-    if final_state is False:
-        warn(
-            "⚠️ Both detectors still report UNLIKED after the click. "
-            "No second click was attempted.",
-            device_id,
-        )
-    else:
-        warn(
-            "⚠️ Final like state is inconclusive. No second click was attempted.",
-            device_id,
-        )
-
+    warn(
+        "⚠️ Like was not confirmed. No second double-tap was attempted.",
+        device_id,
+    )
     return False

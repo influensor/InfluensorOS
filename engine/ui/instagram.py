@@ -99,6 +99,8 @@ def open_post_by_url(
     if isinstance(post, dict):
 
         post_url = post.get("url")
+        post_shortcode = post.get("shortcode")
+        post_p_url = f"https://www.instagram.com/p/{post_shortcode}/"
 
     else:
 
@@ -116,9 +118,12 @@ def open_post_by_url(
     # ----------------------------------------------
     # OPEN POST
     # ----------------------------------------------
+    for attempt in range(1):
+        info(f"Opening Post {post['shortcode']} (attempt {attempt})", device_id)
+        subprocess.run(["adb", "-s", device_id, "shell", "am", "start","-a", "android.intent.action.VIEW","-d", post_p_url, "-p", INSTAGRAM_PKG],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        time.sleep(2)
 
     for attempt in range(1, retries + 1):
-
         info(
             f"Opening Post "
             f"{post['shortcode']} "
