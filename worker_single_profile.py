@@ -104,7 +104,7 @@ MAX_ACCOUNT_SWITCHES_MAX = 5
 # TARGET_PROFILE on EACH device during this script run. The quota is random.
 MIN_POSTS_PER_ACCOUNT_PER_DEVICE = 2
 MAX_POSTS_PER_ACCOUNT_PER_DEVICE = 5
-MAX_SIMULTANEOUS_DEVICES = 4
+MAX_SIMULTANEOUS_DEVICES = 5
 
 # YES: do not let two active devices process the same source account at once.
 # NO: source-account overlap across devices is allowed.
