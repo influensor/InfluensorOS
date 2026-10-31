@@ -18,7 +18,6 @@ usernames = [
     "houseofstylebyricha",
     "ifbbprojyotigupta",
     "imagemakerclicks",
-    "immaculatelimoinc",
     "journey.techie",
     "lipika_maheshwari",
     "pavankhillarepatil0055",
