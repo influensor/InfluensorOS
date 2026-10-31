@@ -197,7 +197,7 @@ def _parse_bounds(bounds_text):
     }
 
 
-def _find_media_tap_point(device):
+def _find_media_tap_point(device, device_id=None):
     """
     Find a safe point inside the actual media container.
 
@@ -268,18 +268,18 @@ def _find_media_tap_point(device):
                 warn(
                     "⚠️ Media center overlaps another clickable UI element. "
                     "Refusing to double-tap.",
-                    device,
+                    device_id,
                 )
                 return None
 
         info(
             f"🎯 Double-tap media point ({x}, {y}) "
-            f"from {resource_id}"
+            f"from {resource_id}", device_id
         )
         return x, y
 
     except Exception as exc:
-        warn(f"⚠️ Could not locate safe media area: {exc}")
+        warn(f"⚠️ Could not locate safe media area: {exc}", device_id)
         return None
 
 
@@ -292,15 +292,16 @@ def _double_tap_media(device, x, y):
 
 def like_post(device_id, retries=2, verify_timeout=8, poll_interval=0.5):
     """
-    Safely like the currently opened Instagram post/reel.
+    Like the currently opened Instagram post/reel.
 
-    1. Check liked state using visual + original accessibility detectors.
-    2. If either says liked, do nothing.
-    3. If both say unliked, double-tap the center of a recognized media area.
-    4. Verify using both detectors.
-    5. Never repeat the double-tap if verification times out.
+    Exact action sequence:
+      1. Check current state. If already liked, do nothing.
+      2. Locate a safe media tap point before changing anything.
+      3. Click the Instagram Like UI element exactly once.
+      4. Double-tap the safe visible media area exactly once.
+      5. Verify the final liked state using visual + accessibility detectors.
 
-    `retries` is retained for compatibility; it does not repeat the gesture.
+    `retries` is retained for compatibility. Neither action is blindly retried.
     """
     try:
         device = u2.connect(device_id)
@@ -312,35 +313,62 @@ def like_post(device_id, retries=2, verify_timeout=8, poll_interval=0.5):
 
     like_button = _find_like_button(device)
     if like_button is None:
-        error("❌ Like button not found; cannot safely verify state.", device_id)
+        error("❌ Like button not found", device_id)
         return False
 
     initial_state = is_post_liked(device, like_button)
 
     if initial_state is True:
-        info("✅ Already liked. Skipping double-tap.", device_id)
+        info("✅ Already liked. Skipping all like actions.", device_id)
         return True
 
     if initial_state is None:
-        warn("⚠️ Like state is inconclusive. Skipping gesture for safety.", device_id)
+        warn(
+            "⚠️ Like state is inconclusive. Skipping actions for safety.",
+            device_id,
+        )
         return False
 
-    tap_point = _find_media_tap_point(device)
+    # Resolve the media point BEFORE clicking the Like button. This avoids
+    # performing only the first half of the requested sequence.
+    tap_point = _find_media_tap_point(device, device_id)
     if tap_point is None:
-        warn("⚠️ Safe media area not found. No double-tap performed.", device_id)
+        warn("⚠️ Safe media area not found. No like action performed.", device_id)
         return False
 
     before_count = _read_like_count(device)
     if before_count is not None:
         info(f"❤️ Like count before action: {before_count}", device_id)
 
+    # ACTION 1: click the actual Instagram Like UI element once.
+    try:
+        like_button.click()
+    except Exception as exc:
+        error(f"❌ Like UI button click failed: {exc}", device_id)
+        return False
+
+    info("🖱️ Step 1/2: Like UI element clicked once.", device_id)
+
+    # Allow Instagram to process the button click before the media gesture.
+    time.sleep(0.35)
+
+    # ACTION 2: double-tap the safe media area once.
+    # Per the user's confirmed behavior, this gesture does not unlike the post.
     try:
         _double_tap_media(device, *tap_point)
     except Exception as exc:
-        error(f"❌ Media double-tap failed: {exc}", device_id)
+        error(
+            f"❌ Step 2/2: Media double-tap failed after UI click: {exc}",
+            device_id,
+        )
+        # Do not click again: the UI click may already have liked the post.
         return False
 
-    info("🖱️ Media double-tapped once. Verifying like state...", device_id)
+    info(
+        f"🖱️ Step 2/2: Media double-tapped once at {tap_point}. "
+        "Verifying final state...",
+        device_id,
+    )
 
     deadline = time.monotonic() + max(0, verify_timeout)
     last_count = before_count
@@ -370,7 +398,10 @@ def like_post(device_id, retries=2, verify_timeout=8, poll_interval=0.5):
                     device_id,
                 )
             else:
-                info("✅ Like successful | Confirmed by visual/accessibility state.", device_id)
+                info(
+                    "✅ Like successful | Confirmed by visual/accessibility state.",
+                    device_id,
+                )
             return True
 
     final_button = _find_like_button(device)
@@ -381,11 +412,12 @@ def like_post(device_id, retries=2, verify_timeout=8, poll_interval=0.5):
     )
 
     if final_state is True:
-        info("✅ Reel is liked | Confirmed after verification timeout.", device_id)
+        info("✅ Post is liked | Confirmed after verification timeout.", device_id)
         return True
 
     warn(
-        "⚠️ Like was not confirmed. No second double-tap was attempted.",
+        "⚠️ Like was not confirmed after UI click + media double-tap. "
+        "No action was repeated.",
         device_id,
     )
     return False
