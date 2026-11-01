@@ -24,7 +24,15 @@ def view_post(device_id, min_seconds=1, max_seconds=60, retries=1):
         try:
             start = time.time()
             while time.time() - start < duration:
-                # Human-like idle pause
+                # When the configured maximum duration is under 10 seconds,
+                # keep the view passive: wait only, without scrolling.
+                if max_seconds < 10:
+                    remaining = duration - (time.time() - start)
+                    if remaining > 0:
+                        time.sleep(min(1, remaining))
+                    continue
+
+                # Existing scrolling behaviour for durations of 10 seconds or more
                 time.sleep(random.uniform(3, 3))
                 try:
                     swipe_up(device_id)

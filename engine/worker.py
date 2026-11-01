@@ -424,32 +424,26 @@ def device_worker(device_id):
         # -------------------------
         # Navigation
         # -------------------------
-        open_profile_by_username(
-            device_id,
-            active_account,
-            customer
-        )
-
+        open_profile_by_username(device_id,active_account,customer)
         story_view_like(device_id)
-
-        open_post_by_url(
-            device_id,
-            post,
-            customer["username"]
-        )
+        open_post_by_url(device_id,post,customer["username"])
+        
+        # Initial Reel Playback Buffer
+        REEL_INITIAL_PLAYBACK_DELAY = 3
+        info(f"Waiting {REEL_INITIAL_PLAYBACK_DELAY}s for initial Reel playback",device_id)
+        time.sleep(REEL_INITIAL_PLAYBACK_DELAY)
 
         # -------------------------
         # Like gate
         # -------------------------
         action_performed = False
-
         already_liked = should_skip_actions(device_id)
 
         # -------------------------
         # Already liked
         # -------------------------
         if already_liked:
-            view_post(device_id,1,random.randint(1, 10))
+            view_post(device_id,1,random.randint(5, 10))
 
         # -------------------------
         # Execute actions
