@@ -99,42 +99,106 @@ def _find_like_button(device):
 
 
 def check_like_state_new(device, like_button=None):
-    """Visual detector: True=red filled heart, False=outline, None=unknown."""
+    """
+    Visual Like detector:
+        True  = Red filled heart (liked)
+        False = White outline heart (unliked)
+        None  = Unable to determine
+
+    Scans the central heart area to avoid red pixels
+    from the Reel image behind the transparent Like button.
+    """
+
     if like_button is None:
         like_button = _find_like_button(device)
+
     if like_button is None:
         return None
 
     try:
         bounds = (like_button.info or {}).get("bounds")
+
         if not isinstance(bounds, dict):
             return None
 
         screenshot = device.screenshot()
+
         if screenshot is None:
             return None
 
         screenshot = screenshot.convert("RGB")
+
         width, height = screenshot.size
-        left = max(0, int(bounds["left"]) + 5)
-        top = max(0, int(bounds["top"]) + 5)
-        right = min(width, int(bounds["right"]) - 5)
-        bottom = min(height, int(bounds["bottom"]) - 5)
+
+        button_left = int(bounds["left"])
+        button_top = int(bounds["top"])
+        button_right = int(bounds["right"])
+        button_bottom = int(bounds["bottom"])
+
+        button_width = button_right - button_left
+        button_height = button_bottom - button_top
+
+        if button_width <= 0 or button_height <= 0:
+            return None
+
+        # Scan only the central interior of the heart.
+        # Excludes the outer button edges and red objects below it.
+        left = max(
+            0,
+            int(button_left + button_width * 0.30)
+        )
+
+        top = max(
+            0,
+            int(button_top + button_height * 0.28)
+        )
+
+        right = min(
+            width,
+            int(button_left + button_width * 0.70)
+        )
+
+        bottom = min(
+            height,
+            int(button_top + button_height * 0.68)
+        )
 
         if right <= left or bottom <= top:
             return None
 
+        crop = screenshot.crop((left, top, right, bottom))
+
+        total_pixels = 0
         red_pixels = 0
-        for red, green, blue in screenshot.crop(
-            (left, top, right, bottom)
-        ).getdata():
-            if red >= 170 and green <= 105 and blue <= 145 and red - green >= 75:
+
+        for red, green, blue in crop.getdata():
+
+            total_pixels += 1
+
+            # Instagram filled-heart red
+            if (
+                red >= 170
+                and green <= 105
+                and blue <= 145
+                and red - green >= 75
+            ):
                 red_pixels += 1
-                if red_pixels >= RED_MIN_PIXELS:
-                    return True
+
+        if total_pixels == 0:
+            return None
+
+        red_ratio = red_pixels / total_pixels
+
+        # Require both a minimum pixel count and
+        # a meaningful percentage of red in the heart interior.
+        if red_pixels >= 20 and red_ratio >= 0.20:
+            return True
+
         return False
+
     except Exception:
         return None
+
 
 
 def check_like_state_old(device, like_button=None):
