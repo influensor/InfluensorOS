@@ -1,0 +1,57 @@
+{
+  "customer_id": "vakildot",
+  "username": "vakildot",
+  "business_profile_description": "A trusted Indian legal-tech platform (VakilDot) bridging the gap between everyday citizens, businesses, and verified legal professionals. Offering instant video consultations, live chat support, and secure legal assistance across India for everything from cyber fraud (1930 reporting and scams), property disputes, and legal notices to consumer rights and loan app harassment. Simultaneously empowering advocates and law firms to take their practice digital, manage case diaries, set smart hearing reminders, and expand their client reach nationwide through the VakilDot app.",
+
+  "type": "paid",
+
+  "plan": {
+    "type": "single_post_per_day",
+	"start_date": "2026-10-24",
+	"expiry_date": "2026-11-24",
+	"posts_per_day": 1
+  },
+
+  "settings": {
+    "like": true,
+    "comment": true,
+	"gif_comment": true,
+	"repost": true,
+    "save": true,
+    "share": true,
+	"interested": true,
+    "add_to_story": false,
+    "randomize_action_sequence": true,
+    "comment_language_distribution": {
+      "English": 35,
+	  "Hinglish (Hindi in English/Roman script)": 35,
+      "Hindi (Devanagari script)": 10,
+      "Hindi (English/Roman script)": 0,
+      "Bengali (Bengali script)": 0,
+      "Bengali (English/Roman script)": 0,
+      "Gujarati (Gujarati script)": 0,
+      "Gujarati (English/Roman script)": 0,
+      "Kannada (Kannada script)": 0,
+      "Kannada (English/Roman script)": 0,
+      "Malayalam (Malayalam script)": 0,
+      "Malayalam (English/Roman script)": 0,
+      "Marathi (Devanagari script)": 0,
+      "Marathi (English/Roman script)": 0,
+      "Odia (Odia script)": 0,
+      "Odia (English/Roman script)": 0,
+      "Punjabi (Gurmukhi script)": 10,
+      "Punjabi (English/Roman script)": 10,
+      "Tamil (Tamil script)": 0,
+      "Tamil (English/Roman script)": 0,
+      "Telugu (Telugu script)": 0,
+      "Telugu (English/Roman script)": 0,
+      "Urdu (Perso-Arabic script)": 0,
+      "Urdu (English/Roman script)": 0
+    }
+  },
+
+  "notifications": {
+    "enabled": true,
+    "mobile_numbers": ["919052815380"]
+  }
+}
