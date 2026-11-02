@@ -25,15 +25,12 @@ usernames = [
     "realtalkwithsandeep",
     "shivanisharma_officia",
     "shivanisharmafoundation",
-    "theumangblog",
     "torqos.ev",
-    "treasure_of_kutch",
     "trishachatterjee09",
     "vanitas_payal_beauty999",
     "vickygetfit",
     "wander_bites_duo",
-    "wearstrangers",
-    "worldspassport"
+    "wearstrangers"
  ]
 
 monitor = PostMonitor(headless=True)
