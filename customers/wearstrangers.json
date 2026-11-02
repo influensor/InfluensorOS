@@ -1,13 +1,14 @@
 {
   "customer_id": "wearstrangers",
   "username": "wearstrangers",
+  "business_profile_description": "An upcoming global fashion and lifestyle brand (Stranger’s™️) redefining quiet luxury and elevated everyday essentials. Blending minimal streetwear aesthetics with timeless sophistication across menswear, womenswear, accessories, and signature fragrances. Built for those who dare to define their own style, offering a glimpse into a world where luxury lives in every line—launching soon across India, the US, UK, and Canada.",
 
   "type": "paid",
 
   "plan": {
     "type": "multi_post_per_day",
-    "start_date": "2026-10-02",
-    "expiry_date": "2027-12-02",
+    "start_date": "2026-10-01",
+    "expiry_date": "2027-12-01",
     "posts_per_day": 10
   },
 

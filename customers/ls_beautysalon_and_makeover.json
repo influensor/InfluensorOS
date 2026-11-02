@@ -1,14 +1,14 @@
 {
-  "customer_id": "therebelbonggirl",
-  "username": "therebelbonggirl",
-  "business_profile_description": "A vibrant digital creator and lifestyle vlogger based in India, sharing daily inspiration in home decor, gardening, aesthetic fashion, and everyday moments. Specializing in relatable lifestyle content, budget-friendly fashion hauls, affordable ethnic wear and Meesho finds, festive GRWMs, and travel vlogs exploring scenic domestic and international destinations.",
+  "customer_id": "ls_beautysalon_and_makeover",
+  "username": "ls_beautysalon_and_makeover",
+  "business_profile_description": "A premier beauty, hair, skin, and nail destination with studios across Dindoli, Surat, Gujarat. Led by expert founders Swati/Laxmi Pingle, delivering professional bridal makeovers, advanced haircuts, nail artistry, and comprehensive salon services. Proud recipient of industry accolades—including recognition by Esha Deol—and a trusted educational hub offering professional hands-on training, student courses, and specialized beauty workshops.",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-10-25",
-	"expiry_date": "2026-11-25",
+	"start_date": "2026-11-02",
+	"expiry_date": "2026-11-02",
 	"posts_per_day": 1
   },
 
@@ -23,20 +23,20 @@
     "add_to_story": false,
     "randomize_action_sequence": true,
     "comment_language_distribution": {
-      "English": 40,
-	  "Hinglish (Hindi in English/Roman script)": 30,
+      "English": 35,
+	  "Hinglish (Hindi in English/Roman script)": 35,
       "Hindi (Devanagari script)": 0,
       "Hindi (English/Roman script)": 0,
-      "Bengali (Bengali script)": 15,
-      "Bengali (English/Roman script)": 15,
-      "Gujarati (Gujarati script)": 0,
-      "Gujarati (English/Roman script)": 0,
+      "Bengali (Bengali script)": 0,
+      "Bengali (English/Roman script)": 0,
+      "Gujarati (Gujarati script)": 10,
+      "Gujarati (English/Roman script)": 10,
       "Kannada (Kannada script)": 0,
       "Kannada (English/Roman script)": 0,
       "Malayalam (Malayalam script)": 0,
       "Malayalam (English/Roman script)": 0,
-      "Marathi (Devanagari script)": 0,
-      "Marathi (English/Roman script)": 0,
+      "Marathi (Devanagari script)": 5,
+      "Marathi (English/Roman script)": 5,
       "Odia (Odia script)": 0,
       "Odia (English/Roman script)": 0,
       "Punjabi (Gurmukhi script)": 0,
@@ -52,6 +52,6 @@
 
   "notifications": {
     "enabled": true,
-    "mobile_numbers": ["917045600559"]
+    "mobile_numbers": ["919023133902"]
   }
 }
