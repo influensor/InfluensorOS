@@ -1,13 +1,14 @@
 {
   "customer_id": "theumangblog",
   "username": "theumangblog",
+  "business_profile_description": "A vibrant lifestyle, skincare, haircare, and beauty UGC creator (umang) helping top brands style and showcase their products. From expert hair rescue routines with Livon and Head & Shoulders to curated Amazon under-₹499 fashion and beauty hauls, festive styling guides, and cafe explorations across Mohali and Lucknow—bringing relatable product insights and authentic storytelling to life.",
 
   "type": "paid",
 
   "plan": {
     "type": "single_post_per_day",
-	"start_date": "2026-10-01",
-	"expiry_date": "2026-11-01",
+	"start_date": "2026-11-04",
+	"expiry_date": "2026-12-04",
 	"posts_per_day": 1
   },
 
