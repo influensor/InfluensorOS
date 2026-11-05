@@ -33,7 +33,8 @@ usernames = [
     "vanitas_payal_beauty999",
     "vickygetfit",
     "wander_bites_duo",
-    "wearstrangers"
+    "wearstrangers",
+    "worldspassport"
  ]
 
 monitor = PostMonitor(headless=True)
