@@ -1,4 +1,5 @@
 import time
+import random
 import threading
 from datetime import datetime
 from engine.ui.device import get_device
@@ -10,6 +11,7 @@ from engine.ui.view import view_post
 from engine.ui.like import like_post
 from engine.logic.comment_loader import load_random_comment
 from engine.ui.comment import post_comment
+from engine.ui.mention import post_mention, load_usernames
 from engine.ui.gif import post_gif_comment
 from engine.ui.repost import repost_post
 from engine.ui.share import share_post
@@ -24,10 +26,10 @@ from engine.ui.switch_account import switch_account
 # =========================
 
 #ACTIONS = ["open_instagram", "profile", "follow", "story", "message", "post", "view", "like", "comment", "gif_comment", "repost", "share", "share_custom", "save", "interested", "switch"]
-ACTIONS = ["open_instagram", "switch"]
+ACTIONS = ["post", "mention"]
 
-TEST_USERNAME = "vickygetfit"
-TEST_POST_URL = {"url": "https://www.instagram.com/reel/DfFYzHlBdtw/","shortcode": "DfFYzHlBdtw"}
+TEST_USERNAME = "influensor.ai"
+TEST_POST_URL = {"url": "https://www.instagram.com/reel/DfXFhMxqGbP/","shortcode": "DfXFhMxqGbP"}
 
 # =========================
 # 📄 LOCAL DEBUG LOGGER
@@ -188,6 +190,22 @@ def debug_device(device_id):
                 return post_comment(device_id, comment)
 
             run_step("Comment", comment_action, device_id)
+            time.sleep(1)
+
+        # -------------------------
+        # MENTION COMMENT
+        # -------------------------
+        if "mention" in ACTIONS:
+            def mention_action():
+                usernames = load_usernames()
+                if not usernames:
+                    raise Exception("No valid usernames found in data/mentions/usernames.txt")
+
+                username = random.choice(usernames)
+                debug_log(device_id,f"💬 Mention Comment: @{username}")
+                return post_mention(device_id, username)
+
+            run_step("Mention Comment", mention_action, device_id)
             time.sleep(1)
 
         # -------------------------
