@@ -235,23 +235,16 @@ class PostMonitor:
     
     def extract_caption(self, post_page):
         try:
-            # ---------------------------------
-            # GET INSTAGRAM METADATA
-            # ---------------------------------
-    
             selectors = [
-                'meta[property="og:description"]',
                 'meta[name="description"]',
+                'meta[property="og:description"]',
+                'meta[property="og:title"]',
                 'meta[name="twitter:description"]'
             ]
     
             raw_caption = ""
-    
             for selector in selectors:
-    
-                value = post_page.locator(
-                    selector
-                ).get_attribute("content")
+                value = post_page.locator(selector).get_attribute("content")
     
                 if value:
                     raw_caption = value
@@ -260,16 +253,22 @@ class PostMonitor:
             if not raw_caption:
                 return ""
     
-            # ---------------------------------
-            # DECODE HTML ENTITIES
-            # ---------------------------------
-    
-            caption = html.unescape(
-                raw_caption
-            ).strip()
+            caption = html.unescape(raw_caption).strip()
     
             # ---------------------------------
-            # REMOVE INSTAGRAM PREFIX
+            # REMOVE OG:TITLE ACCOUNT PREFIX
+            # ---------------------------------
+    
+            caption = re.sub(
+                r'^.*?\s+on\s+Instagram:\s*["“]',
+                '',
+                caption,
+                count=1,
+                flags=re.IGNORECASE | re.DOTALL
+            )
+    
+            # ---------------------------------
+            # REMOVE OLD ENGAGEMENT PREFIX
             # ---------------------------------
     
             caption = re.sub(
@@ -284,30 +283,41 @@ class PostMonitor:
             )
     
             # ---------------------------------
-            # REMOVE INSTAGRAM WRAPPING QUOTES
+            # REMOVE ACCOUNT ATTRIBUTION SUFFIX
+            # ---------------------------------
+    
+            caption = re.sub(
+                r'\s+-\s+@[\w.]+\s+on\s+'
+                r'[A-Za-z]+\s+\d{1,2},\s+\d{4}\s*$',
+                '',
+                caption,
+                count=1,
+                flags=re.IGNORECASE
+            )
+    
+            # ---------------------------------
+            # REMOVE ONLY OUTER WRAPPING QUOTES
             # ---------------------------------
     
             caption = caption.strip()
     
-            if caption.startswith('"'):
+            if caption.startswith(('"', '“')):
                 caption = caption[1:]
     
-            if caption.endswith('.'):
-                caption = caption[:-1].rstrip()
-    
-            if caption.endswith('"'):
+            if caption.endswith(('"', '”')):
                 caption = caption[:-1]
     
             # ---------------------------------
-            # FINAL CLEANUP
+            # PRESERVE PARAGRAPH FORMATTING
             # ---------------------------------
     
-            return self.clean_text(caption)
+            lines = [line.strip() for line in caption.replace("\r\n", "\n").split("\n")]
+            caption = "\n".join(lines).strip()
+            caption = re.sub(r'\s+', ' ', caption).strip()
+            return caption
     
         except Exception as e:
-    
             print(f"[caption error] {e}")
-    
             return ""
 
     # =====================================================
