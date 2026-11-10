@@ -19,7 +19,6 @@ usernames = [
     "ifbbprojyotigupta",
     "imagemakerclicks",
     "immaculatelimoinc",
-    "journey.techie",
     "lipika_maheshwari",
     "ls_beautysalon_and_makeover",
     "pavankhillarepatil0055",
