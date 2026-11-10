@@ -2,7 +2,9 @@ import os
 import json
 from engine.config import DELIVERY_DIR
 
-DEVICE_ID = "ZA222TPGMK"
+# Most_Delayed_Devices
+#ZA222TPGMK, ZA222TPWQ3, ZA222TNV83, ZA222TPZKD
+DEVICE_ID = "ZA222TNV83"
 
 CUSTOMERS_DIR = "customers"
 POSTS_DIR = os.path.join("data", "posts")
