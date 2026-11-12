@@ -31,7 +31,6 @@ usernames = [
     "trishachatterjee09",
     "vanitas_payal_beauty999",
     "vickygetfit",
-    "vishwasenterprises_",
     "wander_bites_duo",
     "wearstrangers",
     "worldspassport"
