@@ -4,7 +4,7 @@ from engine.config import DELIVERY_DIR
 
 # Most_Delayed_Devices
 #ZA222TPGMK, ZA222TPWQ3, ZA222TNV83, ZA222TPZKD
-DEVICE_ID = "ZA222TNV83"
+DEVICE_ID = "ZA222TPGMK"
 
 CUSTOMERS_DIR = "customers"
 POSTS_DIR = os.path.join("data", "posts")
