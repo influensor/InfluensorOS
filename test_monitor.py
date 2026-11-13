@@ -14,7 +14,6 @@ usernames = [
     "eternalbright.in",
     "faizaansofficial",
     "fit__yatra",
-    "friendsandcompany_official",
     "houseofstylebyricha",
     "ifbbprojyotigupta",
     "imagemakerclicks",
