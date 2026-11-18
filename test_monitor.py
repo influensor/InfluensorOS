@@ -16,6 +16,7 @@ usernames = [
     "ifbbprojyotigupta",
     "imagemakerclicks",
     "immaculatelimoinc",
+    "laa_belle_salon",
     "lipika_maheshwari",
     "ls_beautysalon_and_makeover",
     "pavankhillarepatil0055",
