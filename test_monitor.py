@@ -25,7 +25,7 @@ usernames = [
     "shivanisharmafoundation",
     "souravsharmaofficial",
     "themona_diary",
-    "therebelbonggirl",
+    "thesomufied",
     "theumangblog",
     "trishachatterjee09",
     "vanitas_payal_beauty999",

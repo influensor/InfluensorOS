@@ -23,8 +23,16 @@ API_KEYS = [
 random.shuffle(API_KEYS)
 
 TOTAL_COMMENTS = 150
+#MODEL_NAME = "models/gemini-flash-latest"
+#MODEL_NAME = "models/gemini-flash-lite-latest"
+#MODEL_NAME = "models/gemini-3.1-flash-lite"
+#MODEL_NAME = "models/gemini-3.5-flash-lite"
+
 #MODEL_NAME = "models/gemini-2.5-flash"
-MODEL_NAME = "models/gemini-3.5-flash"
+#MODEL_NAME = "models/gemini-3.5-flash"
+MODEL_NAME = "models/gemini-3.6-flash"
+#MODEL_NAME = "models/gemini-3.7-flash"
+#MODEL_NAME = "models/gemini-3.8-flash"
 
 # =====================================================
 # INFLUENSOR OS PATHS
