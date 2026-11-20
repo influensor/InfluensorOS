@@ -21,6 +21,7 @@ usernames = [
     "ls_beautysalon_and_makeover",
     "pavankhillarepatil0055",
     "realtalkwithsandeep",
+    "ria_fashionblogger",
     "shivanisharma_officia",
     "shivanisharmafoundation",
     "souravsharmaofficial",
