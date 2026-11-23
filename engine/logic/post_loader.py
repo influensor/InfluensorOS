@@ -1,53 +1,31 @@
 import os
-
-from engine.config import (
-    DELIVERY_DIR
-)
-
-from engine.utils.file_utils import (
-    safe_json_load
-)
-
+from engine.config import (DELIVERY_DIR)
+from engine.utils.file_utils import (safe_json_load)
 
 # ==================================================
 # POSTS FILE
 # ==================================================
 
 def _posts_file_path(customer_id):
-
-    return os.path.join(
-
-        "data",
-        "posts",
-        f"{customer_id}.json"
-    )
-
+    return os.path.join("data","posts",f"{customer_id}.json")
 
 # ==================================================
 # LOAD POSTS
 # ==================================================
 
 def _load_posts(customer_id):
-
-    path = _posts_file_path(
-        customer_id
-    )
+    path = _posts_file_path(customer_id)
 
     if not os.path.exists(path):
         return []
 
-    data = safe_json_load(
-        path,
-        []
-    )
+    data = safe_json_load(path,[])
 
     if not isinstance(data, list):
         return []
 
     valid_posts = []
-
     for post in data:
-
         if not isinstance(post, dict):
             continue
 
@@ -55,6 +33,18 @@ def _load_posts(customer_id):
             continue
 
         if not post.get("shortcode"):
+            continue
+
+        # -----------------------------------------
+        # AI COMMENT READINESS
+        # -----------------------------------------
+        # Empty/missing captions do not require AI
+        # comments. If a caption exists, the post
+        # is eligible only after AI comments are
+        # successfully generated.
+        caption = post.get("caption")
+        has_caption = bool(isinstance(caption, str) and caption.strip())
+        if has_caption and post.get("ai_comments_generated") is not True:
             continue
 
         valid_posts.append(post)
@@ -66,63 +56,24 @@ def _load_posts(customer_id):
 # DELIVERY FILE
 # ==================================================
 
-def _delivery_file_path(
-    customer_id,
-    device_id
-):
-
-    return os.path.join(
-
-        DELIVERY_DIR,
-
-        device_id,
-
-        f"{customer_id}.json"
-    )
-
+def _delivery_file_path(customer_id,device_id):
+    return os.path.join(DELIVERY_DIR,device_id,f"{customer_id}.json")
 
 # ==================================================
 # LOAD DELIVERY
 # ==================================================
 
-def _load_delivery(
-    customer_id,
-    device_id
-):
-
-    path = _delivery_file_path(
-
-        customer_id,
-        device_id
-    )
-
-    return safe_json_load(
-
-        path,
-
-        {
-            "posts": {}
-        }
-    )
-
+def _load_delivery(customer_id,device_id):
+    path = _delivery_file_path(customer_id,device_id)
+    return safe_json_load(path,{"posts": {}})
 
 # ==================================================
 # IS COMPLETED
 # ==================================================
 
-def _is_completed(
-    delivery_posts,
-    post
-):
-
-    post_url = post.get(
-        "url"
-    )
-
-    record = delivery_posts.get(
-        post_url,
-        {}
-    )
+def _is_completed(delivery_posts,post):
+    post_url = post.get("url")
+    record = delivery_posts.get(post_url,{})
 
     # -----------------------------------------
     # NO RECORD
@@ -131,31 +82,16 @@ def _is_completed(
     if not isinstance(record, dict):
         return False
 
-    completed = record.get(
-        "completed",
-        False
-    )
-
+    completed = record.get("completed",False)
     return bool(completed)
-
 
 # ==================================================
 # MAIN POST LOADER
 # ==================================================
 
-def load_posts(
-    customer,
-    device_id=None
-):
-
-    customer_id = customer[
-        "customer_id"
-    ]
-
-    posts = _load_posts(
-        customer_id
-    )
-
+def load_posts(customer,device_id=None):
+    customer_id = customer["customer_id"]
+    posts = _load_posts(customer_id)
     if not posts:
         return []
 
@@ -164,23 +100,14 @@ def load_posts(
     # =============================================
 
     if not device_id:
-
         return [posts[0]]
 
     # =============================================
     # LOAD DELIVERY
     # =============================================
 
-    delivery = _load_delivery(
-
-        customer_id,
-        device_id
-    )
-
-    delivery_posts = delivery.get(
-        "posts",
-        {}
-    )
+    delivery = _load_delivery(customer_id,device_id)
+    delivery_posts = delivery.get("posts",{})
 
     # =============================================
     # FIND FIRST INCOMPLETE
