@@ -7,7 +7,7 @@ from engine.post_monitor.monitor import PostMonitor
 #usernames = ["torqos.ev"]
 #usernames = ["worldspassport"]
 #usernames = ["journey.techie"]
-usernames = ["_thecosmicvoid"]
+usernames = ["shivanisharmafoundation"]
 
 #INDEX_FILE = r"C:\Users\yagha\OneDrive\Documents\GitHub\InfluensorOS\current_user.txt"
 INDEX_FILE = r"C:\Users\003\Documents\GitHub\InfluensorOS\current_user.txt"

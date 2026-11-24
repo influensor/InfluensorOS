@@ -2,6 +2,7 @@ import os
 from engine.config import (DELIVERY_DIR)
 from engine.utils.file_utils import (safe_json_load)
 
+
 # ==================================================
 # POSTS FILE
 # ==================================================
@@ -13,7 +14,7 @@ def _posts_file_path(customer_id):
 # LOAD POSTS
 # ==================================================
 
-def _load_posts(customer_id):
+def _load_posts(customer_id,comments_enabled=True):
     path = _posts_file_path(customer_id)
 
     if not os.path.exists(path):
@@ -44,7 +45,8 @@ def _load_posts(customer_id):
         # successfully generated.
         caption = post.get("caption")
         has_caption = bool(isinstance(caption, str) and caption.strip())
-        if has_caption and post.get("ai_comments_generated") is not True:
+
+        if comments_enabled and has_caption and post.get("ai_comments_generated") is not True:
             continue
 
         valid_posts.append(post)
@@ -91,7 +93,18 @@ def _is_completed(delivery_posts,post):
 
 def load_posts(customer,device_id=None):
     customer_id = customer["customer_id"]
-    posts = _load_posts(customer_id)
+    settings = customer.get("settings",{})
+
+    if not isinstance(settings, dict):
+        settings = {}
+
+    comments_enabled = (
+        customer.get("comment") is not False
+        and settings.get("comment") is not False
+    )
+
+    posts = _load_posts(customer_id,comments_enabled)
+
     if not posts:
         return []
 
