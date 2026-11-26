@@ -1,11 +1,8 @@
 import re
 import time
 import xml.etree.ElementTree as ET
-
 import uiautomator2 as u2
-
 from engine.logger import info, warn, error
-
 
 LIKE_BUTTON_IDS = [
     "com.instagram.android:id/like_button",
@@ -98,37 +95,24 @@ def _find_like_button(device):
     return None
 
 
-def check_like_state_new(device, like_button=None):
-    """
-    Visual Like detector:
-        True  = Red filled heart (liked)
-        False = White outline heart (unliked)
-        None  = Unable to determine
-
-    Scans the central heart area to avoid red pixels
-    from the Reel image behind the transparent Like button.
-    """
-
+def _get_like_button_crop(device, like_button=None):
+    """Return the central Like-heart crop, excluding most surrounding media."""
     if like_button is None:
         like_button = _find_like_button(device)
-
     if like_button is None:
         return None
 
     try:
         bounds = (like_button.info or {}).get("bounds")
-
         if not isinstance(bounds, dict):
             return None
 
         screenshot = device.screenshot()
-
         if screenshot is None:
             return None
 
         screenshot = screenshot.convert("RGB")
-
-        width, height = screenshot.size
+        screen_width, screen_height = screenshot.size
 
         button_left = int(bounds["left"])
         button_top = int(bounds["top"])
@@ -137,72 +121,51 @@ def check_like_state_new(device, like_button=None):
 
         button_width = button_right - button_left
         button_height = button_bottom - button_top
-
         if button_width <= 0 or button_height <= 0:
             return None
 
-        # Scan only the central interior of the heart.
-        # Excludes the outer button edges and red objects below it.
-        left = max(
-            0,
-            int(button_left + button_width * 0.30)
-        )
-
-        top = max(
-            0,
-            int(button_top + button_height * 0.28)
-        )
-
-        right = min(
-            width,
-            int(button_left + button_width * 0.70)
-        )
-
-        bottom = min(
-            height,
-            int(button_top + button_height * 0.68)
-        )
+        # Keep the scan inside the heart itself, not the Reel background.
+        left = max(0, int(button_left + button_width * 0.30))
+        top = max(0, int(button_top + button_height * 0.28))
+        right = min(screen_width, int(button_left + button_width * 0.70))
+        bottom = min(screen_height, int(button_top + button_height * 0.68))
 
         if right <= left or bottom <= top:
             return None
 
-        crop = screenshot.crop((left, top, right, bottom))
-
-        total_pixels = 0
-        red_pixels = 0
-
-        for red, green, blue in crop.getdata():
-
-            total_pixels += 1
-
-            # Instagram filled-heart red
-            if (
-                red >= 170
-                and green <= 105
-                and blue <= 145
-                and red - green >= 75
-            ):
-                red_pixels += 1
-
-        if total_pixels == 0:
-            return None
-
-        red_ratio = red_pixels / total_pixels
-
-        # Require both a minimum pixel count and
-        # a meaningful percentage of red in the heart interior.
-        if red_pixels >= 20 and red_ratio >= 0.20:
-            return True
-
-        return False
-
+        return screenshot.crop((left, top, right, bottom))
     except Exception:
         return None
 
 
+def check_like_state_rgb_range(device, like_button=None):
+    """Detector 2: detect anti-aliased pixels near the filled-heart red."""
+    crop = _get_like_button_crop(device, like_button)
+    if crop is None:
+        return None
 
-def check_like_state_old(device, like_button=None):
-    """Original accessibility detector using selected state."""
+    try:
+        pixels = list(crop.getdata())
+        if not pixels:
+            return None
+
+        red_pixels = sum(
+            1 for red, green, blue in pixels
+            if (
+                235 <= red <= 255
+                and 10 <= green <= 55
+                and 30 <= blue <= 80
+            )
+        )
+
+        red_ratio = red_pixels / len(pixels)
+        return red_pixels >= 20 and red_ratio >= 0.20
+    except Exception:
+        return None
+
+
+def check_like_state_xml(device, like_button=None):
+    """Detector 3: read Instagram's selected attribute from the XML node."""
     if like_button is None:
         like_button = _find_like_button(device)
     if like_button is None:
@@ -217,26 +180,41 @@ def check_like_state_old(device, like_button=None):
         return None
 
 
+# Backward-compatible detector names used by existing integrations.
+def check_like_state_new(device, like_button=None):
+    return check_like_state_rgb_range(device, like_button)
+
+
+def check_like_state_old(device, like_button=None):
+    return check_like_state_xml(device, like_button)
+
+
 def is_post_liked(device, like_button=None, log_result=True):
-    """Either detector True=liked; BOTH False=unliked; otherwise unknown."""
+    """
+    Any detector True means liked.
+    All three detectors must return False to confirm unliked.
+    Either unavailable detector makes the result inconclusive.
+    """
     if like_button is None:
         like_button = _find_like_button(device)
     if like_button is None:
         return None
 
-    visual_state = check_like_state_new(device, like_button)
-    old_state = check_like_state_old(device, like_button)
+    range_state = check_like_state_rgb_range(device, like_button)
+    xml_state = check_like_state_xml(device, like_button)
 
     if log_result:
         info(
-            f"🔎 Like detectors | NEW visual={visual_state} | "
-            f"OLD selected={old_state}"
+            f"🔎 Like detectors | rgb_range={range_state} | "
+            f"xml_selected={xml_state}"
         )
 
-    if visual_state is True or old_state is True:
+    if range_state is True or xml_state is True:
         return True
-    if visual_state is False and old_state is False:
+
+    if range_state is False and xml_state is False:
         return False
+
     return None
 
 
@@ -363,7 +341,7 @@ def like_post(device_id, retries=2, verify_timeout=8, poll_interval=0.5):
       2. Locate a safe media tap point before changing anything.
       3. Click the Instagram Like UI element exactly once.
       4. Double-tap the safe visible media area exactly once.
-      5. Verify the final liked state using selected + red-pixel detectors.
+      5. Verify the final liked state using RGB-range and XML detectors.
 
     `retries` is retained for compatibility. Neither action is blindly retried.
     """
@@ -463,7 +441,7 @@ def like_post(device_id, retries=2, verify_timeout=8, poll_interval=0.5):
                 )
             else:
                 info(
-                    "✅ Like successful | Confirmed by selected/red-pixel detectors.",
+                    "✅ Like successful | Confirmed by all Like-state detectors.",
                     device_id,
                 )
             return True
